@@ -18,8 +18,8 @@ import { defineAuth, secret } from "@aws-amplify/backend";
 
 const SITE_URLS = [
   "http://localhost:3000/",
-  "https://mygiftlocker.com/",
-  "https://www.mygiftlocker.com/",
+  "https://mygiftlockers.com/",
+  "https://www.mygiftlockers.com/",
   // Amplify Hosting default domain; set AMPLIFY_SITE_URL in the console once the app exists.
   ...(process.env.AMPLIFY_SITE_URL ? [process.env.AMPLIFY_SITE_URL.replace(/\/?$/, "/")] : []),
 ];

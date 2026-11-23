@@ -36,7 +36,7 @@ import { colors } from "@/lib/theme";
 
 /**
  * The invite/connection flow on iPhone & iPad. Opened from a universal link
- * (mygiftlocker.com/join/<token> or mygiftlocker://join?token=…) or locally.
+ * (mygiftlockers.com/join/<token> or mygiftlocker://join?token=…) or locally.
  */
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 

@@ -9,7 +9,7 @@ import { Avatar, Button, Card, Chips, styles } from "@/components/ui";
 import { me, patchExchange, setWishlist, useExchange } from "@/lib/store";
 import { colors, fonts } from "@/lib/theme";
 
-const SITE = "https://mygiftlocker.com";
+const SITE = "https://mygiftlockers.com";
 
 export default function ExchangeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -9,7 +9,7 @@ const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
 export const metadata: Metadata = {
   title: { default: "My Gift Locker", template: "%s · My Gift Locker" },
   description: "Keep everyone's sizes, addresses and special dates in one place — and run joyful gift exchanges.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://mygiftlocker.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://mygiftlockers.com"),
   openGraph: { siteName: "My Gift Locker", images: ["/lockup.svg"] },
 };
 

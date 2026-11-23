@@ -36,7 +36,7 @@ Expo SDK 58 + Expo Router + Reanimated 4 (UI-thread animations).
   else (e.g. dual-screen devices), tell us and we'll adjust.
 - Locker → person uses Expo Router's native **zoom transition** (`Link.AppleZoom`, iOS 18+;
   alpha API) for a true system hero animation.
-- **Universal links** (`applinks:mygiftlocker.com`) are not enabled yet: that entitlement
+- **Universal links** (`applinks:mygiftlockers.com`) are not enabled yet: that entitlement
   requires code signing even for simulator builds. Add `ios.associatedDomains` back in
   `app.json` once there's an Apple Developer team. Until then, use the `mygiftlocker://` scheme.
 - The join flow mirrors the web: same core step config, same backdrop motion and easing.
@@ -80,7 +80,7 @@ deploy for the live site, or an empty `{}` (written automatically) for local dem
    so Google can redirect back to it; redeploy after setting it.
 4. **Google Cloud console → OAuth client:** add the redirect URI
    `https://<auth.oauth.domain from amplify_outputs.json>/oauth2/idpresponse`.
-5. Custom domain: Amplify app → Hosting → Custom domains → `mygiftlocker.com`.
+5. Custom domain: Amplify app → Hosting → Custom domains → `mygiftlockers.com`.
 
 To work locally against the live backend:
 `npx ampx generate outputs --app-id <id> --branch <branch> --out-dir apps/web`.

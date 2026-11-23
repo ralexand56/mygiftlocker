@@ -55,8 +55,8 @@ export default function MyExchanges() {
 
       <Card style={{ alignItems: "center", backgroundColor: colors.cream }}>
         <Text style={[styles.body, { textAlign: "center", fontSize: 14 }]}>Starting a new gift exchange? Create it on the website, then manage it here.</Text>
-        <Pressable onPress={() => Linking.openURL("https://mygiftlocker.com/exchange")} hitSlop={8}>
-          <Text style={{ fontFamily: fonts.black, color: colors.rose, marginTop: 8 }}>mygiftlocker.com/exchange ↗</Text>
+        <Pressable onPress={() => Linking.openURL("https://mygiftlockers.com/exchange")} hitSlop={8}>
+          <Text style={{ fontFamily: fonts.black, color: colors.rose, marginTop: 8 }}>mygiftlockers.com/exchange ↗</Text>
         </Pressable>
       </Card>
     </ScrollView>

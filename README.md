@@ -1,6 +1,6 @@
 <p align="center"><img src="packages/brand/lockup-cream.png" alt="My Gift Locker" width="420"></p>
 
-# My Gift Locker — mygiftlocker.com
+# My Gift Locker — mygiftlockers.com
 
 Keep everyone's sizes, addresses and special dates in one place — and run joyful gift exchanges.
 
@@ -8,7 +8,7 @@ Keep everyone's sizes, addresses and special dates in one place — and run joyf
 
 ```
 apps/
-  web/        Next.js 16 (App Router, React 19, Tailwind 4, Motion) — mygiftlocker.com
+  web/        Next.js 16 (App Router, React 19, Tailwind 4, Motion) — mygiftlockers.com
   mobile/     Expo SDK 58 (React Native 0.88, Expo Router, Reanimated 4) — iPhone, iPad, Android
 packages/
   core/       Shared domain logic: sizes + conversions, dates, invites, step config, draw-names matcher
