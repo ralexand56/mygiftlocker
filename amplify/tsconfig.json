@@ -1,5 +1,11 @@
 {
   "extends": "../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "lib": ["ES2022"], "types": ["node"] },
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022"],
+    "types": ["node"],
+    // Amplify generates function env modules here at synth time; esbuild resolves them via this alias.
+    "paths": { "$amplify/*": ["../.amplify/generated/*"] }
+  },
   "include": ["**/*.ts"]
 }
