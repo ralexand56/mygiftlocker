@@ -53,7 +53,12 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="pb-10 text-center text-sm text-ink-soft">© {new Date().getFullYear()} My Gift Locker · mygiftlockers.com</footer>
+      <footer className="pb-10 text-center text-sm text-ink-soft">
+        © {new Date().getFullYear()} My Gift Locker · mygiftlockers.com ·{" "}
+        <a href="/privacy" className="underline hover:text-ink">
+          Privacy
+        </a>
+      </footer>
     </main>
   );
 }
