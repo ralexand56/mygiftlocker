@@ -1,7 +1,8 @@
 import { daysUntil, isStale, summarizeSizes } from "@mgl/core";
 import { Link, router } from "expo-router";
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Button, styles } from "@/components/ui";
 import { usePeople } from "@/lib/store";
 import { colors, fonts, shadow } from "@/lib/theme";
@@ -13,13 +14,20 @@ import { colors, fonts, shadow } from "@/lib/theme";
  */
 export default function Locker() {
   const people = usePeople();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const cols = width >= 1000 ? 3 : width >= 700 ? 2 : 1;
   const gap = 14;
   const cardW = (Math.min(width, 1100) - 40 - gap * (cols - 1)) / cols;
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 20, gap: 18 }}>
+    <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ padding: 20, paddingTop: insets.top + 12, gap: 18 }}>
+      <Animated.View entering={FadeInDown.springify().damping(18)}>
+        <Text style={{ fontFamily: fonts.display, fontSize: 38, color: colors.ink }}>
+          My <Text style={{ color: colors.rose }}>locker</Text>
+        </Text>
+        <Text style={styles.body}>Everyone you shop for, in one place.</Text>
+      </Animated.View>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <Button title="Invite someone" onPress={() => router.push("/join")} style={{ flex: 1 }} />
         <Button title="Gift exchange" variant="soft" onPress={() => router.push("/exchange")} style={{ flex: 1 }} />
@@ -31,7 +39,8 @@ export default function Locker() {
             <Link href={{ pathname: "/person/[id]", params: { id: p.id } }} asChild>
               <Pressable>
                 <Link.AppleZoom>
-                  <View style={[{ backgroundColor: colors.white, borderRadius: 26, padding: 18, overflow: "hidden" }, shadow]}>
+                  {/* Link.AppleZoom's child must get a flat style object, not an array. */}
+                  <View style={StyleSheet.flatten([{ backgroundColor: colors.white, borderRadius: 26, padding: 18, overflow: "hidden" as const }, shadow])}>
                     <View style={{ position: "absolute", left: 0, right: 0, top: 0, height: 70, backgroundColor: p.color, opacity: 0.6 }} />
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
                       <Avatar name={p.name} color={p.color} size={54} />

@@ -21,7 +21,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.cream },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "My locker", headerLargeTitle: true }} />
+        <Stack.Screen name="index" options={{ title: "My locker", headerShown: false }} />
         <Stack.Screen name="person/[id]" options={{ title: "", headerTransparent: true }} />
         <Stack.Screen name="join" options={{ headerShown: false, presentation: "fullScreenModal" }} />
         <Stack.Screen name="exchange" options={{ title: "Gift exchange" }} />

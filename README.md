@@ -28,7 +28,7 @@ pnpm dev            # web on http://localhost:3000
 ```
 
 ```bash
-pnpm dev:mobile     # Expo dev server (press i for the iOS simulator)
+pnpm dev:mobile     # Expo dev server; first native build: pnpm --filter @mgl/mobile ios
 ```
 
 ```bash
