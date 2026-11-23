@@ -8,7 +8,7 @@ applications:
       phases:
         build:
           commands:
-            - cd ../..
+            - cd "$(git rev-parse --show-toplevel)"
             - corepack enable
             - pnpm install --frozen-lockfile
             - pnpm exec ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --outputs-out-dir apps/web
@@ -16,7 +16,7 @@ applications:
       phases:
         preBuild:
           commands:
-            - cd ../..
+            - cd "$(git rev-parse --show-toplevel)"
             - corepack enable
             - pnpm install --frozen-lockfile
         build:
