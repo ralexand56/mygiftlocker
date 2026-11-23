@@ -1,3 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Amplify/CDK bundles backend Lambdas with esbuild from the repo root; let its binary install.
+onlyBuiltDependencies:
+  - esbuild

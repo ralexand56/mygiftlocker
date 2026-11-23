@@ -13,14 +13,15 @@
     "sandbox": "ampx sandbox"
   },
   "devDependencies": {
-    "turbo": "^2.11.13",
-    "typescript": "^5.9.3",
     "@aws-amplify/backend": "^1.25.1",
     "@aws-amplify/backend-cli": "^1.10.0",
     "@types/node": "^22.20.5",
     "aws-amplify": "^6.22.2",
     "aws-cdk-lib": "^2.220.0",
-    "constructs": "^10.4.2"
+    "constructs": "^10.4.2",
+    "esbuild": "0.25.12",
+    "turbo": "^2.11.13",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@mgl/core": "workspace:*"
