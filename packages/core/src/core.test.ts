@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  exchangeJoinMessage,
+  smsHref,
   cleanWishlist,
   isPlausibleToken,
   DrawError,
@@ -105,6 +107,12 @@ describe("dates", () => {
 });
 
 describe("invites", () => {
+  it("builds sms links with an encoded body", () => {
+    const href = smsHref(exchangeJoinMessage("Family & Friends", "https://mygiftlockers.com/exchange/abc/join"));
+    expect(href.startsWith("sms:?&body=")).toBe(true);
+    expect(decodeURIComponent(href.slice("sms:?&body=".length))).toContain("Family & Friends");
+    expect(href).not.toContain(" ");
+  });
   it("round-trips unicode", () => {
     const p = { v: 1 as const, id: "x", from: { name: "Zoë 🎁" }, ask: DEFAULT_ASK, createdAt: "2026-01-01" };
     expect(decodeInvite(encodeInvite(p))).toEqual(p);

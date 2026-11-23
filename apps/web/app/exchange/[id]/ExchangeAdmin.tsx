@@ -1,8 +1,8 @@
 "use client";
 
-import { formatBudget, type Exchange } from "@mgl/core";
+import { exchangeJoinMessage, exchangeRevealMessage, formatBudget, smsHref, type Exchange } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Copy, Eye, EyeOff, Link2, Plus, RotateCcw, Shuffle, Trash2, X } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, Link2, Mail, MessageSquareText, Plus, RotateCcw, Share2, Shuffle, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar, Button, Card, Input, inputCls } from "@/components/ui";
@@ -47,9 +47,14 @@ function Admin({ ex, adminSub, reload }: Ctx) {
   const [drawing, setDrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [peek, setPeek] = useState(false);
-  useEffect(() => setOrigin(window.location.origin), []);
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setOrigin(window.location.origin);
+    setCanShare(typeof navigator.share === "function");
+  }, []);
 
   const joinUrl = `${origin}/exchange/${ex.id}/join`;
+  const joinMessage = exchangeJoinMessage(ex.name, joinUrl);
   const byId = Object.fromEntries(ex.participants.map((p) => [p.id, p]));
 
   /** Run an action, then refresh from the server; surface errors in the draw card. */
@@ -119,7 +124,16 @@ function Admin({ ex, adminSub, reload }: Ctx) {
                     {peek && ex.assignments?.[p.id] && <p className="text-sm font-bold text-rose">→ gifting {byId[ex.assignments[p.id]!]?.name}</p>}
                   </div>
                   {ex.status === "drawn" ? (
-                    <CopyButton text={`${origin}/exchange/${ex.id}/me/${p.token}`} label="Private link" />
+                    <>
+                      <a
+                        href={smsHref(exchangeRevealMessage(p.name, ex.name, `${origin}/exchange/${ex.id}/me/${p.token}`))}
+                        aria-label={`Text ${p.name} their private link`}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-ink shadow-soft"
+                      >
+                        <MessageSquareText className="h-4 w-4" /> Text
+                      </a>
+                      <CopyButton text={`${origin}/exchange/${ex.id}/me/${p.token}`} label="Private link" />
+                    </>
                   ) : (
                     <>
                       <Link href={`/exchange/${ex.id}/me/${p.token}`} className="rounded-full px-3 py-1.5 text-sm font-bold text-ink-soft hover:bg-white">
@@ -153,6 +167,29 @@ function Admin({ ex, adminSub, reload }: Ctx) {
           <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white/80 p-2 pl-4 shadow-soft">
             <span className="truncate text-sm text-ink-soft">{joinUrl}</span>
             <CopyButton text={joinUrl} label="Copy" dark />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <a href={smsHref(joinMessage)} className={tile}>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-mint">
+                <MessageSquareText className="h-5 w-5" />
+              </span>
+              Text
+            </a>
+            {canShare ? (
+              <button type="button" onClick={() => navigator.share({ title: ex.name, text: joinMessage, url: joinUrl }).catch(() => {})} className={tile}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-sky">
+                  <Share2 className="h-5 w-5" />
+                </span>
+                Share
+              </button>
+            ) : (
+              <a href={`mailto:?subject=${encodeURIComponent(`Join "${ex.name}" 🎁`)}&body=${encodeURIComponent(joinMessage)}`} className={tile}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-blush">
+                  <Mail className="h-5 w-5" />
+                </span>
+                Email
+              </a>
+            )}
           </div>
         </Card>
 
@@ -274,6 +311,8 @@ function Exclusions({ ex, reload }: Ctx) {
     </Card>
   );
 }
+
+const tile = "flex items-center gap-3 rounded-2xl bg-white/80 p-2.5 text-left font-bold shadow-soft transition-transform hover:-translate-y-0.5";
 
 function CopyButton({ text, label, dark }: { text: string; label: string; dark?: boolean }) {
   const [ok, setOk] = useState(false);

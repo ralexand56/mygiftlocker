@@ -69,6 +69,24 @@ export interface ShareLinks {
   messenger: string;
 }
 
+/**
+ * `sms:` link that opens the phone's Messages app with `body` prefilled; the sender
+ * picks recipients. `sms:?&body=` works on iOS and Android (iOS needs the `&`).
+ */
+export function smsHref(body: string): string {
+  return `sms:?&body=${encodeURIComponent(body)}`;
+}
+
+/** Message inviting someone to join a gift exchange. */
+export function exchangeJoinMessage(exchangeName: string, url: string): string {
+  return `You're invited to "${exchangeName}" 🎁 Join and add your top wishes on My Gift Locker: ${url}`;
+}
+
+/** Message carrying a participant's private reveal link (only they should open it). */
+export function exchangeRevealMessage(name: string, exchangeName: string, url: string): string {
+  return `Hi ${name}! Names are drawn for "${exchangeName}" 🎁 Tap your private link to see who you're gifting (keep it to yourself!): ${url}`;
+}
+
 /** Prefilled deep links for each channel. */
 export function inviteShareLinks(url: string, fromName: string, toName?: string): ShareLinks {
   const hi = toName ? `Hi ${toName}! ` : "Hi! ";
@@ -77,8 +95,7 @@ export function inviteShareLinks(url: string, fromName: string, toName?: string)
   const enc = encodeURIComponent;
   return {
     email: `mailto:?subject=${enc(subject)}&body=${enc(body)}`,
-    // `sms:&body=` works on iOS; `sms:?body=` on Android. iOS also accepts `?`.
-    sms: `sms:?&body=${enc(body)}`,
+    sms: smsHref(body),
     whatsapp: `https://wa.me/?text=${enc(body)}`,
     messenger: `fb-messenger://share/?link=${enc(url)}`,
   };
