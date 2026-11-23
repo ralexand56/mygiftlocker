@@ -105,7 +105,7 @@ export function Locker() {
                 <motion.article
                   layoutId={`card-${open.id}`}
                   transition={hero}
-                  className="pointer-events-auto relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto bg-cream shadow-lift"
+                  className="pointer-events-auto relative max-h-[92dvh] w-full max-w-5xl overflow-y-auto bg-cream shadow-lift md:overflow-hidden"
                   style={{ borderRadius: 32 }}
                   role="dialog"
                   aria-modal
@@ -135,30 +135,32 @@ function PersonDetail({ person: p, onClose }: { person: Person; onClose: () => v
     ["Hat", p.sizes.hat],
   ];
 
-  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.18 } } };
-  const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } };
+  // Details column follows the hero ~250ms later, sliding in from the right.
+  const EASE = [0.16, 1, 0.3, 1] as const;
+  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.28 } } };
+  const item = { hidden: { opacity: 0, x: 48 }, show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: EASE } } };
 
   return (
-    <div className="relative">
-      <motion.div layoutId={`bg-${p.id}`} className="absolute inset-x-0 top-0 h-44" style={{ background: `linear-gradient(135deg, ${p.color}, transparent)` }} />
+    <div className="relative grid md:h-[min(720px,92dvh)] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <button onClick={onClose} className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/80 shadow-soft" aria-label="Close">
         <X className="h-5 w-5" />
       </button>
 
-      <div className="relative px-7 pt-10 pb-8 md:px-10">
-        <div className="flex items-center gap-5">
-          <motion.div layoutId={`avatar-${p.id}`} transition={hero}>
-            <Avatar name={p.name} color={p.color} size={96} />
-          </motion.div>
-          <div>
-            <motion.h2 layoutId={`name-${p.id}`} transition={hero} className="font-display text-4xl font-semibold">
-              {p.name}
-            </motion.h2>
-            <p className="text-ink-soft">{p.relationship}</p>
-          </div>
-        </div>
+      <div className="relative flex flex-col items-center justify-center overflow-hidden px-7 py-12 text-center">
+        <motion.div layoutId={`bg-${p.id}`} className="absolute inset-0" style={{ background: `radial-gradient(110% 80% at 30% 20%, #fffaf6, ${p.color} 60%)` }} />
+        <span className="clay absolute top-[14%] left-[14%] h-8 w-8" style={{ ["--clay" as string]: "#fef5ec" }} />
+        <span className="clay absolute right-[16%] bottom-[18%] h-5 w-5" style={{ ["--clay" as string]: "#a8c4da" }} />
+        <motion.div layoutId={`avatar-${p.id}`} transition={hero} className="relative drop-shadow-[0_24px_30px_rgba(120,90,90,0.25)]">
+          <Avatar name={p.name} color="#fffaf6" size={148} />
+        </motion.div>
+        <motion.h2 layoutId={`name-${p.id}`} transition={hero} className="relative mt-6 font-display text-4xl font-semibold md:text-5xl">
+          {p.name}
+        </motion.h2>
+        <p className="relative mt-1 text-ink-soft">{p.relationship}</p>
+      </div>
 
-        <motion.div variants={stagger} initial="hidden" animate="show" className="mt-8 grid gap-5">
+      <div className="relative bg-white/90 px-7 pt-8 pb-10 md:overflow-y-auto md:px-10 md:pt-14">
+        <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-6">
           {isStale(p) && (
             <motion.div variants={item} className="flex items-center gap-3 rounded-2xl bg-butter/70 p-4 text-sm">
               <Baby className="h-5 w-5 shrink-0" /> Sizes were last updated a while ago — kids grow fast! Ask a guardian to refresh them.

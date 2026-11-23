@@ -5,3 +5,4 @@ export * from "./invite";
 export * from "./steps";
 export * from "./exchange";
 export * from "./schemas";
+export * from "./demo";

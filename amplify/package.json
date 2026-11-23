@@ -1,0 +1,22 @@
+{
+  "name": "@mgl/amplify",
+  "private": true,
+  "type": "module",
+  "description": "Amplify Gen 2 backend (auth + data + functions). Deploy with `npx ampx sandbox` from the repo root.",
+  "dependencies": {
+    "@mgl/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.25.1",
+    "@aws-amplify/backend-cli": "^1.10.0",
+    "@types/node": "^22.20.5",
+    "aws-amplify": "^6.22.2",
+    "aws-cdk-lib": "^2.220.0",
+    "constructs": "^10.4.2",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "sandbox": "cd .. && ampx sandbox"
+  }
+}

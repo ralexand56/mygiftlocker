@@ -38,10 +38,11 @@ import {
   type StepDef,
   type StepId,
 } from "@mgl/core";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { ArrowLeft, ArrowRight, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
+import { StepRail, StepShowcase } from "@/components/StepShowcase";
 import { LogoMark } from "@/components/Logo";
 import { Button, ChipGroup, Field, Input, Textarea, inputCls } from "@/components/ui";
 import { upsertPerson } from "@/lib/store";
@@ -81,10 +82,19 @@ const initial: FormState = {
   kids: [],
 };
 
-const slide = {
-  enter: (dir: number) => ({ x: dir * 120, opacity: 0, filter: "blur(6px)" }),
-  center: { x: 0, opacity: 1, filter: "blur(0px)" },
-  exit: (dir: number) => ({ x: dir * -120, opacity: 0, filter: "blur(6px)" }),
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+/** Content lines leave upward with a blur and new ones rise in, ~90ms apart. */
+const EASE_IN = [0.7, 0, 0.84, 0] as const;
+const column: Variants = {
+  enter: {},
+  center: { transition: { staggerChildren: 0.09, delayChildren: 0.12 } },
+  exit: { transition: { staggerChildren: 0.035 } },
+};
+const line: Variants = {
+  enter: (dir: number) => ({ opacity: 0, y: 22 * dir, filter: "blur(8px)" }),
+  center: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: EASE } },
+  exit: (dir: number) => ({ opacity: 0, y: -18 * dir, filter: "blur(8px)", transition: { duration: 0.28, ease: EASE_IN } }),
 };
 
 export function JoinFlow({ invite }: { invite: InvitePayload }) {
@@ -156,85 +166,93 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
     setDone(true);
   };
 
+  const counter = (n: number) => String(n).padStart(2, "0");
+
   return (
     <div className="pastel-wash relative min-h-dvh overflow-x-clip">
       <FlyingBackdrop scene={done ? "done" : step.scene} />
 
-      <div className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-4 py-6">
+      <div className="relative z-10 mx-auto flex min-h-dvh max-w-5xl flex-col px-4 py-6">
         <header className="mb-6 flex items-center gap-3">
           <LogoMark size={34} />
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/70">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/70 md:hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-peach via-rose to-plum"
+              className="h-full rounded-full bg-gradient-to-r from-apricot via-rose to-dusk"
               animate={{ width: `${(done ? 1 : progress) * 100}%` }}
-              transition={{ type: "spring", stiffness: 120, damping: 20 }}
+              transition={{ duration: 0.8, ease: EASE }}
             />
           </div>
-          <span className="w-12 text-right text-sm font-bold text-ink-soft tabular-nums">
-            {done ? steps.length : index + 1}/{steps.length}
-          </span>
         </header>
 
         <div className="relative flex flex-1 items-center">
-          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
-            {done ? (
-              <Success key="done" name={form.name} from={invite.from.name} />
-            ) : (
-              <motion.section
-                key={step.id}
-                custom={dir}
-                variants={slide}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ type: "spring", stiffness: 260, damping: 28 }}
-                className="glass w-full rounded-[32px] p-6 shadow-lift md:p-9"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement) && canContinue && step.id !== "review") {
-                    e.preventDefault();
-                    go(1);
-                  }
-                }}
-              >
-                <div className="mb-1 flex items-center justify-between gap-3">
-                  <p className="text-sm font-extrabold tracking-wide text-rose uppercase">{step.eyebrow}</p>
-                  {isSizeStep(step.id) && <SystemToggle value={sys} onChange={setSys} />}
-                </div>
-                <h1 className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-4xl">
-                  {step.id === "welcome" ? `${invite.from.name} wants your gifts to be just right` : step.title}
-                </h1>
-                {step.subtitle && <p className="mt-2 text-ink-soft">{step.subtitle}</p>}
+          {done ? (
+            <Success name={form.name} from={invite.from.name} />
+          ) : (
+            <section
+              className="glass relative grid w-full overflow-hidden rounded-[36px] shadow-lift md:min-h-[620px] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement) && canContinue && step.id !== "review") {
+                  e.preventDefault();
+                  go(1);
+                }
+              }}
+            >
+              <StepShowcase scene={step.scene} dir={dir} />
+              <StepRail steps={steps} index={index} onJump={(i) => i < index && jump(steps[i]!.id)} />
 
-                <div className="mt-7">
-                  <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} />
-                </div>
+              <div className="relative flex flex-col p-6 md:py-10 md:pr-10 md:pl-14">
+                <AnimatePresence mode="wait" custom={dir} initial={false}>
+                  <motion.div key={step.id} custom={dir} variants={column} initial="enter" animate="center" exit="exit" className="flex flex-1 flex-col">
+                    <motion.div custom={dir} variants={line} className="mb-3 flex items-center justify-between gap-3">
+                      <p className="font-display text-sm tabular-nums text-ink-soft">
+                        <span className="text-2xl font-semibold text-ink">{counter(index + 1)}</span> / {counter(steps.length)}
+                      </p>
+                      {isSizeStep(step.id) && <SystemToggle value={sys} onChange={setSys} />}
+                    </motion.div>
+                    <motion.p custom={dir} variants={line} className="text-sm font-extrabold tracking-wide text-rose uppercase">
+                      {step.eyebrow}
+                    </motion.p>
+                    <motion.h1 custom={dir} variants={line} className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-[2.6rem]">
+                      {step.id === "welcome" ? `${invite.from.name} wants your gifts to be just right` : step.title}
+                    </motion.h1>
+                    {step.subtitle && (
+                      <motion.p custom={dir} variants={line} className="mt-2 text-ink-soft">
+                        {step.subtitle}
+                      </motion.p>
+                    )}
 
-                <footer className="mt-9 flex items-center gap-2">
-                  {index > 0 && (
-                    <Button variant="ghost" onClick={() => go(-1)} aria-label="Back" className="px-4!">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <div className="ml-auto flex items-center gap-2">
-                    {step.optional && (
-                      <Button variant="ghost" onClick={() => go(1)}>
-                        Skip
-                      </Button>
-                    )}
-                    {step.id === "review" ? (
-                      <Button onClick={submit}>
-                        <Sparkles className="h-4 w-4" /> Share with {invite.from.name}
-                      </Button>
-                    ) : (
-                      <Button onClick={() => go(1)} disabled={!canContinue}>
-                        Continue <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </footer>
-              </motion.section>
-            )}
-          </AnimatePresence>
+                    <motion.div custom={dir} variants={line} className="mt-7">
+                      <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} />
+                    </motion.div>
+
+                    <motion.footer custom={dir} variants={line} className="mt-auto flex items-center gap-2 pt-9">
+                      {index > 0 && (
+                        <Button variant="ghost" onClick={() => go(-1)} aria-label="Back" className="px-4!">
+                          <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <div className="ml-auto flex items-center gap-2">
+                        {step.optional && (
+                          <Button variant="ghost" onClick={() => go(1)}>
+                            Skip
+                          </Button>
+                        )}
+                        {step.id === "review" ? (
+                          <Button onClick={submit}>
+                            <Sparkles className="h-4 w-4" /> Share with {invite.from.name}
+                          </Button>
+                        ) : (
+                          <Button onClick={() => go(1)} disabled={!canContinue}>
+                            Continue <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </motion.footer>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>
@@ -327,7 +345,7 @@ function StepBody({
                   whileHover={{ y: -3 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => setSize("fit", f)}
-                  className={`relative rounded-3xl p-5 text-center font-display text-xl font-semibold transition-colors ${on ? "text-white" : "bg-white/70"}`}
+                  className={`relative rounded-3xl px-2 py-4 text-center font-display text-lg font-semibold transition-colors md:p-5 md:text-xl ${on ? "text-white" : "bg-white/70"}`}
                 >
                   {on && <motion.span layoutId="fit" className="absolute inset-0 rounded-3xl bg-gradient-to-br from-rose to-plum shadow-lift" />}
                   <span className="relative">{FIT_LABELS[f]}</span>

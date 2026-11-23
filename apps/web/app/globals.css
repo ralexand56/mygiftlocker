@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #fffaf7;
+  --color-cream: #fef5ec;
+  --color-shell: #faede4;
+  --color-apricot: #f2b9a0;
+  --color-powder: #a8c4da;
+  --color-powder-light: #d6e8f3;
+  --color-dusk: #6888a1;
   --color-blush: #fbd3e3;
   --color-rose: #e9779f;
   --color-rose-deep: #d45c86;
@@ -16,8 +21,10 @@
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
   --radius-card: 28px;
-  --shadow-soft: 0 1px 2px rgb(74 59 102 / 0.04), 0 12px 32px -12px rgb(74 59 102 / 0.18);
-  --shadow-lift: 0 2px 4px rgb(74 59 102 / 0.06), 0 24px 48px -16px rgb(122 90 166 / 0.35);
+  /* clay soft-UI: very wide, warm, low-opacity */
+  --shadow-soft: 0 1px 2px rgb(120 90 90 / 0.05), 0 20px 40px -14px rgb(120 90 90 / 0.18);
+  --shadow-lift: 0 2px 6px rgb(120 90 90 / 0.06), 0 34px 64px -20px rgb(120 90 110 / 0.32);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -42,14 +49,22 @@ body {
 /* soft, dreamy page wash */
 .pastel-wash {
   background:
-    radial-gradient(60% 50% at 10% 0%, rgb(251 211 227 / 0.7), transparent 70%),
-    radial-gradient(50% 50% at 95% 10%, rgb(217 200 255 / 0.65), transparent 70%),
-    radial-gradient(60% 60% at 50% 100%, rgb(205 239 227 / 0.6), transparent 70%),
-    var(--color-cream);
+    radial-gradient(55% 45% at 8% 0%, rgb(242 185 160 / 0.45), transparent 70%),
+    radial-gradient(50% 45% at 100% 8%, rgb(168 196 218 / 0.5), transparent 70%),
+    radial-gradient(60% 50% at 50% 105%, rgb(251 211 227 / 0.7), transparent 70%),
+    linear-gradient(180deg, #f6ebe6 0%, #efe0de 100%);
+  background-attachment: fixed;
+}
+
+/* matte clay sphere, lit from the top-left */
+.clay {
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.95), var(--clay, #f3c9c9) 55%, color-mix(in oklab, var(--clay, #f3c9c9), #6b4f5a 18%) 100%);
+  box-shadow: 0 24px 40px -18px rgb(120 90 90 / 0.35);
 }
 
 .glass {
-  background: rgb(255 255 255 / 0.72);
+  background: rgb(254 248 242 / 0.82);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border: 1px solid rgb(255 255 255 / 0.8);

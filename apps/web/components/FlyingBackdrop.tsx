@@ -31,6 +31,7 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+      <ClaySpheres />
       <AnimatePresence>
         <motion.div key={scene} className="absolute inset-0">
           {SLOTS.map((slot, i) => {
@@ -49,7 +50,7 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
                   width: slot.size,
                   height: slot.size,
                 }}
-                initial={reduce ? { opacity: 0 } : { x: from, rotate: slot.r * 4, opacity: 0, scale: 0.8 }}
+                initial={reduce ? { opacity: 0 } : { x: from, rotate: slot.r * 3, opacity: 0, scale: 0.9 }}
                 animate={{
                   x: 0,
                   rotate: slot.r,
@@ -57,7 +58,7 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
                   scale: 1,
                   transition: reduce
                     ? { duration: 0.3 }
-                    : { type: "spring", stiffness: 70, damping: 15, mass: 0.9, delay: 0.12 + order * 0.055 },
+                    : { duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.18 + order * 0.06 },
                 }}
                 exit={
                   reduce
@@ -66,7 +67,7 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
                         x: from,
                         rotate: slot.r * -3,
                         opacity: 0,
-                        transition: { duration: 0.5, ease: [0.6, 0, 0.9, 0.4], delay: order * 0.02 },
+                        transition: { duration: 0.45, ease: [0.7, 0, 0.84, 0], delay: order * 0.02 },
                       }
                 }
               >
@@ -83,5 +84,33 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+const SPHERES = [
+  { x: "22%", y: "12%", s: 34, c: "#f3c9c9", d: 9 },
+  { x: "76%", y: "18%", s: 22, c: "#a8c4da", d: 11 },
+  { x: "30%", y: "82%", s: 26, c: "#f2b9a0", d: 10 },
+  { x: "70%", y: "88%", s: 40, c: "#fef5ec", d: 12 },
+  { x: "88%", y: "46%", s: 18, c: "#f5d98a", d: 8 },
+  { x: "9%", y: "40%", s: 20, c: "#d6e8f3", d: 13 },
+];
+
+/** Soft clay spheres drifting behind everything — depth without noise. */
+function ClaySpheres() {
+  const reduce = useReducedMotion();
+  return (
+    <>
+      {SPHERES.map((b, i) => (
+        <motion.span
+          key={i}
+          className="clay absolute"
+          style={{ left: b.x, top: b.y, width: b.s, height: b.s, ["--clay" as string]: b.c }}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={reduce ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -18, 0], x: [0, i % 2 ? 10 : -10, 0] }}
+          transition={{ opacity: { duration: 1 }, scale: { duration: 1 }, y: { duration: b.d, repeat: Infinity, ease: "easeInOut" }, x: { duration: b.d * 1.3, repeat: Infinity, ease: "easeInOut" } }}
+        />
+      ))}
+    </>
   );
 }

@@ -16,6 +16,21 @@ export function HeroCollage() {
   return (
     <div className="relative aspect-square w-full max-w-[520px] justify-self-center">
       <div className="absolute inset-[12%] rounded-full bg-white/60 blur-2xl" />
+      {[
+        { l: "18%", t: "22%", s: 30, c: "#fef5ec", d: 0 },
+        { l: "84%", t: "40%", s: 22, c: "#a8c4da", d: 0.4 },
+        { l: "30%", t: "86%", s: 36, c: "#f2b9a0", d: 0.8 },
+        { l: "58%", t: "-2%", s: 18, c: "#f5d98a", d: 1.2 },
+      ].map((b, i) => (
+        <motion.span
+          key={`clay-${i}`}
+          className="clay absolute"
+          style={{ left: b.l, top: b.t, width: b.s, height: b.s, ["--clay" as string]: b.c }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
+          transition={{ scale: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 + b.d * 0.3 }, opacity: { duration: 0.6, delay: 0.6 }, y: { duration: 6 + i, repeat: Infinity, ease: "easeInOut" } }}
+        />
+      ))}
       {ITEMS.map(({ I, c, a, x, y, s, r, from }, i) => (
         <motion.div
           key={i}
@@ -23,7 +38,7 @@ export function HeroCollage() {
           style={{ left: x, top: y, width: s, height: s }}
           initial={{ x: from * 400, opacity: 0, rotate: r * 4 }}
           animate={{ x: 0, opacity: 1, rotate: r }}
-          transition={{ type: "spring", stiffness: 60, damping: 14, delay: 0.15 + i * 0.09 }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 + i * 0.09 }}
         >
           <motion.div
             className="h-full w-full drop-shadow-[0_20px_30px_rgba(122,90,166,0.22)]"
