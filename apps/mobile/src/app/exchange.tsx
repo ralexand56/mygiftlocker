@@ -24,7 +24,7 @@ export default function Exchange() {
     try {
       setResult(drawNames(names));
       setError(null);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e) {
       setError(e instanceof DrawError ? e.message : "Something went wrong");
     }

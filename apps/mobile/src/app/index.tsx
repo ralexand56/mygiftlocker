@@ -39,23 +39,26 @@ export default function Locker() {
             <Link href={{ pathname: "/person/[id]", params: { id: p.id } }} asChild>
               <Pressable>
                 <Link.AppleZoom>
-                  {/* Link.AppleZoom's child must get a flat style object, not an array. */}
-                  <View style={StyleSheet.flatten([{ backgroundColor: colors.white, borderRadius: 26, padding: 18, overflow: "hidden" as const }, shadow])}>
-                    <View style={{ position: "absolute", left: 0, right: 0, top: 0, height: 70, backgroundColor: p.color, opacity: 0.6 }} />
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                      <Avatar name={p.name} color={p.color} size={54} />
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontFamily: fonts.display, fontSize: 20, color: colors.ink }} numberOfLines={1}>
-                          {p.name}
-                        </Text>
-                        <Text style={styles.body}>{p.relationship ?? "Connection"}</Text>
+                  {/* Zoom source: one non-collapsible native view with a flat style. The shadow lives
+                      here on a solid background; clipping happens on the inner view so it isn't cut off. */}
+                  <View collapsable={false} style={StyleSheet.flatten([{ backgroundColor: colors.white, borderRadius: 26 }, shadow])}>
+                    <View style={{ borderRadius: 26, padding: 18, overflow: "hidden" }}>
+                      <View style={{ position: "absolute", left: 0, right: 0, top: 0, height: 70, backgroundColor: p.color, opacity: 0.6 }} />
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                        <Avatar name={p.name} color={p.color} size={54} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: colors.ink }} numberOfLines={1}>
+                            {p.name}
+                          </Text>
+                          <Text style={styles.body}>{p.relationship ?? "Connection"}</Text>
+                        </View>
                       </View>
-                    </View>
-                    <Text style={{ fontFamily: fonts.bold, color: colors.ink, marginTop: 16 }}>{summarizeSizes(p.sizes) || "No sizes yet"}</Text>
-                    <View style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
-                      {p.birthday && <Tag bg={colors.cream}>🎂 {daysUntil(p.birthday)}d</Tag>}
-                      {p.kind === "child" && <Tag bg={colors.mint}>Managed</Tag>}
-                      {isStale(p) && <Tag bg={colors.butter}>Sizes may be outgrown</Tag>}
+                      <Text style={{ fontFamily: fonts.bold, color: colors.ink, marginTop: 16 }}>{summarizeSizes(p.sizes) || "No sizes yet"}</Text>
+                      <View style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
+                        {p.birthday && <Tag bg={colors.cream}>🎂 {daysUntil(p.birthday)}d</Tag>}
+                        {p.kind === "child" && <Tag bg={colors.mint}>Managed</Tag>}
+                        {isStale(p) && <Tag bg={colors.butter}>Sizes may be outgrown</Tag>}
+                      </View>
                     </View>
                   </View>
                 </Link.AppleZoom>

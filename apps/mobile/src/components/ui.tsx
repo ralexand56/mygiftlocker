@@ -16,7 +16,7 @@ export function Button({ title, onPress, variant = "primary", disabled, style }:
         onPressIn={() => (scale.value = withSpring(0.96, springs.snappy))}
         onPressOut={() => (scale.value = withSpring(1, springs.snappy))}
         onPress={() => {
-          Haptics.selectionAsync();
+          Haptics.selectionAsync().catch(() => {}); // no haptics on simulators
           onPress();
         }}
         style={[styles.btn, { backgroundColor: bg }, variant !== "ghost" && shadow]}
@@ -46,7 +46,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   return (
     <Pressable
       onPress={() => {
-        Haptics.selectionAsync();
+        Haptics.selectionAsync().catch(() => {}); // no haptics on simulators
         onPress();
       }}
     >
@@ -75,7 +75,8 @@ export const styles = StyleSheet.create({
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, minWidth: 48, alignItems: "center" },
   chipText: { fontFamily: fonts.black, fontSize: 15 },
-  card: { backgroundColor: "rgba(255,255,255,0.86)", borderRadius: 28, padding: 22 },
+  // Solid (not translucent) so iOS can compute the shadow path cheaply.
+  card: { backgroundColor: "#FFFDFB", borderRadius: 28, padding: 22 },
   eyebrow: { fontFamily: fonts.black, fontSize: 12, letterSpacing: 1.2, color: colors.rose, textTransform: "uppercase" },
   h1: { fontFamily: fonts.display, fontSize: 30, lineHeight: 34, color: colors.ink },
   h2: { fontFamily: fonts.display, fontSize: 22, color: colors.ink },

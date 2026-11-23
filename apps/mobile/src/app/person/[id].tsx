@@ -25,7 +25,7 @@ export default function PersonScreen() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: 40 }}>
       <Link.AppleZoomTarget>
-        <View style={{ backgroundColor: p.color, paddingTop: 110, paddingBottom: 28, paddingHorizontal: 22, alignItems: "center", borderBottomLeftRadius: 36, borderBottomRightRadius: 36 }}>
+        <View collapsable={false} style={{ backgroundColor: p.color, paddingTop: 110, paddingBottom: 28, paddingHorizontal: 22, alignItems: "center", borderBottomLeftRadius: 36, borderBottomRightRadius: 36 }}>
           <Avatar name={p.name} color={colors.white} size={104} />
           <Text style={[styles.h1, { marginTop: 14, textAlign: "center" }]}>{p.name}</Text>
           <Text style={styles.body}>{p.relationship}</Text>
