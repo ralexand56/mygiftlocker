@@ -139,7 +139,7 @@ const schema = a
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
-    getInvite: a
+    getPublicInvite: a
       .query()
       .arguments({ inviteId: a.id().required() })
       .returns(a.json())

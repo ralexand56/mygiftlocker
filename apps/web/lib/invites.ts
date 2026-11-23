@@ -33,7 +33,7 @@ export async function loadInvite(segment: string): Promise<PublicInvite> {
   const decoded = decodeInvite(segment);
   if (decoded) return decoded;
   if (!backendEnabled) throw new Error("This invite link looks broken. Ask the sender for a fresh link.");
-  return unwrap<PublicInvite>(await api().queries.getInvite({ inviteId: segment }, { authMode: "apiKey" }));
+  return unwrap<PublicInvite>(await api().queries.getPublicInvite({ inviteId: segment }, { authMode: "apiKey" }));
 }
 
 export async function submitInvite(invite: PublicInvite, profile: Person, kids: Person[]): Promise<void> {

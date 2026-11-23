@@ -57,8 +57,8 @@ export const handler = async (event: ResolverEvent) => {
         return await getMyExchange(str(args.exchangeId), str(args.token));
       case "saveWishlist":
         return await saveWishlist(str(args.exchangeId), str(args.token), parseJson(args.wishlist));
-      case "getInvite":
-        return await getInvite(str(args.inviteId));
+      case "getPublicInvite":
+        return await getPublicInvite(str(args.inviteId));
       case "submitInvite":
         return await submitInvite(str(args.inviteId), parseJson(args.profile), parseJson(args.kids));
       case "drawNames":
@@ -204,7 +204,7 @@ async function draw(exchangeId: string, callerSub: string | undefined) {
 
 // ---- invites ---------------------------------------------------------------
 
-async function getInvite(inviteId: string): Promise<PublicInvite> {
+async function getPublicInvite(inviteId: string): Promise<PublicInvite> {
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
   if (!inv || inv.status === "revoked") throw new UserError("This invite link is no longer active.");
   return {
