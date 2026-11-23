@@ -1,4 +1,4 @@
-# Kids in M Gift Locker: proposal
+# Kids in My Gift Locker: proposal
 
 Young kids can't (and legally shouldn't) have their own accounts, but they're the people
 whose sizes change fastest and who get the most gifts. The model below treats them as

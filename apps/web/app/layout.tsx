@@ -7,10 +7,10 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axe
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
 
 export const metadata: Metadata = {
-  title: { default: "M Gift Locker", template: "%s · M Gift Locker" },
+  title: { default: "My Gift Locker", template: "%s · My Gift Locker" },
   description: "Keep everyone's sizes, addresses and special dates in one place — and run joyful gift exchanges.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://mygiftlocker.com"),
-  openGraph: { siteName: "M Gift Locker", images: ["/lockup.svg"] },
+  openGraph: { siteName: "My Gift Locker", images: ["/lockup.svg"] },
 };
 
 export const viewport: Viewport = { themeColor: "#fffaf7" };

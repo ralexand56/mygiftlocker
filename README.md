@@ -1,6 +1,6 @@
-<p align="center"><img src="packages/brand/lockup-cream.png" alt="M Gift Locker" width="420"></p>
+<p align="center"><img src="packages/brand/lockup-cream.png" alt="My Gift Locker" width="420"></p>
 
-# M Gift Locker — mygiftlocker.com
+# My Gift Locker — mygiftlocker.com
 
 Keep everyone's sizes, addresses and special dates in one place — and run joyful gift exchanges.
 

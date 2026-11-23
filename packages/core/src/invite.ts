@@ -73,7 +73,7 @@ export interface ShareLinks {
 export function inviteShareLinks(url: string, fromName: string, toName?: string): ShareLinks {
   const hi = toName ? `Hi ${toName}! ` : "Hi! ";
   const body = `${hi}${fromName} wants to get your gifts just right. Add your sizes & favorite things to their Gift Locker (takes 2 min): ${url}`;
-  const subject = `${fromName} invited you to M Gift Locker 🎁`;
+  const subject = `${fromName} invited you to My Gift Locker 🎁`;
   const enc = encodeURIComponent;
   return {
     email: `mailto:?subject=${enc(subject)}&body=${enc(body)}`,

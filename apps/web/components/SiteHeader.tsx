@@ -4,7 +4,7 @@ import { Logo } from "./Logo";
 export function SiteHeader() {
   return (
     <header className="relative z-20 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-      <Link href="/" aria-label="M Gift Locker home">
+      <Link href="/" aria-label="My Gift Locker home">
         <Logo />
       </Link>
       <nav className="flex items-center gap-1 text-[15px] font-bold text-ink-soft">

@@ -172,7 +172,7 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
       </div>
 
       {canShare && (
-        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "M Gift Locker", text: `${from} invited you to M Gift Locker`, url }).catch(() => {})}>
+        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "My Gift Locker", text: `${from} invited you to My Gift Locker`, url }).catch(() => {})}>
           <Share2 className="h-4 w-4" /> More options…
         </Button>
       )}

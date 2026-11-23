@@ -1,6 +1,6 @@
 import { useId } from "react";
 
-/** The M Gift Locker mark: a gift-locker whose ribbon bow forms the "M". */
+/** The My Gift Locker mark: a gift-locker whose ribbon bow forms the "M". */
 export function LogoMark({ size = 40, className }: { size?: number; className?: string }) {
   const id = useId().replace(/:/g, "");
   return (
@@ -33,7 +33,7 @@ export function Logo({ size = 36 }: { size?: number }) {
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={size} />
       <span className="font-display text-[1.35rem] font-semibold tracking-tight">
-        <span className="text-rose">M</span> Gift Locker
+        <span className="text-rose">My</span> Gift Locker
       </span>
     </span>
   );
