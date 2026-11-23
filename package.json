@@ -1,0 +1,17 @@
+{
+  "name": "mygiftlocker",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "turbo run dev --filter=@mgl/web",
+    "dev:mobile": "pnpm --filter @mgl/mobile start",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.13",
+    "typescript": "^5.9.3"
+  }
+}

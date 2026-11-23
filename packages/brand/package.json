@@ -1,0 +1,7 @@
+{
+  "name": "@mgl/brand",
+  "version": "0.1.0",
+  "private": true,
+  "description": "M Gift Locker logo + design tokens",
+  "files": ["*.svg", "*.png", "tokens.json"]
+}

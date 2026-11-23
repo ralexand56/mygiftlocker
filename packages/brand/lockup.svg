@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" fill="none">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&amp;display=swap');
+  .w{font-family:Fraunces,'Iowan Old Style',Georgia,serif;font-weight:600;font-size:38px;letter-spacing:-0.5px}</style>
+  <g transform="translate(4 8)">
+  <defs>
+    <linearGradient id="mgl-body" x1="8" y1="22" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBD3E3"/>
+      <stop offset="1" stop-color="#D9C8FF"/>
+    </linearGradient>
+    <linearGradient id="mgl-ribbon" x1="32" y1="4" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC9A8"/>
+      <stop offset="1" stop-color="#FF9FBF"/>
+    </linearGradient>
+  </defs>
+  <!-- locker / box body -->
+  <rect x="7" y="24" width="50" height="35" rx="11" fill="url(#mgl-body)"/>
+  <!-- lid seam -->
+  <path d="M7 33.5h50" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="1.6"/>
+  <!-- locker vents -->
+  <g stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-opacity=".9">
+    <path d="M14 40h9M14 45h9M14 50h9"/>
+  </g>
+  <!-- keyhole -->
+  <circle cx="45" cy="43" r="3" fill="#7A5AA6"/>
+  <path d="M43.6 44.5h2.8l.9 5.5h-4.6z" fill="#7A5AA6"/>
+  <!-- ribbon -->
+  <rect x="28.5" y="24" width="7" height="35" fill="url(#mgl-ribbon)"/>
+  <!-- bow = the "M" : ribbon loops shaped as the letter -->
+  <path d="M15 24 L19.5 9.5 Q21 6 23.6 8.6 L32 19 L40.4 8.6 Q43 6 44.5 9.5 L49 24"
+        stroke="#E9779F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M15 24 L19.5 9.5 Q21 6 23.6 8.6 L32 19 L40.4 8.6 Q43 6 44.5 9.5 L49 24"
+        stroke="url(#mgl-ribbon)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="32" cy="21" r="4.2" fill="#E9779F"/>
+</g>
+  <text x="80" y="53" class="w"><tspan fill="#E9779F">M</tspan><tspan fill="#4A3B66"> Gift Locker</tspan></text>
+</svg>
