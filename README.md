@@ -39,6 +39,17 @@ pnpm test           # core unit tests (matcher, conversions, dates, invites)
 pnpm typecheck      # all packages
 ```
 
+### iOS on a Mac (Xcode 27+)
+
+Tested with Xcode 27.2 and the iOS 26.5 simulators. In Xcode 27 the iOS simulator app is
+called **Device Hub** (Xcode → Open Developer Tool → Device Hub, or `open -b com.apple.dt.Devices`).
+
+```bash
+cd apps/mobile && pnpm ios --device "iPhone 17 Pro"
+```
+
+Running on a physical iPhone needs an Apple ID added in Xcode → Settings → Accounts.
+
 The web and mobile apps run in **demo mode** out of the box: data is kept on the device
 (localStorage on web, in-memory on mobile) and sign-in is simulated. To go live, deploy
 the Amplify backend — see [docs/architecture.md](docs/architecture.md#going-live-with-amplify).
