@@ -128,3 +128,5 @@ export const PALETTE = [
   { c: "#FFD8C9", a: "#F08C6C" },
   { c: "#D4E9FF", a: "#6FA3DA" },
 ];
+
+export { Gift as GiftIllo };

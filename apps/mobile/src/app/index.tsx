@@ -30,7 +30,7 @@ export default function Locker() {
       </Animated.View>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <Button title="Invite someone" onPress={() => router.push("/join")} style={{ flex: 1 }} />
-        <Button title="Gift exchange" variant="soft" onPress={() => router.push("/exchange")} style={{ flex: 1 }} />
+        <Button title="My exchanges" variant="soft" onPress={() => router.push("/exchange")} style={{ flex: 1 }} />
       </View>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
