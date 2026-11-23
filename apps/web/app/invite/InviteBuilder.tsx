@@ -1,12 +1,14 @@
 "use client";
 
-import { DEFAULT_ASK, encodeInvite, inviteShareLinks, newId, type InvitePayload, type InviteSection } from "@mgl/core";
+import { DEFAULT_ASK, inviteShareLinks, newId, type InvitePayload, type InviteSection } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Mail, MessageCircle, MessageSquareText, QrCode, Share2, Send } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { Button, Card, Field, Input, Textarea } from "@/components/ui";
-import { saveInvite, useDB } from "@/lib/store";
+import { useRouter } from "next/navigation";
+import { authMode, useUser } from "@/lib/auth";
+import { createInvite } from "@/lib/invites";
 
 const SECTIONS: { id: InviteSection; label: string; desc: string }[] = [
   { id: "sizes", label: "Clothing & shoe sizes", desc: "Tops, bottoms, dresses, outerwear, shoes, rings" },
@@ -17,7 +19,10 @@ const SECTIONS: { id: InviteSection; label: string; desc: string }[] = [
 ];
 
 export function InviteBuilder() {
-  const me = useDB((db) => db.me);
+  const me = useUser();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
@@ -28,7 +33,9 @@ export function InviteBuilder() {
     if (me?.name && !from) setFrom(me.name);
   }, [me, from]);
 
-  const create = () => {
+  const create = async () => {
+    // With the backend, invites belong to an account so answers land in *your* locker.
+    if (authMode === "amplify" && !me) return router.push("/sign-in?next=/invite");
     const payload: InvitePayload = {
       v: 1,
       id: newId("inv_"),
@@ -38,8 +45,16 @@ export function InviteBuilder() {
       note: note.trim() || undefined,
       createdAt: new Date().toISOString(),
     };
-    saveInvite(payload);
-    setUrl(`${window.location.origin}/join/${encodeInvite(payload)}`);
+    setBusy(true);
+    setError(null);
+    try {
+      const segment = await createInvite(payload, me?.sub);
+      setUrl(`${window.location.origin}/join/${segment}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't create the invite");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -88,8 +103,9 @@ export function InviteBuilder() {
         </div>
 
         <div className="mt-8">
-          <Button onClick={create} disabled={!from.trim() || !Object.values(ask).some(Boolean)}>
-            <Send className="h-4 w-4" /> Create invite
+          {error && <p className="mb-3 text-sm font-bold text-rose-deep">{error}</p>}
+          <Button onClick={create} disabled={busy || !from.trim() || !Object.values(ask).some(Boolean)}>
+            <Send className="h-4 w-4" /> {busy ? "Creating…" : authMode === "amplify" && me === null ? "Sign in & create invite" : "Create invite"}
           </Button>
         </div>
       </Card>

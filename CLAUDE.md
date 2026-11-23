@@ -30,8 +30,18 @@ cd apps/mobile && pnpm ios --device "iPhone 17 Pro"
 - `Link.AppleZoom` children must receive a flat style object (`StyleSheet.flatten`), not an array.
 - The native large title doesn't render with the custom font on iOS 26; screens use in-page headings.
 
+## Backend
+
+- AWS Amplify Gen 2 in `amplify/`; deployed by Amplify Hosting via `amplify.yml` (backend + site).
+- Backend deps live in the root `package.json`; `amplify/` is not a workspace package.
+- `apps/web/amplify_outputs.json` decides the mode: real outputs = live backend, `{}` = demo mode
+  (local storage). It's git-ignored and auto-created as `{}` by `scripts/ensure-outputs.mjs`.
+- Participants never sign in: link-holder operations go through `amplify/functions/exchange-api`,
+  which validates the token in the link. Keep all participant-visible data behind that function.
+- Typecheck the backend with `pnpm typecheck:backend`.
+
 ## Checks before calling work done
 
 ```bash
-pnpm typecheck && pnpm test && pnpm --filter @mgl/web build
+pnpm typecheck && pnpm typecheck:backend && pnpm test && pnpm --filter @mgl/web build
 ```

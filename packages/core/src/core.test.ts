@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  cleanWishlist,
+  isPlausibleToken,
   DrawError,
   convertShoe,
   convertWomensNumeric,
@@ -111,5 +113,26 @@ describe("invites", () => {
   it("skips dresses for men's fit", () => {
     expect(stepsFor(DEFAULT_ASK, "mens").map((s) => s.id)).not.toContain("dresses");
     expect(stepsFor({ ...DEFAULT_ASK, sizes: false, address: false }).map((s) => s.id)).toEqual(["welcome", "dates", "favorites", "review"]);
+  });
+});
+
+
+describe("api helpers", () => {
+  it("cleans wishlists", () => {
+    const out = cleanWishlist(
+      [{ title: "  Socks " }, { title: "" }, { title: "Kettle", url: "javascript:alert(1)" }, { title: "Mug", url: "https://x.com/m" }, { title: "Extra" }],
+      3,
+    );
+    expect(out.map((w) => [w.title, w.url, w.rank])).toEqual([
+      ["Socks", undefined, 1],
+      ["Kettle", undefined, 2],
+      ["Mug", "https://x.com/m", 3],
+    ]);
+    expect(cleanWishlist("nope", 3)).toEqual([]);
+  });
+  it("validates tokens", () => {
+    expect(isPlausibleToken("abcDEF123_-abcDEF123_-xy")).toBe(true);
+    expect(isPlausibleToken("short")).toBe(false);
+    expect(isPlausibleToken({})).toBe(false);
   });
 });

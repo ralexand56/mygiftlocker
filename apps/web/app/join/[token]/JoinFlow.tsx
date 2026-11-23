@@ -30,7 +30,7 @@ import {
   type Address,
   type AlphaSize,
   type Fit,
-  type InvitePayload,
+  type PublicInvite,
   type PartialDate,
   type Person,
   type SizeProfile,
@@ -45,7 +45,7 @@ import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { StepRail, StepShowcase } from "@/components/StepShowcase";
 import { LogoMark } from "@/components/Logo";
 import { Button, ChipGroup, Field, Input, Textarea, inputCls } from "@/components/ui";
-import { upsertPerson } from "@/lib/store";
+import { submitInvite } from "@/lib/invites";
 
 type PD = Partial<PartialDate>;
 interface Kid {
@@ -97,7 +97,7 @@ const line: Variants = {
   exit: (dir: number) => ({ opacity: 0, y: -18 * dir, filter: "blur(8px)", transition: { duration: 0.28, ease: EASE_IN } }),
 };
 
-export function JoinFlow({ invite }: { invite: InvitePayload }) {
+export function JoinFlow({ invite }: { invite: PublicInvite }) {
   const [form, setForm] = useState<FormState>(() => ({ ...initial, name: invite.to?.name ?? "" }));
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
@@ -125,7 +125,10 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
     }
   };
 
-  const submit = () => {
+  const [sending, setSending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const submit = async () => {
     const now = new Date().toISOString();
     const complete = (d: PD): PartialDate | undefined =>
       d.month && d.day ? { month: d.month, day: d.day, year: d.year && d.year >= 1900 ? d.year : undefined } : undefined;
@@ -147,11 +150,9 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
       },
       updatedAt: now,
     };
-    // Demo mode: lands in this browser's locker. With Amplify this becomes a
-    // `submitInvite` mutation that links the profile to the inviter.
-    upsertPerson(person);
+    const kids: Person[] = [];
     for (const k of form.kids.filter((k) => k.name.trim())) {
-      upsertPerson({
+      kids.push({
         id: newId("p_"),
         name: k.name.trim(),
         kind: "child",
@@ -163,7 +164,17 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
         updatedAt: now,
       });
     }
-    setDone(true);
+    // Lands in the inviter's locker (backend) or this browser's locker (demo mode).
+    setSending(true);
+    setSubmitError(null);
+    try {
+      await submitInvite(invite, person, kids);
+      setDone(true);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Couldn't send. Try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   const counter = (n: number) => String(n).padStart(2, "0");
@@ -225,6 +236,7 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
                       <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} />
                     </motion.div>
 
+                    {submitError && step.id === "review" && <p className="mt-6 text-sm font-bold text-rose-deep">{submitError}</p>}
                     <motion.footer custom={dir} variants={line} className="mt-auto flex items-center gap-2 pt-9">
                       {index > 0 && (
                         <Button variant="ghost" onClick={() => go(-1)} aria-label="Back" className="px-4!">
@@ -238,8 +250,8 @@ export function JoinFlow({ invite }: { invite: InvitePayload }) {
                           </Button>
                         )}
                         {step.id === "review" ? (
-                          <Button onClick={submit}>
-                            <Sparkles className="h-4 w-4" /> Share with {invite.from.name}
+                          <Button onClick={submit} disabled={sending}>
+                            <Sparkles className="h-4 w-4" /> {sending ? "Sending…" : `Share with ${invite.from.name}`}
                           </Button>
                         ) : (
                           <Button onClick={() => go(1)} disabled={!canContinue}>
@@ -304,7 +316,7 @@ function StepBody({
   jump,
 }: {
   step: StepDef;
-  invite: InvitePayload;
+  invite: PublicInvite;
   form: FormState;
   set: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   setSize: <K extends keyof SizeProfile>(k: K, v: SizeProfile[K]) => void;
@@ -613,11 +625,11 @@ function KidsEditor({ kids, onChange }: { kids: Kid[]; onChange: (k: Kid[]) => v
   );
 }
 
-function Review({ form, invite, jump }: { form: FormState; invite: InvitePayload; jump: (id: StepId) => void }) {
+function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite; jump: (id: StepId) => void }) {
   const complete = (d: PD) =>
     d.month && d.day ? formatPartialDate({ month: d.month, day: d.day, year: d.year && d.year >= 1900 ? d.year : undefined }) : undefined;
   const a = form.address;
-  const section: Partial<Record<StepId, keyof InvitePayload["ask"]>> = { tops: "sizes", address: "address", dates: "dates", favorites: "favorites", kids: "kids" };
+  const section: Partial<Record<StepId, keyof PublicInvite["ask"]>> = { tops: "sizes", address: "address", dates: "dates", favorites: "favorites", kids: "kids" };
   const rows: [string, string | undefined, StepId][] = [
     ["Name", form.name, "welcome"],
     ["Sizes", summarizeSizes(form.sizes) || undefined, "tops"],

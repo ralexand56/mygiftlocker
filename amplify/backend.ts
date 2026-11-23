@@ -1,6 +1,6 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
-import { drawNamesFn } from "./functions/draw-names/resource";
+import { exchangeApi } from "./functions/exchange-api/resource";
 
-defineBackend({ auth, data, drawNamesFn });
+defineBackend({ auth, data, exchangeApi });

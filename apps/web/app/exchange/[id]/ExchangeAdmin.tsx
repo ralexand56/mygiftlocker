@@ -1,33 +1,47 @@
 "use client";
 
-import { DrawError, drawNames, formatBudget, newId, type Exchange } from "@mgl/core";
+import { formatBudget, type Exchange } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Eye, EyeOff, Link2, Plus, RotateCcw, Shuffle, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar, Button, Card, Input, inputCls } from "@/components/ui";
-import { deleteExchange, patchExchange, useDB, useHydrated } from "@/lib/store";
+import { useUser } from "@/lib/auth";
+import { addParticipant, deleteExchange, draw, getAdminExchange, removeParticipant, resetDraw, setExclusions, useAsync } from "@/lib/exchanges";
 import { pastelFor } from "@mgl/core";
 import { useRouter } from "next/navigation";
 
 export function ExchangeAdmin({ id }: { id: string }) {
-  const hydrated = useHydrated();
-  const ex = useDB((db) => db.exchanges.find((x) => x.id === id));
-  if (!hydrated) return null;
+  const user = useUser();
+  const { data: ex, loading, error, reload } = useAsync(async () => (user ? getAdminExchange(id) : null), [id, user?.sub]);
+
+  if (user === undefined || (user && loading && !ex)) return <p className="py-20 text-center text-ink-soft">Loading…</p>;
+  if (user === null)
+    return (
+      <Card className="mx-auto max-w-md p-10 text-center">
+        <h1 className="font-display text-3xl font-semibold">Organizer sign-in</h1>
+        <p className="mt-2 text-ink-soft">Sign in to manage this exchange. Joining as a participant? Use the invite link you were sent.</p>
+        <div className="mt-6">
+          <Button href={`/sign-in?next=/exchange/${id}`}>Sign in</Button>
+        </div>
+      </Card>
+    );
   if (!ex)
     return (
       <Card className="mx-auto max-w-md p-10 text-center">
         <h1 className="font-display text-3xl font-semibold">Exchange not found</h1>
-        <p className="mt-2 text-ink-soft">In demo mode exchanges are saved in the browser that created them.</p>
+        <p className="mt-2 text-ink-soft">{error ?? "Only the organizer can open this page."}</p>
         <div className="mt-6">
           <Button href="/exchange">Back to exchanges</Button>
         </div>
       </Card>
     );
-  return <Admin ex={ex} />;
+  return <Admin ex={ex} adminSub={user.sub} reload={reload} />;
 }
 
-function Admin({ ex }: { ex: Exchange }) {
+type Ctx = { ex: Exchange; adminSub: string; reload: () => Promise<void> };
+
+function Admin({ ex, adminSub, reload }: Ctx) {
   const router = useRouter();
   const [origin, setOrigin] = useState("");
   const [drawing, setDrawing] = useState(false);
@@ -38,26 +52,33 @@ function Admin({ ex }: { ex: Exchange }) {
   const joinUrl = `${origin}/exchange/${ex.id}/join`;
   const byId = Object.fromEntries(ex.participants.map((p) => [p.id, p]));
 
-  const runDraw = () => {
+  /** Run an action, then refresh from the server; surface errors in the draw card. */
+  const act = async (fn: () => Promise<unknown>) => {
     setError(null);
-    let result: Record<string, string>;
     try {
-      result = drawNames(
-        ex.participants.map((p) => p.id),
-        { exclusions: ex.exclusions, singleLoop: ex.singleLoop, previous: ex.previous },
-      );
+      await fn();
     } catch (e) {
-      setError(e instanceof DrawError ? e.message : "Something went wrong");
-      return;
+      setError(e instanceof Error ? e.message : "Something went wrong");
     }
-    setDrawing(true);
-    setTimeout(() => {
-      patchExchange(ex.id, (x) => ({ ...x, status: "drawn", assignments: result, drawnAt: new Date().toISOString() }));
-      setDrawing(false);
-    }, 2200);
+    await reload();
   };
 
-  const reset = () => patchExchange(ex.id, (x) => ({ ...x, status: "open", assignments: undefined, drawnAt: undefined }));
+  const runDraw = async () => {
+    setError(null);
+    setDrawing(true);
+    const started = Date.now();
+    try {
+      await draw(ex.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    }
+    // Let the shuffle animation play out before revealing the result.
+    await new Promise((r) => setTimeout(r, Math.max(0, 2200 - (Date.now() - started))));
+    await reload();
+    setDrawing(false);
+  };
+
+  const reset = () => act(() => resetDraw(ex.id));
 
   return (
     <div className="mx-auto grid max-w-6xl gap-6 px-5 pb-24 lg:grid-cols-[1.4fr_1fr]">
@@ -107,13 +128,7 @@ function Admin({ ex }: { ex: Exchange }) {
                       {p.id !== ex.adminId && (
                         <button
                           aria-label={`Remove ${p.name}`}
-                          onClick={() =>
-                            patchExchange(ex.id, (x) => ({
-                              ...x,
-                              participants: x.participants.filter((q) => q.id !== p.id),
-                              exclusions: x.exclusions.filter(([a, b]) => a !== p.id && b !== p.id),
-                            }))
-                          }
+                          onClick={() => act(() => removeParticipant(ex.id, p.id))}
                           className="rounded-full p-2 text-ink-soft hover:bg-white"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -125,7 +140,7 @@ function Admin({ ex }: { ex: Exchange }) {
               ))}
             </AnimatePresence>
           </motion.ul>
-          {ex.status === "open" && <AddPerson ex={ex} />}
+          {ex.status === "open" && <AddPerson ex={ex} adminSub={adminSub} reload={reload} />}
         </Card>
       </div>
 
@@ -141,7 +156,7 @@ function Admin({ ex }: { ex: Exchange }) {
           </div>
         </Card>
 
-        {ex.status === "open" && <Exclusions ex={ex} />}
+        {ex.status === "open" && <Exclusions ex={ex} adminSub={adminSub} reload={reload} />}
 
         <Card className="p-7 text-center">
           {ex.status === "open" ? (
@@ -164,8 +179,9 @@ function Admin({ ex }: { ex: Exchange }) {
           )}
           <button
             className="mt-4 text-xs font-bold text-ink-soft hover:text-rose-deep"
-            onClick={() => {
-              deleteExchange(ex.id);
+            onClick={async () => {
+              if (!window.confirm(`Delete "${ex.name}" for everyone?`)) return;
+              await deleteExchange(ex.id);
               router.push("/exchange");
             }}
           >
@@ -179,15 +195,13 @@ function Admin({ ex }: { ex: Exchange }) {
   );
 }
 
-function AddPerson({ ex }: { ex: Exchange }) {
+function AddPerson({ ex, adminSub, reload }: Ctx) {
   const [name, setName] = useState("");
-  const add = () => {
+  const add = async () => {
     if (!name.trim()) return;
-    patchExchange(ex.id, (x) => ({
-      ...x,
-      participants: [...x.participants, { id: newId("pt_"), name: name.trim(), token: newId("t_"), wishlist: [], joinedAt: new Date().toISOString() }],
-    }));
+    await addParticipant(ex.id, name.trim(), adminSub);
     setName("");
+    await reload();
   };
   return (
     <form
@@ -205,14 +219,14 @@ function AddPerson({ ex }: { ex: Exchange }) {
   );
 }
 
-function Exclusions({ ex }: { ex: Exchange }) {
+function Exclusions({ ex, reload }: Ctx) {
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const name = (id: string) => ex.participants.find((p) => p.id === id)?.name ?? "?";
   const add = () => {
     if (!a || !b || a === b) return;
     if (ex.exclusions.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return;
-    patchExchange(ex.id, (x) => ({ ...x, exclusions: [...x.exclusions, [a, b]] }));
+    setExclusions(ex.id, [...ex.exclusions, [a, b]]).then(reload);
     setA("");
     setB("");
   };
@@ -249,7 +263,7 @@ function Exclusions({ ex }: { ex: Exchange }) {
               <button
                 aria-label="Remove exclusion"
                 className="rounded-full p-1 hover:bg-white/60"
-                onClick={() => patchExchange(ex.id, (e) => ({ ...e, exclusions: e.exclusions.filter(([p, q]) => !(p === x && q === y)) }))}
+                onClick={() => setExclusions(ex.id, ex.exclusions.filter(([p, q]) => !(p === x && q === y))).then(reload)}
               >
                 <X className="h-3.5 w-3.5" />
               </button>

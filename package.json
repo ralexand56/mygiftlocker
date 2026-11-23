@@ -8,10 +8,21 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "typecheck:backend": "tsc --noEmit -p amplify",
+    "sandbox": "ampx sandbox"
   },
   "devDependencies": {
     "turbo": "^2.11.13",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@aws-amplify/backend": "^1.25.1",
+    "@aws-amplify/backend-cli": "^1.10.0",
+    "@types/node": "^22.20.5",
+    "aws-amplify": "^6.22.2",
+    "aws-cdk-lib": "^2.220.0",
+    "constructs": "^10.4.2"
+  },
+  "dependencies": {
+    "@mgl/core": "workspace:*"
   }
 }

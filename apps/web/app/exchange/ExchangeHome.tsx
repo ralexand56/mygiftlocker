@@ -1,17 +1,20 @@
 "use client";
 
-import { exchangeSchema, formatBudget, newId, type Exchange } from "@mgl/core";
+import { exchangeSchema, formatBudget } from "@mgl/core";
 import { motion } from "motion/react";
 import { CalendarDays, Gift, Shuffle, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, ChipGroup, Field, Input, Textarea } from "@/components/ui";
-import { saveExchange, useDB } from "@/lib/store";
+import { useUser } from "@/lib/auth";
+import { createExchange, listMyExchanges, useAsync } from "@/lib/exchanges";
 
 export function ExchangeHome() {
-  const exchanges = useDB((db) => db.exchanges);
+  const user = useUser();
+  const { data: exchanges = [] } = useAsync(async () => (user ? listMyExchanges() : []), [user?.sub]);
   const router = useRouter();
+  const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
   const [you, setYou] = useState("");
   const [date, setDate] = useState("");
@@ -21,7 +24,7 @@ export function ExchangeHome() {
   const [singleLoop, setSingleLoop] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const create = () => {
+  const create = async () => {
     const parsed = exchangeSchema.safeParse({
       name: name.trim(),
       date: date || undefined,
@@ -31,20 +34,17 @@ export function ExchangeHome() {
     });
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Check the form");
     if (!you.trim()) return setError("Add your name — organizers usually play too");
-    const adminId = newId("pt_");
-    const ex: Exchange = {
-      id: newId("ex_"),
-      ...parsed.data,
-      budget: parsed.data.budget ? { amount: parsed.data.budget, currency: "USD" } : undefined,
-      adminId,
-      singleLoop,
-      status: "open",
-      participants: [{ id: adminId, name: you.trim(), token: newId("t_"), wishlist: [], joinedAt: new Date().toISOString() }],
-      exclusions: [],
-      createdAt: new Date().toISOString(),
-    };
-    saveExchange(ex);
-    router.push(`/exchange/${ex.id}`);
+    // Organizers need an account so only they can manage and draw.
+    if (!user) return router.push("/sign-in?next=/exchange");
+    setBusy(true);
+    setError(null);
+    try {
+      const id = await createExchange({ ...parsed.data, singleLoop, organizerName: you.trim() }, user.sub);
+      router.push(`/exchange/${id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't create the exchange");
+      setBusy(false);
+    }
   };
 
   return (
@@ -105,7 +105,9 @@ export function ExchangeHome() {
               One big circle (great for opening gifts in turn)
             </label>
             {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
-            <Button onClick={create}>Create exchange</Button>
+            <Button onClick={create} disabled={busy}>
+              {busy ? "Creating…" : user === null ? "Sign in & create exchange" : "Create exchange"}
+            </Button>
           </div>
         </Card>
       </section>

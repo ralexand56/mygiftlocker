@@ -7,19 +7,10 @@ settings:
 importers:
 
   .:
-    devDependencies:
-      turbo:
-        specifier: ^2.11.13
-        version: 2.11.13
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  amplify:
     dependencies:
       '@mgl/core':
         specifier: workspace:*
-        version: link:../packages/core
+        version: link:packages/core
     devDependencies:
       '@aws-amplify/backend':
         specifier: ^1.25.1
@@ -39,6 +30,9 @@ importers:
       constructs:
         specifier: ^10.4.2
         version: 10.8.1
+      turbo:
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -123,7 +117,7 @@ importers:
         version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       next:
         specifier: ^16.4.6
-        version: 16.4.6(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -7455,7 +7449,7 @@ snapshots:
       local-pkg: 0.5.1
       parse-cache-control: 1.0.1
       semver: 7.8.6
-      zod: 3.25.17
+      zod: 3.25.76
     optionalDependencies:
       typescript: 5.9.3
 
@@ -12919,7 +12913,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next@16.4.6(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       '@next/env': 16.4.6
       '@swc/helpers': 0.5.23
@@ -12928,7 +12922,7 @@ snapshots:
       postcss: 8.5.23
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-      styled-jsx: 5.1.6(react@19.3.1)
+      styled-jsx: 5.1.6(@babel/core@7.29.13)(react@19.3.1)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.4.6
       '@next/swc-darwin-x64': 16.4.6
@@ -13914,10 +13908,12 @@ snapshots:
 
   structured-headers@0.4.1: {}
 
-  styled-jsx@5.1.6(react@19.3.1):
+  styled-jsx@5.1.6(@babel/core@7.29.13)(react@19.3.1):
     dependencies:
       client-only: 0.0.1
       react: 19.3.1
+    optionalDependencies:
+      '@babel/core': 7.29.13
 
   supports-color@5.5.0:
     dependencies:

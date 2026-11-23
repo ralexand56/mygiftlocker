@@ -47,6 +47,11 @@ function write(next: DB) {
   listeners.forEach((l) => l());
 }
 
+/** Current snapshot (client only). */
+export function readDB(): DB {
+  return read();
+}
+
 export function update(fn: (db: DB) => DB) {
   write(fn(read()));
 }

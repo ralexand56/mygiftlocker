@@ -14,12 +14,18 @@ import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { Baby, CalendarHeart, Gift, MapPin, Plus, Ruler, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button } from "@/components/ui";
+import { authMode, useUser } from "@/lib/auth";
+import { useAsync } from "@/lib/exchanges";
+import { listLockerPeople } from "@/lib/invites";
 import { useDB } from "@/lib/store";
 
 const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 
 export function Locker() {
-  const people = useDB((db) => db.people);
+  const user = useUser();
+  const localPeople = useDB((db) => db.people);
+  const { data: remotePeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
+  const people = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
   const [openId, setOpenId] = useState<string | null>(null);
   const open = people.find((p) => p.id === openId) ?? null;
 
@@ -37,6 +43,17 @@ export function Locker() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  if (authMode === "amplify" && user === null)
+    return (
+      <div className="mx-auto max-w-md px-5 py-16 text-center">
+        <h1 className="font-display text-4xl font-semibold">Your locker</h1>
+        <p className="mt-2 text-ink-soft">Sign in to see everyone you shop for.</p>
+        <div className="mt-6">
+          <Button href="/sign-in?next=/locker">Sign in</Button>
+        </div>
+      </div>
+    );
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-24">

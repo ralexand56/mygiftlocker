@@ -7,14 +7,32 @@ import { useState } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Input } from "@/components/ui";
-import { authMode, signInWithEmail, signInWithProvider } from "@/lib/auth";
+import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn } from "@/lib/auth";
 
 export function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const done = () => router.push("/locker");
+  /** Return to where the user came from (?next=/exchange), else the locker. */
+  const done = () => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/locker");
+  };
+  const attempt = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <main className="pastel-wash relative grid min-h-dvh place-items-center overflow-x-clip py-10 px-4">
@@ -27,11 +45,18 @@ export function SignIn() {
       >
         <LogoMark size={64} className="mx-auto" />
         <h1 className="mt-4 font-display text-3xl font-semibold">Welcome back</h1>
-        <p className="mt-1 text-ink-soft">Sign in to open your locker.</p>
+        <p className="mt-1 text-ink-soft">No password needed — sign in with Google or an email code.</p>
 
         <div className="mt-7 grid gap-3">
           <button
-            onClick={() => signInWithProvider("Google").then(done)}
+            onClick={() =>
+              attempt(async () => {
+                const next = new URLSearchParams(window.location.search).get("next");
+                if (next) sessionStorage.setItem("mgl:next", next);
+                await signInWithGoogle();
+                if (authMode === "demo") done();
+              })
+            }
             className="flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 font-bold shadow-soft transition hover:-translate-y-0.5"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
@@ -42,38 +67,49 @@ export function SignIn() {
             </svg>
             Continue with Google
           </button>
-          <button
-            onClick={() => signInWithProvider("Facebook").then(done)}
-            className="flex items-center justify-center gap-3 rounded-full bg-[#1877F2] px-5 py-3 font-bold text-white shadow-soft transition hover:-translate-y-0.5"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-              <path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z" />
-            </svg>
-            Continue with Facebook
-          </button>
-
           <div className="my-2 flex items-center gap-3 text-xs font-bold text-ink-soft">
             <span className="h-px flex-1 bg-ink/10" /> or <span className="h-px flex-1 bg-ink/10" />
           </div>
 
           {sent ? (
-            <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">Check {email} for your sign-in code ✨</p>
+            <form
+              className="grid gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                attempt(async () => {
+                  await confirmEmailCode(email, code);
+                  done();
+                });
+              }}
+            >
+              <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">We emailed a 6-digit code to {email} ✨</p>
+              <Input inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" className="text-center tracking-[0.4em]" autoFocus />
+              <Button type="submit" disabled={busy || code.length < 6}>
+                {busy ? "Checking…" : "Sign in"}
+              </Button>
+              <button type="button" className="text-xs font-bold text-ink-soft hover:text-ink" onClick={() => (setSent(false), setCode(""))}>
+                Use a different email
+              </button>
+            </form>
           ) : (
             <form
               className="grid gap-3"
-              onSubmit={async (e) => {
+              onSubmit={(e) => {
                 e.preventDefault();
-                const r = await signInWithEmail(email);
-                if (r === "signed-in") done();
-                else setSent(true);
+                attempt(async () => {
+                  const r = await startEmailSignIn(email);
+                  if (r === "signed-in") done();
+                  else setSent(true);
+                });
               }}
             >
               <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
-              <Button type="submit">
-                <Mail className="h-4 w-4" /> Continue with email
+              <Button type="submit" disabled={busy}>
+                <Mail className="h-4 w-4" /> {busy ? "Sending…" : "Continue with email"}
               </Button>
             </form>
           )}
+          {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
         </div>
         {authMode === "demo" && <p className="mt-5 text-xs text-ink-soft">Demo mode — no account is created until the Amplify backend is connected.</p>}
       </motion.section>

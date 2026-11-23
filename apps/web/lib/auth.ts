@@ -1,48 +1,107 @@
 "use client";
 
 /**
- * Auth facade. Uses Amplify (Cognito) when NEXT_PUBLIC_AMPLIFY_CONFIG is set
- * (the JSON from `amplify_outputs.json`), otherwise falls back to demo mode.
- *
- * Providers: Google, Facebook (Cognito federated sign-in) and passwordless
- * email one-time codes. The same Cognito user pool backs the Expo app, so
- * accounts and data stay in sync across web and mobile.
+ * Auth facade over Cognito (Amplify). Organizers and locker owners sign in with
+ * a passwordless email code or Google. In demo mode (no backend) sign-in is simulated.
  */
-import { setMe } from "./store";
+import { useEffect, useState } from "react";
+import { backendEnabled } from "./amplify";
+import { setMe, useDB } from "./store";
 
-export const authMode: "amplify" | "demo" = process.env.NEXT_PUBLIC_AMPLIFY_CONFIG ? "amplify" : "demo";
+export const authMode: "amplify" | "demo" = backendEnabled ? "amplify" : "demo";
 
-let configured = false;
-async function amplify() {
-  const { Amplify } = await import("aws-amplify");
-  if (!configured) {
-    Amplify.configure(JSON.parse(process.env.NEXT_PUBLIC_AMPLIFY_CONFIG!));
-    configured = true;
-  }
+export interface User {
+  sub: string;
+  email?: string;
+  name: string;
+}
+
+async function auth() {
   return import("aws-amplify/auth");
 }
 
-export async function signInWithProvider(provider: "Google" | "Facebook"): Promise<void> {
-  if (authMode === "demo") {
-    setMe({ id: "me", name: `${provider} user` });
-    return;
+async function loadUser(): Promise<User | null> {
+  const a = await auth();
+  try {
+    const u = await a.getCurrentUser();
+    const attrs = await a.fetchUserAttributes().catch(() => ({}) as Record<string, string>);
+    const email = attrs.email;
+    return { sub: u.userId, email, name: attrs.name || email?.split("@")[0] || "You" };
+  } catch {
+    return null;
   }
-  const auth = await amplify();
-  await auth.signInWithRedirect({ provider });
 }
 
-/** Passwordless: Cognito emails a one-time code (USER_AUTH / EMAIL_OTP flow). */
-export async function signInWithEmail(email: string): Promise<"code-sent" | "signed-in"> {
-  if (authMode === "demo") {
+/** Current user (undefined while loading, null when signed out). */
+export function useUser(): User | null | undefined {
+  const demoMe = useDB((db) => db.me);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!backendEnabled) return;
+    let stop = () => {};
+    loadUser().then(setUser);
+    import("aws-amplify/utils").then(({ Hub }) => {
+      stop = Hub.listen("auth", () => loadUser().then(setUser));
+    });
+    return () => stop();
+  }, []);
+
+  if (!backendEnabled) return demoMe ? { sub: demoMe.id, name: demoMe.name } : null;
+  return user;
+}
+
+export async function signInWithGoogle(): Promise<void> {
+  if (!backendEnabled) {
+    setMe({ id: "me", name: "Google user" });
+    return;
+  }
+  const a = await auth();
+  await a.signInWithRedirect({ provider: "Google" });
+}
+
+export type EmailStep = "code-sent" | "signed-in";
+
+/**
+ * Step 1 of passwordless sign-in. Signs in existing users, or signs up new
+ * ones; either way Cognito emails a one-time code.
+ */
+export async function startEmailSignIn(email: string): Promise<EmailStep> {
+  if (!backendEnabled) {
     setMe({ id: "me", name: email.split("@")[0] ?? email });
     return "signed-in";
   }
-  const auth = await amplify();
-  const res = await auth.signIn({ username: email, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
-  return res.isSignedIn ? "signed-in" : "code-sent";
+  const a = await auth();
+  const username = email.trim().toLowerCase();
+  try {
+    const res = await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
+    return res.isSignedIn ? "signed-in" : "code-sent";
+  } catch (e) {
+    if ((e as { name?: string }).name !== "UserNotFoundException") throw e;
+    const res = await a.signUp({ username, options: { userAttributes: { email: username }, autoSignIn: { authFlowType: "USER_AUTH" } } });
+    pendingSignUp = username;
+    return res.isSignUpComplete ? "signed-in" : "code-sent";
+  }
+}
+
+let pendingSignUp: string | null = null;
+
+/** Step 2: the 6-digit code from the email. */
+export async function confirmEmailCode(email: string, code: string): Promise<void> {
+  const a = await auth();
+  const c = code.trim();
+  if (pendingSignUp) {
+    await a.confirmSignUp({ username: pendingSignUp, confirmationCode: c });
+    pendingSignUp = null;
+    await a.autoSignIn();
+    return;
+  }
+  const res = await a.confirmSignIn({ challengeResponse: c });
+  if (!res.isSignedIn) throw new Error("That code didn't work. Try again.");
+  void email;
 }
 
 export async function signOut() {
   setMe(null);
-  if (authMode === "amplify") await (await amplify()).signOut();
+  if (backendEnabled) await (await auth()).signOut();
 }

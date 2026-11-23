@@ -1,31 +1,30 @@
 "use client";
 
-import { formatBudget, newId, type Exchange } from "@mgl/core";
+import { formatBudget, type PublicExchange } from "@mgl/core";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Field, Input } from "@/components/ui";
-import { patchExchange, useDB, useHydrated } from "@/lib/store";
+import { getPublicExchange, joinExchange, useAsync } from "@/lib/exchanges";
 
 export function JoinExchange({ id }: { id: string }) {
-  const hydrated = useHydrated();
-  const ex = useDB((db) => db.exchanges.find((x) => x.id === id));
-  if (!hydrated) return null;
+  const { data: ex, error, loading } = useAsync(() => getPublicExchange(id), [id]);
+  if (loading) return <p className="py-24 text-center text-ink-soft">Loading…</p>;
   if (!ex)
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div>
           <h1 className="font-display text-3xl font-semibold">We couldn't find that exchange</h1>
-          <p className="mt-2 text-ink-soft">Demo mode stores exchanges in the organizer's browser. Connect the Amplify backend to share across devices.</p>
+          <p className="mt-2 text-ink-soft">{error ?? "Check the link with whoever sent it."}</p>
         </div>
       </div>
     );
   return <Form ex={ex} />;
 }
 
-function Form({ ex }: { ex: Exchange }) {
+function Form({ ex }: { ex: PublicExchange }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,25 +32,28 @@ function Form({ ex }: { ex: Exchange }) {
 
   const closed = ex.status === "drawn";
 
-  const join = () => {
-    const token = newId("t_");
-    patchExchange(ex.id, (x) => ({
-      ...x,
-      participants: [
-        ...x.participants,
-        {
-          id: newId("pt_"),
-          name: name.trim(),
-          email: email.trim() || undefined,
-          token,
-          joinedAt: new Date().toISOString(),
-          wishlist: wishes
-            .filter((w) => w.title.trim())
-            .map((w, i) => ({ id: newId("w_"), title: w.title.trim(), url: w.url.trim() || undefined, rank: i + 1 })),
-        },
-      ],
-    }));
-    router.push(`/exchange/${ex.id}/me/${token}`);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const join = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const { token } = await joinExchange(
+        ex.id,
+        name.trim(),
+        email.trim() || undefined,
+        wishes.filter((w) => w.title.trim()).map((w) => ({ title: w.title.trim(), url: w.url.trim() || undefined })),
+      );
+      // Remember this browser's private link so a returning visitor lands on it.
+      try {
+        localStorage.setItem(`mgl:token:${ex.id}`, token);
+      } catch {}
+      router.push(`/exchange/${ex.id}/me/${token}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't join");
+      setBusy(false);
+    }
   };
 
   return (
@@ -91,8 +93,12 @@ function Form({ ex }: { ex: Exchange }) {
                   ))}
                 </div>
               </div>
-              <Button className="mt-2" onClick={join} disabled={!name.trim()}>
-                Join the exchange
+              {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
+              {ex.participantNames.length > 0 && (
+                <p className="text-sm text-ink-soft">Already in: {ex.participantNames.join(", ")}</p>
+              )}
+              <Button className="mt-2" onClick={join} disabled={!name.trim() || busy}>
+                {busy ? "Joining…" : "Join the exchange"}
               </Button>
             </div>
           )}

@@ -1,34 +1,34 @@
 "use client";
 
-import { formatBudget, newId, pastelFor, type Exchange, type Participant } from "@mgl/core";
+import { formatBudget, pastelFor, type MyExchangeView, type WishItem } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Avatar, Button, Card, Input } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
-import { patchExchange, useDB, useHydrated } from "@/lib/store";
+import { getMyExchange, saveWishlist, useAsync } from "@/lib/exchanges";
 
 export function MyExchange({ id, token }: { id: string; token: string }) {
-  const hydrated = useHydrated();
-  const ex = useDB((db) => db.exchanges.find((x) => x.id === id));
-  const me = ex?.participants.find((p) => p.token === token);
+  const { data: view, error, loading, reload } = useAsync(() => getMyExchange(id, token), [id, token]);
   return (
     <main className="pastel-wash min-h-dvh">
       <SiteHeader />
-      {hydrated && (!ex || !me) ? (
+      {loading && !view ? (
+        <p className="py-20 text-center text-ink-soft">Loading…</p>
+      ) : !view ? (
         <Card className="mx-auto max-w-md p-10 text-center">
           <h1 className="font-display text-3xl font-semibold">Link not recognized</h1>
-          <p className="mt-2 text-ink-soft">Ask your organizer for your private link.</p>
+          <p className="mt-2 text-ink-soft">{error ?? "Ask your organizer for your private link."}</p>
         </Card>
-      ) : hydrated && ex && me ? (
-        <View ex={ex} me={me} />
-      ) : null}
+      ) : (
+        <View view={view} token={token} onSaved={reload} />
+      )}
     </main>
   );
 }
 
-function View({ ex, me }: { ex: Exchange; me: Participant }) {
-  const match = ex.assignments?.[me.id] ? ex.participants.find((p) => p.id === ex.assignments![me.id]) : undefined;
+function View({ view, token, onSaved }: { view: MyExchangeView; token: string; onSaved: () => void }) {
+  const { exchange: ex, me, match } = view;
   return (
     <div className="mx-auto grid max-w-5xl gap-6 px-5 pb-24 md:grid-cols-2">
       <div>
@@ -38,8 +38,9 @@ function View({ ex, me }: { ex: Exchange; me: Participant }) {
           {[ex.budget && `${formatBudget(ex.budget)} budget`, ex.date && new Date(ex.date + "T00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" })].filter(Boolean).join(" · ")}
         </p>
         <div className="mt-6">{match ? <Reveal match={match} /> : <Waiting />}</div>
+        <p className="mt-4 text-xs text-ink-soft">Bookmark this page: it's your private link for this exchange.</p>
       </div>
-      <WishlistEditor ex={ex} me={me} />
+      <WishlistEditor exchangeId={ex.id} wishCount={ex.wishCount} wishlist={me.wishlist} token={token} onSaved={onSaved} />
     </div>
   );
 }
@@ -56,7 +57,7 @@ function Waiting() {
   );
 }
 
-function Reveal({ match }: { match: Participant }) {
+function Reveal({ match }: { match: MyExchangeView["match"] & {} }) {
   const [open, setOpen] = useState(false);
   return (
     <Card className="relative overflow-hidden p-8 text-center">
@@ -104,26 +105,28 @@ function Reveal({ match }: { match: Participant }) {
   );
 }
 
-function WishlistEditor({ ex, me }: { ex: Exchange; me: Participant }) {
-  const [items, setItems] = useState(() =>
-    Array.from({ length: ex.wishCount }, (_, i) => ({ title: me.wishlist[i]?.title ?? "", url: me.wishlist[i]?.url ?? "" })),
-  );
+function WishlistEditor({ exchangeId, wishCount, wishlist, token, onSaved }: { exchangeId: string; wishCount: number; wishlist: WishItem[]; token: string; onSaved: () => void }) {
+  const [items, setItems] = useState(() => Array.from({ length: wishCount }, (_, i) => ({ title: wishlist[i]?.title ?? "", url: wishlist[i]?.url ?? "" })));
   const [saved, setSaved] = useState(false);
-  const save = () => {
-    patchExchange(ex.id, (x) => ({
-      ...x,
-      participants: x.participants.map((p) =>
-        p.id === me.id
-          ? { ...p, wishlist: items.filter((w) => w.title.trim()).map((w, i) => ({ id: newId("w_"), title: w.title.trim(), url: w.url.trim() || undefined, rank: i + 1 })) }
-          : p,
-      ),
-    }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+  const [error, setError] = useState<string | null>(null);
+  const save = async () => {
+    setError(null);
+    try {
+      await saveWishlist(
+        exchangeId,
+        token,
+        items.filter((w) => w.title.trim()).map((w) => ({ title: w.title.trim(), url: w.url.trim() || undefined })),
+      );
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save");
+    }
   };
   return (
     <Card className="p-7">
-      <h2 className="font-display text-2xl font-semibold">My top {ex.wishCount}</h2>
+      <h2 className="font-display text-2xl font-semibold">My top {wishCount}</h2>
       <p className="mt-1 text-sm text-ink-soft">Ranked — #1 is the one you'd love most.</p>
       <div className="mt-5 grid gap-3">
         {items.map((w, i) => (
@@ -136,6 +139,7 @@ function WishlistEditor({ ex, me }: { ex: Exchange; me: Participant }) {
           </div>
         ))}
       </div>
+      {error && <p className="mt-3 text-sm font-bold text-rose-deep">{error}</p>}
       <Button className="mt-5 w-full" onClick={save}>
         {saved ? "Saved ✓" : "Save wishes"}
       </Button>
