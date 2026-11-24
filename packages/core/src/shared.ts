@@ -2,12 +2,13 @@
  * What a signed-in participant can share with whoever draws them in a gift
  * exchange: sizes and favorites from their own profile. Never their address or dates.
  */
+import { cleanWishlistLinks } from "./links";
 import type { Favorites, Person } from "./people";
 import type { SizeProfile } from "./sizes";
 
 export interface SharedProfile {
   sizes?: SizeProfile;
-  favorites?: Pick<Favorites, "colors" | "likes" | "avoid">;
+  favorites?: Pick<Favorites, "colors" | "likes" | "avoid" | "wishlists">;
 }
 
 const text = (v: unknown, max: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : undefined);
@@ -45,8 +46,9 @@ export function cleanShared(input: unknown): SharedProfile | undefined {
   const sizes = cleanSizes(s.sizes);
   const f = (s.favorites ?? {}) as Record<string, unknown>;
   const colors = Array.isArray(f.colors) ? f.colors.map((c) => text(c, 30)).filter((c): c is string => !!c).slice(0, 8) : [];
-  const favorites = { colors: colors.length ? colors : undefined, likes: text(f.likes, 500), avoid: text(f.avoid, 500) };
-  const hasFavorites = !!(favorites.colors || favorites.likes || favorites.avoid);
+  const links = cleanWishlistLinks(f.wishlists);
+  const favorites = { colors: colors.length ? colors : undefined, likes: text(f.likes, 500), avoid: text(f.avoid, 500), wishlists: links.length ? links : undefined };
+  const hasFavorites = !!(favorites.colors || favorites.likes || favorites.avoid || favorites.wishlists);
   if (!sizes && !hasFavorites) return undefined;
   return { ...(sizes && { sizes }), ...(hasFavorites && { favorites }) };
 }

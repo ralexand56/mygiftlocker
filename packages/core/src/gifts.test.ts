@@ -32,11 +32,27 @@ describe("gifted locks", () => {
 describe("shared profiles", () => {
   it("keeps sizes and favorites, never address or dates", () => {
     const s = sharedFromPerson({ ...maya, favorites: { likes: "tea", colors: ["green"], wishes: ["x"] }, address: { line1: "1", city: "c", region: "r", postalCode: "1", country: "US" } } as Person);
-    expect(s).toEqual({ sizes: { top: "M", shoe: 8 }, favorites: { colors: ["green"], likes: "tea", avoid: undefined } });
+    expect(s).toEqual({ sizes: { top: "M", shoe: 8 }, favorites: { colors: ["green"], likes: "tea", avoid: undefined, wishlists: undefined } });
   });
 
   it("rejects junk", () => {
     expect(cleanShared({ sizes: { shoe: 999, top: { evil: 1 } }, favorites: {} })).toBeUndefined();
     expect(cleanShared("x")).toBeUndefined();
+  });
+});
+
+import { cleanWishlistLinks, linkLabel, normalizeLink } from "./index";
+
+describe("wish list links", () => {
+  it("accepts web links, adds https, rejects the rest", () => {
+    expect(normalizeLink("amazon.com/hz/wishlist/ls/ABC")).toBe("https://amazon.com/hz/wishlist/ls/ABC");
+    expect(normalizeLink("javascript:alert(1)")).toBeNull();
+    expect(normalizeLink("not a link")).toBeNull();
+    expect(cleanWishlistLinks(["https://etsy.com/x", "https://etsy.com/x", "ftp://a.b", 3])).toEqual(["https://etsy.com/x"]);
+  });
+  it("names common stores", () => {
+    expect(linkLabel("https://www.amazon.com/hz/wishlist/ls/ABC")).toBe("Amazon");
+    expect(linkLabel("https://www.target.com/gift-registry/x")).toBe("Target");
+    expect(linkLabel("https://shop.example.org/list")).toBe("shop.example.org");
   });
 });

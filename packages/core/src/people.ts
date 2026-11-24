@@ -17,6 +17,8 @@ export interface Favorites {
   likes?: string;
   avoid?: string; // allergies, dislikes, "please no more mugs"
   wishes?: string[];
+  /** Links to wish lists kept elsewhere (Amazon, Target, Etsy…). */
+  wishlists?: string[];
 }
 
 export type PersonKind = "adult" | "child";

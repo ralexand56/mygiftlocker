@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { getMyExchange, saveShared, saveWishlist, useAsync } from "@/lib/exchanges";
 import { useUser } from "@/lib/auth";
 import { getSelfProfile } from "@/lib/self";
+import { WishlistLinkList } from "@/app/locker/Locker";
 
 export function MyExchange({ id, token }: { id: string; token: string }) {
   const { data: view, error, loading, reload } = useAsync(() => getMyExchange(id, token), [id, token]);
@@ -184,6 +185,7 @@ function SharedDetails({ name, shared }: { name: string; shared: SharedProfile }
           ))}
         </div>
       )}
+      {!!f.wishlists?.length && <WishlistLinkList links={f.wishlists} />}
       {(f.likes || f.colors?.length || f.avoid) && (
         <div className="mt-2 rounded-2xl bg-white p-4 shadow-soft">
           {f.likes && <p>Loves: {f.likes}</p>}

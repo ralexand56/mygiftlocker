@@ -10,6 +10,7 @@ import {
   formatAddress,
   formatPartialDate,
   isGifted,
+  linkLabel,
   isStale,
   nextEvent,
   sortPeople,
@@ -24,7 +25,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, CalendarHeart, Gift, Lock, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, CalendarHeart, ExternalLink, Gift, Lock, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -470,6 +471,7 @@ function PersonDetail({
                 {p.favorites.likes && <p>{p.favorites.likes}</p>}
                 {!!p.favorites.colors?.length && <p className="mt-2 text-sm text-ink-soft">Colors: {p.favorites.colors.join(", ")}</p>}
                 {p.favorites.avoid && <p className="mt-2 text-sm text-rose-deep">Avoid: {p.favorites.avoid}</p>}
+                {!!p.favorites.wishlists?.length && <WishlistLinkList links={p.favorites.wishlists} />}
                 {!!p.favorites.wishes?.length && (
                   <ol className="mt-3 list-decimal pl-5 text-sm">
                     {p.favorites.wishes.map((w) => (
@@ -558,5 +560,23 @@ function SectionTitle({ icon: Icon, children }: { icon: typeof Gift; children: R
     <h3 className="mb-2.5 flex items-center gap-2 text-sm font-extrabold tracking-wide text-ink-soft uppercase">
       <Icon className="h-4 w-4" /> {children}
     </h3>
+  );
+}
+
+export function WishlistLinkList({ links }: { links: string[] }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {links.map((url) => (
+        <a
+          key={url}
+          href={url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="inline-flex items-center gap-1.5 rounded-full bg-blush/60 px-3.5 py-1.5 text-sm font-bold text-ink hover:bg-blush"
+        >
+          {linkLabel(url)} wish list <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      ))}
+    </div>
   );
 }

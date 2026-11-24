@@ -16,6 +16,10 @@ import {
   SIZE_SYSTEMS,
   PRIORITY_COUNTRIES,
   addressFormat,
+  MAX_WISHLIST_LINKS,
+  cleanWishlistLinks,
+  linkLabel,
+  normalizeLink,
   countryForLocale,
   countryOptions,
   formatAddress,
@@ -77,6 +81,7 @@ interface FormState {
   likes: string;
   avoid: string;
   wishes: string[];
+  wishlists: string[];
   kids: Kid[];
 }
 
@@ -90,6 +95,7 @@ const initial: FormState = {
   likes: "",
   avoid: "",
   wishes: ["", "", ""],
+  wishlists: [""],
   kids: [],
 };
 
@@ -125,6 +131,7 @@ function formFrom(p: Person): FormState {
     likes: p.favorites?.likes ?? "",
     avoid: p.favorites?.avoid ?? "",
     wishes,
+    wishlists: p.favorites?.wishlists?.length ? [...p.favorites.wishlists] : [""],
   };
 }
 
@@ -164,7 +171,9 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
         ? !!form.sizes.fit
         : step.id === "address"
           ? !addressStarted || isCompleteAddress(form.address) // optional, but complete if started
-          : true;
+          : step.id === "favorites"
+            ? form.wishlists.every((l) => !l.trim() || normalizeLink(l))
+            : true;
 
   const go = (delta: number) => {
     setDir(delta);
@@ -200,6 +209,7 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
         likes: form.likes || undefined,
         avoid: form.avoid || undefined,
         wishes: form.wishes.filter(Boolean),
+        wishlists: cleanWishlistLinks(form.wishlists),
       },
       updatedAt: now,
     };
@@ -672,6 +682,9 @@ function StepBody({
               ))}
             </div>
           </Group>
+          <Group label="Wish list links (optional)">
+            <WishlistLinks value={form.wishlists} onChange={(v) => set("wishlists", v)} />
+          </Group>
         </>
       );
 
@@ -681,6 +694,49 @@ function StepBody({
     case "review":
       return <Review form={form} invite={invite} jump={jump} />;
   }
+}
+
+/** Links to lists kept elsewhere: Amazon, Target, Etsy… */
+function WishlistLinks({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [touched, setTouched] = useState<Record<number, boolean>>({});
+  return (
+    <div className="grid gap-2">
+      {value.map((l, i) => {
+        const ok = normalizeLink(l);
+        const bad = !!l.trim() && !ok;
+        return (
+          <div key={i}>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                inputMode="url"
+                value={l}
+                onChange={(e) => onChange(value.map((x, j) => (j === i ? e.target.value : x)))}
+                onBlur={() => setTouched((t) => ({ ...t, [i]: true }))}
+                placeholder="Paste a link to your Amazon, Target or Etsy wish list"
+                aria-invalid={bad && touched[i]}
+              />
+              {value.length > 1 && (
+                <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="rounded-2xl px-3 text-ink-soft hover:bg-white" aria-label="Remove link">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            {bad && touched[i] ? (
+              <p className="mt-1 text-xs font-bold text-rose-deep">That doesn't look like a web link.</p>
+            ) : ok ? (
+              <p className="mt-1 text-xs text-ink-soft">{linkLabel(ok)} ✓</p>
+            ) : null}
+          </div>
+        );
+      })}
+      {value.length < MAX_WISHLIST_LINKS && value[value.length - 1]?.trim() && (
+        <button type="button" onClick={() => onChange([...value, ""])} className="flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold text-plum hover:bg-white/70">
+          <Plus className="h-4 w-4" /> Add another list
+        </button>
+      )}
+    </div>
+  );
 }
 
 function DateField({ label, value, onChange }: { label: string; value: PD; onChange: (v: PD) => void }) {
@@ -799,6 +855,7 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
     ["Birthday", complete(form.birthday), "dates"],
     ["Anniversary", complete(form.anniversary), "dates"],
     ["Loves", form.likes || form.colors.join(", ") || undefined, "favorites"],
+    ["Wish lists", cleanWishlistLinks(form.wishlists).map(linkLabel).join(", ") || undefined, "favorites"],
     ["Kids", form.kids.map((k) => k.name).filter(Boolean).join(", ") || undefined, "kids"],
   ];
   return (

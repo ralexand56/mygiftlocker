@@ -11,6 +11,7 @@ import {
   DrawError,
   cleanAddress,
   cleanShared,
+  cleanWishlistLinks,
   cleanWishlist,
   drawNames,
   isPlausibleToken,
@@ -279,7 +280,7 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
     address: json(cleanAddress(p.address)), // trimmed, per-country checks; dropped if unusable
     birthday: date(p.birthday),
     anniversary: date(p.anniversary),
-    favorites: json(p.favorites),
+    favorites: json(cleanFavorites(p.favorites)),
     fromInviteId: inv.id,
   });
 
@@ -319,6 +320,13 @@ function parseJson(v: unknown): unknown {
   } catch {
     return undefined;
   }
+}
+/** Favorites as submitted, with wish list links checked (web links only). */
+function cleanFavorites(v: unknown) {
+  if (!v || typeof v !== "object") return undefined;
+  const f = v as Record<string, unknown>;
+  const wishlists = cleanWishlistLinks(f.wishlists);
+  return { ...f, wishlists: wishlists.length ? wishlists : undefined };
 }
 function date(v: unknown) {
   const d = v as { month?: number; day?: number; year?: number } | undefined;
