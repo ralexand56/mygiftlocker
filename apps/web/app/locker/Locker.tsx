@@ -271,6 +271,7 @@ function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onC
     ["Dress", p.sizes.dress],
     ["Outerwear", p.sizes.outerwear],
     ["Shoe", p.sizes.shoe ? `${p.sizes.shoe}${p.sizes.shoeWidth && p.sizes.shoeWidth !== "Regular" ? ` ${p.sizes.shoeWidth}` : ""}` : undefined],
+    ["Foot length", p.sizes.footLengthCm ? `${p.sizes.footLengthCm} cm` : undefined],
     ["Ring", p.sizes.ring?.toString()],
     ["Hat", p.sizes.hat],
   ];
@@ -321,7 +322,7 @@ function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onC
             </div>
             {shoe && (
               <p className="mt-2 text-sm text-ink-soft">
-                Shoe ≈ UK {shoe.UK} · EU {shoe.EU} · JP {shoe.JP}
+                Shoe ≈ UK {shoe.UK} · EU {shoe.EU} · BR {shoe.BR} · MX {shoe.MX} · CO {shoe.CO} · JP {shoe.JP}
               </p>
             )}
           </motion.section>

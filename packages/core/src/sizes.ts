@@ -1,13 +1,31 @@
 /**
  * Clothing size catalog + conversions.
  *
- * MVP collects everything in US sizing. Conversions to UK / EU / JP are shown
- * as "≈" hints and are approximate — brands vary. Tables are intentionally data
- * so new regions can be added without touching UI code.
+ * Everything is stored in US sizing; other systems are display conversions and
+ * approximate (brands vary). Values starting with "≈" are rules of thumb where
+ * published charts disagree. Tables are data so regions can be added without UI code.
+ *
+ * Latin America (researched Nov 2026):
+ *  - BR shoes: Nike Brasil's official chart (static.nike.com.br/web/prd/tabela-de-medidas.html).
+ *    Clothing: PP/P/M/G/GG/XG letters; women's numeric ≈ US + 34 (36 = US 2).
+ *  - MX shoes: labeled in centimeters (same number as JP/CM). Clothing: XCH/CH/M/G/EG
+ *    letters; women's pants ≈ US + 24 (24 = US 0). Men's waist in inches.
+ *  - CO shoes: ≈ US + 30 (women) / + 31 (men), per Nike/ASICS Colombia guides;
+ *    other charts differ by 1–2. Clothing: US letters; women's numeric ≈ US + 2.
  */
 
-export type SizeSystem = "US" | "UK" | "EU" | "JP";
-export const SIZE_SYSTEMS: SizeSystem[] = ["US", "UK", "EU", "JP"];
+export type SizeSystem = "US" | "UK" | "EU" | "JP" | "BR" | "MX" | "CO";
+export const SIZE_SYSTEMS: SizeSystem[] = ["US", "UK", "EU", "JP", "BR", "MX", "CO"];
+
+export const SIZE_SYSTEM_LABELS: Record<SizeSystem, string> = {
+  US: "United States",
+  UK: "United Kingdom",
+  EU: "Europe",
+  JP: "Japan",
+  BR: "Brazil",
+  MX: "Mexico",
+  CO: "Colombia",
+};
 
 /** Which section of the store someone usually shops. */
 export type Fit = "mens" | "womens" | "kids";
@@ -41,42 +59,42 @@ export const HAT_SIZES = ["S/M", "M/L", "L/XL", "One size"] as const;
 // ---------------------------------------------------------------------------
 // Shoes
 
-type ShoeRow = { us: number; uk: number; eu: number; jp: number };
+/** jp = cm label (Japan and Mexico label shoes by cm). br = Nike Brasil chart; absent → estimated from EU. */
+type ShoeRow = { us: number; uk: number; eu: number; jp: number; br?: number };
 
-/** jp = foot length in cm (Japan labels shoes by cm). */
 const MENS_SHOES: ShoeRow[] = [
-  { us: 6, uk: 5.5, eu: 39, jp: 24 },
-  { us: 6.5, uk: 6, eu: 39.5, jp: 24.5 },
-  { us: 7, uk: 6.5, eu: 40, jp: 25 },
-  { us: 7.5, uk: 7, eu: 40.5, jp: 25.5 },
-  { us: 8, uk: 7.5, eu: 41, jp: 26 },
-  { us: 8.5, uk: 8, eu: 42, jp: 26.5 },
-  { us: 9, uk: 8.5, eu: 42.5, jp: 27 },
-  { us: 9.5, uk: 9, eu: 43, jp: 27.5 },
-  { us: 10, uk: 9.5, eu: 44, jp: 28 },
-  { us: 10.5, uk: 10, eu: 44.5, jp: 28.5 },
-  { us: 11, uk: 10.5, eu: 45, jp: 29 },
-  { us: 11.5, uk: 11, eu: 45.5, jp: 29.5 },
-  { us: 12, uk: 11.5, eu: 46, jp: 30 },
-  { us: 13, uk: 12.5, eu: 47.5, jp: 31 },
+  { us: 6, uk: 5.5, eu: 39, jp: 24, br: 37 },
+  { us: 6.5, uk: 6, eu: 39.5, jp: 24.5, br: 37.5 },
+  { us: 7, uk: 6.5, eu: 40, jp: 25, br: 38 },
+  { us: 7.5, uk: 7, eu: 40.5, jp: 25.5, br: 39 },
+  { us: 8, uk: 7.5, eu: 41, jp: 26, br: 39.5 },
+  { us: 8.5, uk: 8, eu: 42, jp: 26.5, br: 40 },
+  { us: 9, uk: 8.5, eu: 42.5, jp: 27, br: 40.5 },
+  { us: 9.5, uk: 9, eu: 43, jp: 27.5, br: 41 },
+  { us: 10, uk: 9.5, eu: 44, jp: 28, br: 42 },
+  { us: 10.5, uk: 10, eu: 44.5, jp: 28.5, br: 42.5 },
+  { us: 11, uk: 10.5, eu: 45, jp: 29, br: 43 },
+  { us: 11.5, uk: 11, eu: 45.5, jp: 29.5, br: 43.5 },
+  { us: 12, uk: 11.5, eu: 46, jp: 30, br: 44 },
+  { us: 13, uk: 12.5, eu: 47.5, jp: 31, br: 46 },
   { us: 14, uk: 13.5, eu: 48.5, jp: 32 },
   { us: 15, uk: 14.5, eu: 49.5, jp: 33 },
 ];
 
 const WOMENS_SHOES: ShoeRow[] = [
-  { us: 5, uk: 3, eu: 35.5, jp: 22 },
-  { us: 5.5, uk: 3.5, eu: 36, jp: 22.5 },
-  { us: 6, uk: 4, eu: 36.5, jp: 23 },
-  { us: 6.5, uk: 4.5, eu: 37, jp: 23.5 },
-  { us: 7, uk: 5, eu: 37.5, jp: 24 },
-  { us: 7.5, uk: 5.5, eu: 38, jp: 24.5 },
-  { us: 8, uk: 6, eu: 38.5, jp: 25 },
-  { us: 8.5, uk: 6.5, eu: 39, jp: 25.5 },
-  { us: 9, uk: 7, eu: 40, jp: 26 },
-  { us: 9.5, uk: 7.5, eu: 40.5, jp: 26.5 },
-  { us: 10, uk: 8, eu: 41, jp: 27 },
-  { us: 10.5, uk: 8.5, eu: 42, jp: 27.5 },
-  { us: 11, uk: 9, eu: 42.5, jp: 28 },
+  { us: 5, uk: 3, eu: 35.5, jp: 22, br: 33.5 },
+  { us: 5.5, uk: 3.5, eu: 36, jp: 22.5, br: 34 },
+  { us: 6, uk: 4, eu: 36.5, jp: 23, br: 35 },
+  { us: 6.5, uk: 4.5, eu: 37, jp: 23.5, br: 35.5 },
+  { us: 7, uk: 5, eu: 37.5, jp: 24, br: 36 },
+  { us: 7.5, uk: 5.5, eu: 38, jp: 24.5, br: 37 },
+  { us: 8, uk: 6, eu: 38.5, jp: 25, br: 37.5 },
+  { us: 8.5, uk: 6.5, eu: 39, jp: 25.5, br: 38 },
+  { us: 9, uk: 7, eu: 40, jp: 26, br: 39 },
+  { us: 9.5, uk: 7.5, eu: 40.5, jp: 26.5, br: 39.5 },
+  { us: 10, uk: 8, eu: 41, jp: 27, br: 40 },
+  { us: 10.5, uk: 8.5, eu: 42, jp: 27.5, br: 41 },
+  { us: 11, uk: 9, eu: 42.5, jp: 28, br: 41.5 },
   { us: 12, uk: 10, eu: 44, jp: 29 },
 ];
 
@@ -103,7 +121,18 @@ export function shoeSizes(fit: Fit): number[] {
 export function convertShoe(usSize: number, fit: Fit): Record<SizeSystem, string> | null {
   const row = SHOE_TABLE[fit].find((r) => r.us === usSize);
   if (!row) return null;
-  return { US: fmt(row.us), UK: fmt(row.uk), EU: fmt(row.eu), JP: `${fmt(row.jp)} cm` };
+  // Colombia: US + 30 (women) / + 31 (men); kids' charts follow EU numbering about one lower.
+  const co = fit === "kids" ? `≈${fmt(Math.round(row.eu) - 1)}` : `≈${fmt(row.us + (fit === "mens" ? 31 : 30))}`;
+  return {
+    US: fmt(row.us),
+    UK: fmt(row.uk),
+    EU: fmt(row.eu),
+    JP: `${fmt(row.jp)} cm`,
+    // Beyond Nike Brasil's chart: adults run ~1.5 below EU (US 13 = BR 46 = EU 47.5), kids ~1.
+    BR: row.br !== undefined ? fmt(row.br) : `≈${fmt(Math.round(row.eu - (fit === "kids" ? 1 : 1.5)))}`,
+    MX: fmt(row.jp),
+    CO: co,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +146,9 @@ export function convertWomensNumeric(us: string): Record<SizeSystem, string> | n
     UK: fmt(Math.max(n + 4, 2)),
     EU: fmt(n + 32),
     JP: fmt(n + 5), // JP ladies' sizes step 5/7/9/11…
+    BR: fmt(n + 34), // 36 = US 2 … 44 = US 10
+    MX: `≈${fmt(n + 24)}`, // pants 22–44 ↔ US 00–20
+    CO: `≈${fmt(n + 2)}`, // shops run ~one step above US (8 ≈ S)
   };
 }
 
@@ -134,11 +166,16 @@ export function womensNumericToAlpha(us: string): AlphaSize {
 // ---------------------------------------------------------------------------
 // Alpha tops
 
-/** EU/UK keep letters; JP runs roughly one size smaller. */
+/** Brazil: PP (XS), P (S), M, G (L), GG (XL), XG (XXL)… */
+const BR_ALPHA: Record<AlphaSize, string> = { XXS: "PPP", XS: "PP", S: "P", M: "M", L: "G", XL: "GG", XXL: "XG", "3XL": "XGG", "4XL": "XXGG" };
+/** Mexico: XCH (XS), CH (S), M, G (L), EG (XL), EEG (XXL)… */
+const MX_ALPHA: Record<AlphaSize, string> = { XXS: "XXCH", XS: "XCH", S: "CH", M: "M", L: "G", XL: "EG", XXL: "EEG", "3XL": "3EG", "4XL": "4EG" };
+
+/** EU/UK/Colombia keep letters; JP runs roughly one size smaller. */
 export function convertAlpha(size: AlphaSize): Record<SizeSystem, string> {
   const i = ALPHA_SIZES.indexOf(size);
   const jp = ALPHA_SIZES[Math.min(i + 1, ALPHA_SIZES.length - 1)] ?? size;
-  return { US: size, UK: size, EU: size, JP: jp };
+  return { US: size, UK: size, EU: size, JP: jp, BR: BR_ALPHA[size], MX: MX_ALPHA[size], CO: size };
 }
 
 export const MENS_CHEST_IN: Partial<Record<AlphaSize, string>> = {
@@ -149,7 +186,9 @@ export const MENS_CHEST_IN: Partial<Record<AlphaSize, string>> = {
 // Men's pants
 
 export function convertWaist(inches: number): Record<SizeSystem, string> {
-  return { US: `${inches}`, UK: `${inches}`, EU: `${Math.round(inches + 16)}`, JP: `${Math.round(inches * 2.54)} cm` };
+  // Brazil's men's pants run even numbers ≈ waist + 10 (BR 42 ≈ 32″); MX/CO use inches.
+  const br = Math.round((inches + 10) / 2) * 2;
+  return { US: `${inches}`, UK: `${inches}`, EU: `${Math.round(inches + 16)}`, JP: `${Math.round(inches * 2.54)} cm`, BR: `≈${br}`, MX: `${inches}`, CO: `${inches}` };
 }
 
 export function convertRing(us: number): Record<SizeSystem, string> {
@@ -162,6 +201,10 @@ export function convertRing(us: number): Record<SizeSystem, string> {
     UK: ukLetters[Math.min(Math.max(ukIndex, 0), 25)] ?? "?",
     EU: fmt(Math.round(circ)),
     JP: fmt(Math.max(1, Math.round(us * 2.5 - 3.5))),
+    // Brazil's "aro" numbers vary by jeweler; inner circumference is unambiguous.
+    BR: `${fmt(Math.round(circ))} mm`,
+    MX: fmt(us),
+    CO: fmt(us),
   };
 }
 
@@ -186,6 +229,8 @@ export interface SizeProfile {
   outerwear?: string;
   shoe?: number;
   shoeWidth?: (typeof SHOE_WIDTHS)[number];
+  /** Heel-to-toe foot length in cm: the one shoe measure that converts reliably everywhere. */
+  footLengthCm?: number;
   hat?: string;
   ring?: number;
   notes?: string;
@@ -200,5 +245,6 @@ export function summarizeSizes(s: SizeProfile): string {
   else if (s.bottomAlpha) parts.push(`Pants ${s.bottomAlpha}`);
   if (s.dress) parts.push(`Dress ${s.dress}`);
   if (s.shoe) parts.push(`Shoe ${s.shoe}`);
+  if (s.footLengthCm) parts.push(`Foot ${fmt(s.footLengthCm)} cm`);
   return parts.join(" · ");
 }

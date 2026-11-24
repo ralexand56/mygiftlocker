@@ -83,7 +83,7 @@ describe("drawNames", () => {
 
 describe("sizes", () => {
   it("converts shoes", () => {
-    expect(convertShoe(10, "mens")).toEqual({ US: "10", UK: "9.5", EU: "44", JP: "28 cm" });
+    expect(convertShoe(10, "mens")).toEqual({ US: "10", UK: "9.5", EU: "44", JP: "28 cm", BR: "42", MX: "28", CO: "≈41" });
     expect(convertShoe(8, "womens")?.EU).toBe("38.5");
     expect(convertShoe(99, "mens")).toBeNull();
   });

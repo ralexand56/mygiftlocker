@@ -14,6 +14,7 @@ import {
   SHIRT_SLEEVE,
   SHOE_WIDTHS,
   SIZE_SYSTEMS,
+  SIZE_SYSTEM_LABELS,
   WOMENS_NUMERIC,
   convertAlpha,
   convertRing,
@@ -40,7 +41,7 @@ import {
 } from "@mgl/core";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { ArrowLeft, ArrowRight, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { StepRail, StepShowcase } from "@/components/StepShowcase";
 import { LogoMark } from "@/components/Logo";
@@ -104,6 +105,11 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [sys, setSys] = useState<SizeSystem>("US");
+  // Start in the visitor's own system when their browser language says so (pt-BR, es-MX, es-CO…).
+  useEffect(() => {
+    const guess = systemForLocale(navigator.languages?.[0] ?? navigator.language);
+    if (guess) setSys(guess);
+  }, []);
   const [done, setDone] = useState(false);
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
@@ -276,23 +282,54 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
 
 const isSizeStep = (id: StepId) => ["tops", "bottoms", "dresses", "outerwear", "shoes", "accessories"].includes(id);
 
+/** Size system implied by a browser locale, if it's one we convert to. */
+function systemForLocale(locale: string | undefined): SizeSystem | null {
+  const region = locale?.split(/[-_]/)[1]?.toUpperCase();
+  const byRegion: Record<string, SizeSystem> = { BR: "BR", MX: "MX", CO: "CO", GB: "UK", JP: "JP" };
+  if (region && byRegion[region]) return byRegion[region]!;
+  if (locale?.toLowerCase().startsWith("pt")) return "BR";
+  return null;
+}
+
 function SystemToggle({ value, onChange }: { value: SizeSystem; onChange: (s: SizeSystem) => void }) {
   return (
-    <div className="flex rounded-full bg-white/70 p-1 text-xs font-extrabold" role="radiogroup" aria-label="Size system">
+    <div className="flex max-w-full overflow-x-auto rounded-full bg-white/70 p-1 text-xs font-extrabold" role="radiogroup" aria-label="Size system">
       {SIZE_SYSTEMS.map((s) => (
         <button
           key={s}
           type="button"
           role="radio"
           aria-checked={s === value}
+          aria-label={SIZE_SYSTEM_LABELS[s]}
+          title={SIZE_SYSTEM_LABELS[s]}
           onClick={() => onChange(s)}
-          className={`relative rounded-full px-2.5 py-1 ${s === value ? "text-white" : "text-ink-soft"}`}
+          className={`relative shrink-0 rounded-full px-2.5 py-1 ${s === value ? "text-white" : "text-ink-soft"}`}
         >
           {s === value && <motion.span layoutId="sys" className="absolute inset-0 rounded-full bg-ink" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
           <span className="relative">{s}</span>
         </button>
       ))}
     </div>
+  );
+}
+
+/** Keeps the typed text (so "25." can become "25.5") and stores a rounded cm value when valid. */
+function FootLengthInput({ value, onChange }: { value?: number; onChange: (cm: number | undefined) => void }) {
+  const [text, setText] = useState(value?.toString() ?? "");
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      placeholder="e.g. 25.5"
+      value={text}
+      aria-label="Foot length in centimeters"
+      onChange={(e) => {
+        const t = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
+        setText(t);
+        const n = Number.parseFloat(t);
+        onChange(Number.isFinite(n) && n >= 8 && n <= 35 ? Math.round(n * 10) / 10 : undefined);
+      }}
+    />
   );
 }
 
@@ -396,7 +433,7 @@ function StepBody({
       if (fit === "mens")
         return (
           <>
-            <Group label={`Waist ${sys === "JP" ? "(cm)" : sys === "EU" ? "(EU)" : "(in)"}`}>
+            <Group label={`Waist ${sys === "JP" ? "(cm)" : sys === "EU" ? "(EU)" : sys === "BR" ? "(BR)" : "(in)"}`}>
               <ChipGroup label="Waist" options={MENS_WAIST} value={s.waist} onChange={(v) => setSize("waist", v)} render={(v) => convertWaist(v)[sys]} />
             </Group>
             <Group label="Inseam (in)">
@@ -435,9 +472,16 @@ function StepBody({
           <ChipGroup label="Shoe size" options={shoeSizes(fit)} value={s.shoe} onChange={(v) => setSize("shoe", v)} render={(v) => convertShoe(v, fit)?.[sys] ?? String(v)} />
           {conv && (
             <Hint>
-              ≈ US {conv.US} · UK {conv.UK} · EU {conv.EU} · JP {conv.JP}
+              {SIZE_SYSTEMS.filter((k) => k !== sys)
+                .map((k) => `${k} ${conv[k]}`)
+                .join(" · ")}
+              {sys !== "US" && ` · saved as US ${conv.US}`}
             </Hint>
           )}
+          <Group label="Foot length in cm (optional)">
+            <FootLengthInput value={s.footLengthCm} onChange={(v) => setSize("footLengthCm", v)} />
+            <Hint>Heel to longest toe, standing. It's the one shoe measure that converts reliably between countries.</Hint>
+          </Group>
           <Group label="Width">
             <ChipGroup label="Width" options={SHOE_WIDTHS} value={s.shoeWidth} onChange={(v) => setSize("shoeWidth", v)} />
           </Group>
