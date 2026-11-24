@@ -5,6 +5,7 @@
  * Pure logic, shared with tests; amplify/functions/event-reminders sends them.
  */
 import { upcomingEvents, type EventKind, type UpcomingEvent } from "./events";
+import { shortPlace } from "./addresses";
 import { holiday, type HolidayId } from "./holidays";
 import type { Person } from "./people";
 import { summarizeSizes } from "./sizes";
@@ -71,7 +72,7 @@ function details(p: Person): string[] {
   if (wishes.length) lines.push(`Wishes: ${wishes.join(", ")}`);
   if (p.favorites?.likes) lines.push(`Loves: ${p.favorites.likes}`);
   if (p.favorites?.avoid) lines.push(`Avoid: ${p.favorites.avoid}`);
-  if (p.address?.city) lines.push(`Ships to: ${[p.address.city, p.address.region].filter(Boolean).join(", ")}`);
+  if (p.address?.city) lines.push(`Ships to: ${shortPlace(p.address)}`);
   if (p.ownerNote?.trim()) lines.push(`Your note: ${p.ownerNote.trim()}`);
   return lines;
 }

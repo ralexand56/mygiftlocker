@@ -7,6 +7,7 @@ import {
   daysUntil,
   describeDays,
   filterPeopleByName,
+  formatAddress,
   formatPartialDate,
   isStale,
   nextEvent,
@@ -359,12 +360,11 @@ function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onC
             <motion.section variants={item}>
               <SectionTitle icon={MapPin}>Ship to</SectionTitle>
               <address className="rounded-2xl bg-white p-4 not-italic shadow-soft">
-                {p.name}
-                <br />
-                {p.address.line1}
-                {p.address.line2 && `, ${p.address.line2}`}
-                <br />
-                {p.address.city}, {p.address.region} {p.address.postalCode}
+                {[p.name, ...formatAddress(p.address)].map((line, i) => (
+                  <span key={i} className="block">
+                    {line}
+                  </span>
+                ))}
               </address>
             </motion.section>
           )}

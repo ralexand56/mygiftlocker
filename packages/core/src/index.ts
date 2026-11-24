@@ -4,6 +4,7 @@ export * from "./holidays";
 export * from "./events";
 export * from "./reminders";
 export * from "./people";
+export * from "./addresses";
 export * from "./invite";
 export * from "./steps";
 export * from "./exchange";

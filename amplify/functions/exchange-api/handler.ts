@@ -9,6 +9,7 @@
 import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
 import {
   DrawError,
+  cleanAddress,
   cleanWishlist,
   drawNames,
   isPlausibleToken,
@@ -258,7 +259,7 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
     kind: "adult",
     color: pastelFor(name),
     sizes: json(p.sizes),
-    address: json(p.address),
+    address: json(cleanAddress(p.address)), // trimmed, per-country checks; dropped if unusable
     birthday: date(p.birthday),
     anniversary: date(p.anniversary),
     favorites: json(p.favorites),

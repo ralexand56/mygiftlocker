@@ -14,6 +14,13 @@ import {
   SHIRT_SLEEVE,
   SHOE_WIDTHS,
   SIZE_SYSTEMS,
+  PRIORITY_COUNTRIES,
+  addressFormat,
+  countryForLocale,
+  countryOptions,
+  formatAddress,
+  isCompleteAddress,
+  validateAddress,
   SIZE_SYSTEM_LABELS,
   WOMENS_NUMERIC,
   convertAlpha,
@@ -107,8 +114,11 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
   const [sys, setSys] = useState<SizeSystem>("US");
   // Start in the visitor's own system when their browser language says so (pt-BR, es-MX, es-CO…).
   useEffect(() => {
-    const guess = systemForLocale(navigator.languages?.[0] ?? navigator.language);
+    const locale = navigator.languages?.[0] ?? navigator.language;
+    const guess = systemForLocale(locale);
     if (guess) setSys(guess);
+    const country = countryForLocale(locale);
+    if (country) setForm((f) => (f.address.line1 ? f : { ...f, address: { ...f.address, country } }));
   }, []);
   const [done, setDone] = useState(false);
 
@@ -119,7 +129,15 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
   const setSize = <K extends keyof SizeProfile>(k: K, v: SizeProfile[K]) => setForm((f) => ({ ...f, sizes: { ...f.sizes, [k]: v } }));
 
-  const canContinue = step.id === "welcome" ? form.name.trim().length > 0 : step.id === "fit" ? !!form.sizes.fit : true;
+  const addressStarted = !!(form.address.line1 || form.address.line2 || form.address.city || form.address.region || form.address.postalCode);
+  const canContinue =
+    step.id === "welcome"
+      ? form.name.trim().length > 0
+      : step.id === "fit"
+        ? !!form.sizes.fit
+        : step.id === "address"
+          ? !addressStarted || isCompleteAddress(form.address) // optional, but complete if started
+          : true;
 
   const go = (delta: number) => {
     setDir(delta);
@@ -147,7 +165,7 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
       kind: "adult",
       color: pastelFor(form.name),
       sizes: form.sizes,
-      address: a.line1 && a.city && a.region && a.postalCode ? (a as Address) : undefined,
+      address: isCompleteAddress(a) ? a : undefined,
       birthday: complete(form.birthday),
       anniversary: complete(form.anniversary),
       favorites: {
@@ -309,6 +327,84 @@ function SystemToggle({ value, onChange }: { value: SizeSystem; onChange: (s: Si
           <span className="relative">{s}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+/** Country-aware shipping address: labels, region pick-lists and postal rules follow the country. */
+function AddressStep({ value: a, onChange }: { value: Partial<Address>; onChange: (a: Partial<Address>) => void }) {
+  const [touched, setTouched] = useState<Partial<Record<keyof Address, boolean>>>({});
+  const f = addressFormat(a.country);
+  const errors = validateAddress(a);
+  const countries = useMemo(() => countryOptions(), []);
+  const up = (k: keyof Address, v: string) => onChange({ ...a, [k]: v });
+  const blur = (k: keyof Address) => () => setTouched((t) => ({ ...t, [k]: true }));
+  const err = (k: keyof Address) => (touched[k] ? errors[k] : undefined);
+  const errHint = (k: keyof Address) => (err(k) ? <span className="font-bold text-rose-deep">{err(k)}</span> : undefined);
+  const numericPostal = ["US", "MX", "BR", "CO"].includes((a.country ?? "US").toUpperCase());
+  const opt = (label: string, required?: boolean) => (required ? label : label.includes("optional") ? label : `${label} (optional)`);
+
+  return (
+    <div className="grid gap-4">
+      <Field label="Country">
+        <select
+          className={inputCls}
+          value={a.country ?? "US"}
+          autoComplete="country"
+          onChange={(e) => {
+            // Region and postal formats differ by country, so start those fresh.
+            onChange({ ...a, country: e.target.value, region: "", postalCode: "" });
+            setTouched({});
+          }}
+        >
+          {countries.map((c, i) => [
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>,
+            i === PRIORITY_COUNTRIES.length - 1 ? (
+              <option key="divider" disabled>
+                ──────────
+              </option>
+            ) : null,
+          ])}
+        </select>
+      </Field>
+      <Field label="Street and number" hint={errHint("line1")}>
+        <Input value={a.line1 ?? ""} onChange={(e) => up("line1", e.target.value)} onBlur={blur("line1")} autoComplete="address-line1" aria-invalid={!!err("line1")} />
+      </Field>
+      <Field label={opt(f.line2Label, f.line2Required)} hint={errHint("line2")}>
+        <Input value={a.line2 ?? ""} onChange={(e) => up("line2", e.target.value)} onBlur={blur("line2")} autoComplete="address-line2" aria-invalid={!!err("line2")} />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-[1.3fr_1fr_1fr]">
+        <Field label="City" hint={errHint("city")}>
+          <Input value={a.city ?? ""} onChange={(e) => up("city", e.target.value)} onBlur={blur("city")} autoComplete="address-level2" aria-invalid={!!err("city")} />
+        </Field>
+        <Field label={f.regionRequired ? f.regionLabel : opt(f.regionLabel)} hint={errHint("region")}>
+          {f.regions ? (
+            <select className={inputCls} value={a.region ?? ""} onChange={(e) => up("region", e.target.value)} onBlur={blur("region")} autoComplete="address-level1" aria-invalid={!!err("region")}>
+              <option value="">Choose…</option>
+              {f.regions.map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Input value={a.region ?? ""} onChange={(e) => up("region", e.target.value)} onBlur={blur("region")} autoComplete="address-level1" />
+          )}
+        </Field>
+        <Field label={f.postalRequired ? f.postalLabel : opt(f.postalLabel)} hint={errHint("postalCode")}>
+          <Input
+            value={a.postalCode ?? ""}
+            onChange={(e) => up("postalCode", f.postalFormat ? f.postalFormat(e.target.value) : e.target.value)}
+            onBlur={blur("postalCode")}
+            autoComplete="postal-code"
+            inputMode={numericPostal ? "numeric" : "text"}
+            placeholder={f.postalExample}
+            aria-invalid={!!err("postalCode")}
+          />
+        </Field>
+      </div>
     </div>
   );
 }
@@ -504,31 +600,8 @@ function StepBody({
         </>
       );
 
-    case "address": {
-      const a = form.address;
-      const up = (k: keyof Address, v: string) => set("address", { ...a, [k]: v });
-      return (
-        <div className="grid gap-4">
-          <Field label="Street address">
-            <Input value={a.line1 ?? ""} onChange={(e) => up("line1", e.target.value)} autoComplete="address-line1" placeholder="123 Maple St" />
-          </Field>
-          <Field label="Apt, suite (optional)">
-            <Input value={a.line2 ?? ""} onChange={(e) => up("line2", e.target.value)} autoComplete="address-line2" />
-          </Field>
-          <div className="grid grid-cols-[1.4fr_0.8fr_1fr] gap-3">
-            <Field label="City">
-              <Input value={a.city ?? ""} onChange={(e) => up("city", e.target.value)} autoComplete="address-level2" />
-            </Field>
-            <Field label="State">
-              <Input value={a.region ?? ""} onChange={(e) => up("region", e.target.value.toUpperCase())} autoComplete="address-level1" maxLength={2} placeholder="CA" />
-            </Field>
-            <Field label="ZIP">
-              <Input value={a.postalCode ?? ""} onChange={(e) => up("postalCode", e.target.value)} autoComplete="postal-code" inputMode="numeric" />
-            </Field>
-          </div>
-        </div>
-      );
-    }
+    case "address":
+      return <AddressStep value={form.address} onChange={(v) => set("address", v)} />;
 
     case "dates":
       return (
@@ -680,7 +753,7 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
   const rows: [string, string | undefined, StepId][] = [
     ["Name", form.name, "welcome"],
     ["Sizes", summarizeSizes(form.sizes) || undefined, "tops"],
-    ["Address", a.line1 ? `${a.line1}, ${a.city ?? ""} ${a.region ?? ""} ${a.postalCode ?? ""}` : undefined, "address"],
+    ["Address", isCompleteAddress(a) ? formatAddress(a).join(", ") : undefined, "address"],
     ["Birthday", complete(form.birthday), "dates"],
     ["Anniversary", complete(form.anniversary), "dates"],
     ["Loves", form.likes || form.colors.join(", ") || undefined, "favorites"],

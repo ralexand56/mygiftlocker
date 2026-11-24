@@ -15,8 +15,9 @@ export const addressSchema = z.object({
   line1: z.string().min(1, "Street address is required").max(200),
   line2: z.string().max(200).optional(),
   city: z.string().min(1, "City is required").max(120),
-  region: z.string().min(1, "State is required").max(120),
-  postalCode: z.string().min(3, "ZIP / postal code is required").max(20),
+  // Region and postal rules vary by country; see validateAddress in addresses.ts.
+  region: z.string().max(120),
+  postalCode: z.string().max(20),
   country: z.string().length(2),
 });
 
