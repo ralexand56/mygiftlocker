@@ -1,4 +1,5 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
+import { eventReminders } from "../functions/event-reminders/resource";
 import { exchangeApi } from "../functions/exchange-api/resource";
 
 /**
@@ -153,6 +154,35 @@ const schema = a
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
+    // ---- Reminder emails ----------------------------------------------------
+    /** One per locker owner. The token goes in the unsubscribe link (no sign-in needed). */
+    ReminderSettings: a
+      .model({
+        ownerSub: a.string().required(),
+        remindersOff: a.boolean(),
+        unsubscribeToken: a.string().required(),
+      })
+      .identifier(["ownerSub"])
+      .secondaryIndexes((index) => [index("unsubscribeToken")])
+      .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub").to(["read"])]),
+
+    /** "ownerSub#YYYY-MM-DD": written before sending so a retried run never emails twice. */
+    ReminderLog: a
+      .model({
+        id: a.id().required(),
+        ownerSub: a.string().required(),
+        count: a.integer(),
+      })
+      .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub").to(["read"])]),
+
+    /** From the email's unsubscribe link: turn reminders off (or back on). */
+    setReminders: a
+      .mutation()
+      .arguments({ token: a.string().required(), on: a.boolean().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
     // ---- Organizer operations ---------------------------------------------
     drawNames: a
       .mutation()
@@ -169,7 +199,7 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
   })
-  .authorization((allow) => [allow.resource(exchangeApi)]);
+  .authorization((allow) => [allow.resource(exchangeApi), allow.resource(eventReminders)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

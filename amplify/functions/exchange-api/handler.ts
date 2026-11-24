@@ -65,6 +65,8 @@ export const handler = async (event: ResolverEvent) => {
         return await draw(str(args.exchangeId), callerSub);
       case "removeExchange":
         return await removeExchange(str(args.exchangeId), callerSub);
+      case "setReminders":
+        return await setReminders(str(args.token), args.on === true);
       default:
         throw new Error(`Unknown operation ${field}`);
     }
@@ -214,6 +216,18 @@ async function removeExchange(exchangeId: string, callerSub: string | undefined)
   await Promise.all(people.map((p) => client.models.Participant.delete({ id: p.id })));
   await client.models.Exchange.delete({ id: exchangeId });
   return { ok: true, deleted: { assignments: assignments.length, participants: people.length } };
+}
+
+// ---- reminder emails -------------------------------------------------------
+
+/** From the unsubscribe link in a reminder email; the random token is the only credential. */
+async function setReminders(token: string, on: boolean) {
+  if (token.length < 20 || token.length > 100) throw new UserError("That link isn't valid.");
+  const { data } = await client.models.ReminderSettings.listReminderSettingsByUnsubscribeToken({ unsubscribeToken: token }, { limit: 1 });
+  const settings = data[0];
+  if (!settings) throw new UserError("That link isn't valid.");
+  await client.models.ReminderSettings.update({ ownerSub: settings.ownerSub, remindersOff: !on });
+  return { ok: true, on };
 }
 
 // ---- invites ---------------------------------------------------------------

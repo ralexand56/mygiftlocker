@@ -10,3 +10,18 @@ declare module "$amplify/env/exchange-api" {
     [key: string]: string;
   };
 }
+
+declare module "$amplify/env/event-reminders" {
+  export const env: {
+    AWS_ACCESS_KEY_ID: string;
+    AWS_SECRET_ACCESS_KEY: string;
+    AWS_SESSION_TOKEN: string;
+    AWS_REGION: string;
+    AMPLIFY_DATA_DEFAULT_NAME: string;
+    SITE_URL: string;
+    FROM_ADDRESS: string;
+    REPLY_TO: string;
+    REMINDER_TIME_ZONE: string;
+    [key: string]: string;
+  };
+}

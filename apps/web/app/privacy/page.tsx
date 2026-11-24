@@ -64,6 +64,10 @@ export default function PrivacyPage() {
           <ul>
             <li>To provide the service: show your locker, run exchanges, draw names and reveal matches.</li>
             <li>To sign you in and keep your account secure.</li>
+            <li>
+              To email you reminders a week before and the day before birthdays and other dates in your locker. Every
+              reminder has a link to stop them.
+            </li>
             <li>To respond when you contact us.</li>
           </ul>
           <p>We don’t sell or rent personal information, and we don’t use it for advertising.</p>
