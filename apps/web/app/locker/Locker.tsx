@@ -24,7 +24,7 @@ const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 export function Locker() {
   const user = useUser();
   const localPeople = useDB((db) => db.people);
-  const { data: remotePeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
+  const { data: remotePeople, loading: loadingPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
   const people = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
   const [openId, setOpenId] = useState<string | null>(null);
   const open = people.find((p) => p.id === openId) ?? null;
@@ -70,6 +70,31 @@ export function Locker() {
           <Plus className="h-4 w-4" /> Invite someone
         </Button>
       </div>
+
+      {people.length === 0 && !(authMode === "amplify" && (user === undefined || loadingPeople)) && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass mx-auto mt-6 max-w-xl rounded-[32px] p-10 text-center shadow-soft"
+        >
+          <span className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-blush">
+            <Gift className="h-8 w-8 text-ink" strokeWidth={2.2} />
+          </span>
+          <h2 className="font-display text-3xl font-semibold">Your locker is empty</h2>
+          <p className="mx-auto mt-2 max-w-sm text-ink-soft">
+            Invite the first person you shop for. They add their own sizes, dates and favorites, and they'll show up
+            right here.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Button href="/invite">
+              <Plus className="h-4 w-4" /> Invite someone
+            </Button>
+            <Button href="/exchange" variant="soft">
+              Start a gift exchange
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       <LayoutGroup>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

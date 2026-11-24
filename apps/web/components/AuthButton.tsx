@@ -23,7 +23,7 @@ export function AuthButton() {
   return (
     <span className="flex items-center gap-1">
       <span className="hidden max-w-[12rem] truncate px-2 text-ink md:block" title={user.email}>
-        {user.name.split(" ")[0]}
+        {user.hasName ? user.name.split(" ")[0] : "Account"}
       </span>
       <button
         type="button"

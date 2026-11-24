@@ -13,7 +13,10 @@ export const authMode: "amplify" | "demo" = backendEnabled ? "amplify" : "demo";
 export interface User {
   sub: string;
   email?: string;
+  /** Display name; falls back to the email's local part when the user hasn't set one. */
   name: string;
+  /** False for email-code users who haven't told us their name yet (Google supplies one). */
+  hasName: boolean;
 }
 
 async function auth() {
@@ -26,11 +29,15 @@ async function loadUser(): Promise<User | null> {
     const u = await a.getCurrentUser();
     const attrs = await a.fetchUserAttributes().catch(() => ({}) as Record<string, string>);
     const email = attrs.email;
-    return { sub: u.userId, email, name: attrs.name || email?.split("@")[0] || "You" };
+    const name = attrs.name?.trim();
+    return { sub: u.userId, email, name: name || email?.split("@")[0] || "You", hasName: !!name };
   } catch {
     return null;
   }
 }
+
+/** Mounted useUser hooks, so changes that don't emit Hub auth events (e.g. a new name) still refresh. */
+const reloaders = new Set<() => void>();
 
 /** Current user (undefined while loading, null when signed out). */
 export function useUser(): User | null | undefined {
@@ -40,15 +47,32 @@ export function useUser(): User | null | undefined {
   useEffect(() => {
     if (!backendEnabled) return;
     let stop = () => {};
-    loadUser().then(setUser);
+    const reload = () => void loadUser().then(setUser);
+    reload();
+    reloaders.add(reload);
     import("aws-amplify/utils").then(({ Hub }) => {
-      stop = Hub.listen("auth", () => loadUser().then(setUser));
+      stop = Hub.listen("auth", reload);
     });
-    return () => stop();
+    return () => {
+      reloaders.delete(reload);
+      stop();
+    };
   }, []);
 
-  if (!backendEnabled) return demoMe ? { sub: demoMe.id, name: demoMe.name } : null;
+  if (!backendEnabled) return demoMe ? { sub: demoMe.id, name: demoMe.name, hasName: true } : null;
   return user;
+}
+
+/** Saves the signed-in user's display name (Cognito `name`) and refreshes every useUser. */
+export async function saveDisplayName(name: string): Promise<void> {
+  const clean = name.trim().slice(0, 80);
+  if (!clean) throw new Error("Please enter your name.");
+  if (!backendEnabled) {
+    setMe({ id: "me", name: clean });
+    return;
+  }
+  await (await auth()).updateUserAttributes({ userAttributes: { name: clean } });
+  reloaders.forEach((r) => r());
 }
 
 export async function signInWithGoogle(): Promise<void> {
