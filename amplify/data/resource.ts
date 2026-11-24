@@ -41,6 +41,10 @@ const schema = a
         /** For child profiles: Cognito subs of guardians who can edit. */
         guardians: a.string().array(),
         fromInviteId: a.id(),
+        /** Owner-set: HolidayId[] from @mgl/core (christmas, valentines, mothers-day, fathers-day). */
+        holidays: a.string().array(),
+        /** Owner's private note about this person. Never returned to link holders. */
+        ownerNote: a.string(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub"), allow.ownersDefinedIn("guardians").identityClaim("sub")]),
 

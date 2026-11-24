@@ -87,6 +87,11 @@ export function upsertPerson(p: Person) {
   update((db) => ({ ...db, people: [p, ...db.people.filter((x) => x.id !== p.id)] }));
 }
 
+/** Update one person in place (keeps list order). */
+export function patchPerson(id: string, changes: Partial<Person>) {
+  update((db) => ({ ...db, people: db.people.map((p) => (p.id === id ? { ...p, ...changes } : p)) }));
+}
+
 export function newPersonColor(name: string) {
   return pastelFor(name);
 }

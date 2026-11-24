@@ -2,6 +2,7 @@
 
 import {
   FIT_LABELS,
+  HOLIDAYS,
   convertShoe,
   daysUntil,
   describeDays,
@@ -13,17 +14,19 @@ import {
   summarizeSizes,
   upcomingEvents,
   upcomingMilestone,
-  type EventKind,
+  type HolidayId,
   type PeopleSort,
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Cake, CalendarHeart, Gift, Heart, MapPin, Plus, Ruler, Search, Sparkles, X } from "lucide-react";
+import { Baby, CalendarHeart, Gift, Lock, MapPin, Plus, Ruler, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
+import { EventIcon } from "./EventIcon";
+import { HolidayLists } from "./HolidayLists";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
-import { listLockerPeople } from "@/lib/invites";
+import { listLockerPeople, updateOwnerFields } from "@/lib/invites";
 import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
 
@@ -33,8 +36,24 @@ export function Locker() {
   const user = useUser();
   const localPeople = useDB((db) => db.people);
   const { data: remotePeople, loading: loadingPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
-  const people = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
+  const basePeople = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
+  // Owner edits (holiday tags, notes) show immediately and are saved in the background.
+  const [edits, setEdits] = useState<Record<string, Partial<Person>>>({});
+  const people = useMemo(() => basePeople.map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)), [basePeople, edits]);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [holidaysOpen, setHolidaysOpen] = useState(false);
+
+  /** Optimistically apply, then save; roll back and rethrow if the save fails. */
+  const saveOwner = async (id: string, changes: { holidays?: HolidayId[]; ownerNote?: string }) => {
+    const before = edits[id];
+    setEdits((e) => ({ ...e, [id]: { ...e[id], ...changes } }));
+    try {
+      await updateOwnerFields(id, changes);
+    } catch (err) {
+      setEdits((e) => ({ ...e, [id]: before ?? {} }));
+      throw err;
+    }
+  };
   const open = people.find((p) => p.id === openId) ?? null;
 
   const [query, setQuery] = useState("");
@@ -127,8 +146,17 @@ export function Locker() {
               render={(v) => (v === "next" ? "Next event" : "Name")}
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setHolidaysOpen(true)}
+            className="rounded-full bg-white/70 px-4 py-2.5 text-[15px] font-bold text-ink ring-1 ring-lavender/50 hover:bg-white"
+          >
+            🎄 Holidays
+          </button>
         </div>
       )}
+
+      <HolidayLists open={holidaysOpen} people={people} onClose={() => setHolidaysOpen(false)} onSave={saveOwner} />
 
       <LayoutGroup>
         {people.length > 0 && shown.length === 0 && (
@@ -165,7 +193,7 @@ export function Locker() {
                   aria-modal
                   aria-label={open.name}
                 >
-                  <PersonDetail person={open} onClose={() => setOpenId(null)} />
+                  <PersonDetail person={open} onClose={() => setOpenId(null)} onSaveOwner={(changes) => saveOwner(open.id, changes)} />
                 </motion.article>
               </div>
             </>
@@ -174,13 +202,6 @@ export function Locker() {
       </LayoutGroup>
     </div>
   );
-}
-
-const EVENT_ICON: Record<EventKind, typeof Cake> = { birthday: Cake, anniversary: Heart, other: Sparkles };
-
-export function EventIcon({ kind, className }: { kind: EventKind; className?: string }) {
-  const Icon = EVENT_ICON[kind];
-  return <Icon className={className ?? "h-4 w-4"} />;
 }
 
 function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index: number; hidden: boolean; onOpen: () => void }) {
@@ -224,7 +245,7 @@ function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index
         {next ? (
           <>
             <p className="flex items-center justify-end gap-1.5 text-sm font-bold text-ink">
-              <EventIcon kind={next.kind} className="h-4 w-4 text-rose" />
+              <EventIcon kind={next.kind} holidayId={next.holidayId} className="h-4 w-4 text-rose" />
               {next.label}
             </p>
             <p className={`text-sm ${next.days <= 7 ? "font-bold text-rose-deep" : "text-ink-soft"}`}>
@@ -239,7 +260,9 @@ function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index
   );
 }
 
-function PersonDetail({ person: p, onClose }: { person: Person; onClose: () => void }) {
+type OwnerChanges = { holidays?: HolidayId[]; ownerNote?: string };
+
+function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onClose: () => void; onSaveOwner: (changes: OwnerChanges) => Promise<void> }) {
   const shoe = p.sizes.shoe && p.sizes.fit ? convertShoe(p.sizes.shoe, p.sizes.fit) : null;
   const sizes: [string, string | undefined][] = [
     ["Section", p.sizes.fit ? FIT_LABELS[p.sizes.fit] : undefined],
@@ -327,6 +350,10 @@ function PersonDetail({ person: p, onClose }: { person: Person; onClose: () => v
             </motion.section>
           )}
 
+          <motion.section variants={item}>
+            <OwnerSection person={p} onSave={onSaveOwner} />
+          </motion.section>
+
           {p.address && (
             <motion.section variants={item}>
               <SectionTitle icon={MapPin}>Ship to</SectionTitle>
@@ -361,6 +388,73 @@ function PersonDetail({ person: p, onClose }: { person: Person; onClose: () => v
         </motion.div>
       </div>
     </div>
+  );
+}
+
+/** Holiday tags and a private note: the owner's own info, never shown to the person. */
+function OwnerSection({ person: p, onSave }: { person: Person; onSave: (changes: OwnerChanges) => Promise<void> }) {
+  const [note, setNote] = useState(p.ownerNote ?? "");
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const tags = new Set(p.holidays ?? []);
+
+  const run = async (changes: OwnerChanges) => {
+    setStatus("saving");
+    try {
+      await onSave(changes);
+      setStatus("saved");
+    } catch {
+      setStatus("error");
+    }
+  };
+  const toggle = (id: HolidayId) => {
+    const next = new Set(tags);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    void run({ holidays: [...next] });
+  };
+  const noteChanged = note.trim() !== (p.ownerNote ?? "").trim();
+
+  return (
+    <>
+      <SectionTitle icon={Lock}>Just for you</SectionTitle>
+      <div className="rounded-2xl bg-white p-4 shadow-soft">
+        <p className="text-sm font-bold text-ink-soft">Holidays you shop for {p.name.split(" ")[0]}</p>
+        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Holidays">
+          {HOLIDAYS.map((h) => {
+            const on = tags.has(h.id);
+            return (
+              <button
+                key={h.id}
+                type="button"
+                aria-pressed={on}
+                aria-label={`${h.name} (${h.when})`}
+                onClick={() => toggle(h.id)}
+                title={h.when}
+                className={`rounded-full px-3.5 py-2 text-sm font-bold transition-colors ${
+                  on ? "bg-gradient-to-br from-rose to-plum text-white shadow-lift" : "bg-cream text-ink ring-1 ring-lavender/60 hover:bg-white"
+                }`}
+              >
+                {h.emoji} {h.name}
+              </button>
+            );
+          })}
+        </div>
+        <label className="mt-4 block">
+          <span className="text-sm font-bold text-ink-soft">Private note</span>
+          <textarea
+            className={`${inputCls} mt-1.5 min-h-20 resize-y`}
+            placeholder="Gift ideas, things they already have, what they mentioned…"
+            value={note}
+            maxLength={2000}
+            onChange={(e) => setNote(e.target.value)}
+            onBlur={() => noteChanged && void run({ ownerNote: note })}
+          />
+        </label>
+        <p className="mt-1.5 text-xs text-ink-soft" aria-live="polite">
+          {status === "saving" ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Couldn't save. Try again." : `Only you can see this${p.kind === "child" ? " (and co-guardians)" : ""}.`}
+        </p>
+      </div>
+    </>
   );
 }
 

@@ -2,12 +2,39 @@
 
 import { MONTHS, daysInMonth, eventsInMonth, type MonthEvent, type Person } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
-import { Cake, CalendarDays, ChevronLeft, ChevronRight, Heart, Sparkles } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/ui";
+import { EventIcon } from "./EventIcon";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const ICON = { birthday: Cake, anniversary: Heart, other: Sparkles } as const;
+
+/** A row in the month list: one personal date, or one holiday with everyone tagged for it. */
+type Row = { key: string; day: number; event: MonthEvent; people: { id: string; name: string; color: string }[] };
+
+function toRows(events: MonthEvent[]): Row[] {
+  const rows: Row[] = [];
+  const holidays = new Map<string, Row>();
+  for (const e of events) {
+    const who = { id: e.personId, name: e.personName, color: e.color };
+    if (!e.holidayId) {
+      rows.push({ key: `${e.personId}-${e.kind}-${e.label}`, day: e.day, event: e, people: [who] });
+      continue;
+    }
+    const key = `${e.holidayId}-${e.day}`;
+    const row = holidays.get(key);
+    if (row) row.people.push(who);
+    else {
+      const r = { key, day: e.day, event: e, people: [who] };
+      holidays.set(key, r);
+      rows.push(r);
+    }
+  }
+  return rows;
+}
+
+const nameList = (names: string[]) =>
+  names.length <= 3 ? (names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`) : `${names.slice(0, 3).join(", ")} +${names.length - 3}`;
 
 const milestoneText = (e: MonthEvent) =>
   e.milestone ? (e.kind === "birthday" ? ` · turns ${e.milestone}` : ` · ${e.milestone} ${e.milestone === 1 ? "year" : "years"}`) : "";
@@ -128,28 +155,35 @@ export function LockerCalendar({ people, onOpenPerson }: { people: Person[]; onO
 
           <ul className="mt-6 grid gap-2">
             {events.length === 0 && <li className="rounded-2xl bg-white/60 p-4 text-center text-sm text-ink-soft">No dates in {MONTHS[view.month - 1]}.</li>}
-            {events.map((e) => {
-              const Icon = ICON[e.kind];
-              const when = new Date(view.year, view.month - 1, e.day);
+            {toRows(events).map((r) => {
+              const e = r.event;
+              const when = new Date(view.year, view.month - 1, r.day);
+              const isHoliday = e.kind === "holiday";
               return (
-                <li key={`${e.personId}-${e.kind}-${e.label}`}>
+                <li key={r.key}>
                   <button
-                    onClick={() => onOpenPerson(e.personId)}
-                    className={`flex w-full items-center gap-3 rounded-2xl bg-white/80 p-3 text-left shadow-soft hover:bg-white ${isPast(e.day) ? "opacity-60" : ""}`}
+                    onClick={() => onOpenPerson(r.people[0]!.id)}
+                    className={`flex w-full items-center gap-3 rounded-2xl bg-white/80 p-3 text-left shadow-soft hover:bg-white ${isPast(r.day) ? "opacity-60" : ""}`}
                   >
                     <span className="w-14 shrink-0 text-center">
                       <span className="block text-xs font-extrabold text-ink-soft uppercase">{when.toLocaleDateString(undefined, { weekday: "short" })}</span>
-                      <span className="block font-display text-2xl leading-none font-semibold">{e.day}</span>
+                      <span className="block font-display text-2xl leading-none font-semibold">{r.day}</span>
                     </span>
-                    <Avatar name={e.personName} color={e.color} size={36} />
+                    <span className="flex shrink-0 -space-x-2">
+                      {r.people.slice(0, 3).map((p) => (
+                        <span key={p.id} className="rounded-full ring-2 ring-white">
+                          <Avatar name={p.name} color={p.color} size={36} />
+                        </span>
+                      ))}
+                    </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-bold">{e.personName}</span>
+                      <span className="block truncate font-bold">{isHoliday ? e.label : e.personName}</span>
                       <span className="flex items-center gap-1.5 text-sm text-ink-soft">
-                        <Icon className="h-3.5 w-3.5 text-rose" /> {e.label}
-                        {milestoneText(e)}
+                        <EventIcon kind={e.kind} holidayId={e.holidayId} className="h-3.5 w-3.5 text-rose" />
+                        <span className="truncate">{isHoliday ? nameList(r.people.map((p) => p.name.split(" ")[0]!)) : `${e.label}${milestoneText(e)}`}</span>
                       </span>
                     </span>
-                    {isToday(e.day) && <span className="rounded-full bg-rose px-2.5 py-1 text-xs font-bold text-white">Today</span>}
+                    {isToday(r.day) && <span className="rounded-full bg-rose px-2.5 py-1 text-xs font-bold text-white">Today</span>}
                   </button>
                 </li>
               );

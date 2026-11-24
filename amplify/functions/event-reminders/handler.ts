@@ -11,6 +11,7 @@ import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import {
   DEMO_PEOPLE,
   buildReminderEmail,
+  cleanHolidays,
   dateKey,
   dueReminders,
   nextOccurrence,
@@ -168,6 +169,8 @@ function toPerson(p: Profile): OwnedPerson {
     birthday: date(p.birthday),
     anniversary: date(p.anniversary),
     favorites: parse(p.favorites),
+    holidays: cleanHolidays(p.holidays),
+    ownerNote: p.ownerNote ?? undefined,
     updatedAt: p.updatedAt,
   };
 }
