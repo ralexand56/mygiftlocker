@@ -10,7 +10,7 @@ import {
   formatAddress,
   formatPartialDate,
   isGifted,
-  linkLabel,
+  linkTitle,
   isStale,
   nextEvent,
   sortPeople,
@@ -574,7 +574,7 @@ export function WishlistLinkList({ links }: { links: string[] }) {
           rel="noreferrer noopener"
           className="inline-flex items-center gap-1.5 rounded-full bg-blush/60 px-3.5 py-1.5 text-sm font-bold text-ink hover:bg-blush"
         >
-          {linkLabel(url)} wish list <ExternalLink className="h-3.5 w-3.5" />
+          {linkTitle(url)} <ExternalLink className="h-3.5 w-3.5" />
         </a>
       ))}
     </div>

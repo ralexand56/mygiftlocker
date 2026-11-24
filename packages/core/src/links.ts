@@ -38,7 +38,12 @@ const STORES: [RegExp, string][] = [
   [/(^|\.)kohls\.com$/, "Kohl's"],
   [/(^|\.)nordstrom\.com$/, "Nordstrom"],
   [/(^|\.)ikea\.com$/, "IKEA"],
-  [/(^|\.)zola\.com$|(^|\.)theknot\.com$|(^|\.)myregistry\.com$|(^|\.)babylist\.com$/, "Registry"],
+  [/(^|\.)zola\.com$/, "Zola"],
+  [/(^|\.)theknot\.com$/, "The Knot"],
+  [/(^|\.)myregistry\.com$/, "MyRegistry"],
+  [/(^|\.)babylist\.com$/, "Babylist"],
+  [/(^|\.)crateandbarrel\.com$/, "Crate & Barrel"],
+  [/(^|\.)williams-sonoma\.com$/, "Williams Sonoma"],
 ];
 
 /** A friendly name for a link: the store ("Amazon") or the bare domain. */
@@ -49,4 +54,17 @@ export function linkLabel(url: string): string {
   } catch {
     return url;
   }
+}
+
+const REGISTRY_ONLY = new Set(["Zola", "The Knot", "MyRegistry", "Babylist"]);
+
+/** "Amazon wish list", "Amazon registry", "Zola registry", "etsy.com list". */
+export function linkTitle(url: string): string {
+  const label = linkLabel(url);
+  let path = "";
+  try {
+    path = new URL(url).pathname.toLowerCase();
+  } catch {}
+  if (REGISTRY_ONLY.has(label) || /registr|wedding|baby-?reg|baby-?list/.test(path)) return `${label} registry`;
+  return `${label} ${/wish/.test(path) || label !== new URL(url).hostname.replace(/^www\./, "") ? "wish list" : "list"}`;
 }

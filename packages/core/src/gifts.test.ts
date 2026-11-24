@@ -41,7 +41,7 @@ describe("shared profiles", () => {
   });
 });
 
-import { cleanWishlistLinks, linkLabel, normalizeLink } from "./index";
+import { cleanWishlistLinks, linkLabel, linkTitle, normalizeLink } from "./index";
 
 describe("wish list links", () => {
   it("accepts web links, adds https, rejects the rest", () => {
@@ -54,5 +54,11 @@ describe("wish list links", () => {
     expect(linkLabel("https://www.amazon.com/hz/wishlist/ls/ABC")).toBe("Amazon");
     expect(linkLabel("https://www.target.com/gift-registry/x")).toBe("Target");
     expect(linkLabel("https://shop.example.org/list")).toBe("shop.example.org");
+    expect(linkTitle("https://www.amazon.com/hz/wishlist/ls/ABC")).toBe("Amazon wish list");
+    expect(linkTitle("https://www.amazon.com/baby-reg/abc")).toBe("Amazon registry");
+    expect(linkTitle("https://www.amazon.com/wedding/registry/abc")).toBe("Amazon registry");
+    expect(linkTitle("https://www.target.com/gift-registry/gift/abc")).toBe("Target registry");
+    expect(linkTitle("https://www.zola.com/registry/ab")).toBe("Zola registry");
+    expect(linkTitle("https://shop.example.org/list")).toBe("shop.example.org list");
   });
 });

@@ -6,7 +6,7 @@
  */
 import { upcomingEvents, type EventKind, type UpcomingEvent } from "./events";
 import { shortPlace } from "./addresses";
-import { linkLabel } from "./links";
+import { linkTitle } from "./links";
 import { isGifted } from "./gifts";
 import { holiday, type HolidayId } from "./holidays";
 import type { Person } from "./people";
@@ -75,7 +75,7 @@ function details(p: Person): string[] {
   if (wishes.length) lines.push(`Wishes: ${wishes.join(", ")}`);
   if (p.favorites?.likes) lines.push(`Loves: ${p.favorites.likes}`);
   if (p.favorites?.avoid) lines.push(`Avoid: ${p.favorites.avoid}`);
-  for (const url of p.favorites?.wishlists?.slice(0, 2) ?? []) lines.push(`${linkLabel(url)} wish list: ${url}`);
+  for (const url of p.favorites?.wishlists?.slice(0, 2) ?? []) lines.push(`${linkTitle(url)}: ${url}`);
   if (p.address?.city) lines.push(`Ships to: ${shortPlace(p.address)}`);
   if (p.ownerNote?.trim()) lines.push(`Your note: ${p.ownerNote.trim()}`);
   return lines;
