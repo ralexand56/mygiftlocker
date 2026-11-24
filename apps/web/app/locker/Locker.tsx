@@ -85,12 +85,9 @@ export function Locker() {
             Invite the first person you shop for. They add their own sizes, dates and favorites, and they'll show up
             right here.
           </p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <div className="mt-7 flex justify-center">
             <Button href="/invite">
               <Plus className="h-4 w-4" /> Invite someone
-            </Button>
-            <Button href="/exchange" variant="soft">
-              Start a gift exchange
             </Button>
           </div>
         </motion.div>
