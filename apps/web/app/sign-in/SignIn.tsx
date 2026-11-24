@@ -82,8 +82,8 @@ export function SignIn() {
                 });
               }}
             >
-              <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">We emailed a 6-digit code to {email} ✨</p>
-              <Input inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" className="text-center tracking-[0.4em]" autoFocus />
+              <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">We emailed a sign-in code to {email} ✨</p>
+              <Input inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="Enter code" className="text-center tracking-[0.4em]" autoFocus />
               <Button type="submit" disabled={busy || code.length < 6}>
                 {busy ? "Checking…" : "Sign in"}
               </Button>
