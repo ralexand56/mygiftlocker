@@ -53,7 +53,7 @@ export function StepShowcase({ scene, dir }: { scene: Scene; dir: number }) {
           initial="enter"
           animate="center"
           exit="exit"
-          className="absolute inset-0"
+          className="absolute inset-0 will-change-transform"
           style={{ background: `radial-gradient(120% 90% at 30% 20%, #fffaf6 0%, ${SCENE_TINT[scene]} 55%, ${SCENE_TINT[scene]} 100%)` }}
         >
           {/* soft floor shadow + clay spheres for depth */}
@@ -61,14 +61,23 @@ export function StepShowcase({ scene, dir }: { scene: Scene; dir: number }) {
           <span className="clay absolute top-[12%] right-[14%] h-6 w-6 md:h-9 md:w-9" style={{ ["--clay" as string]: "#fef5ec" }} />
           <span className="clay absolute bottom-[18%] left-[10%] h-4 w-4 md:h-6 md:w-6" style={{ ["--clay" as string]: "#a8c4da" }} />
 
-          <motion.div {...lag(0, 60)} className="absolute top-1/2 left-1/2 h-[62%] w-[62%] max-w-[340px] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_30px_30px_rgba(120,90,90,0.22)] md:h-auto md:aspect-square">
-            <Hero {...paletteAt(scene.length)} />
+          {/* Shadows live on static children so the sliding layers don't re-run the filter each frame. */}
+          <div className="absolute top-1/2 left-1/2 h-[62%] w-[62%] max-w-[340px] -translate-x-1/2 -translate-y-1/2 md:h-auto md:aspect-square">
+            <motion.div {...lag(0, 60)} className="h-full w-full will-change-transform">
+              <div className="h-full w-full drop-shadow-[0_30px_30px_rgba(120,90,90,0.22)]">
+                <Hero {...paletteAt(scene.length)} />
+              </div>
+            </motion.div>
+          </div>
+          <motion.div {...lag(0.1, 120)} className="absolute top-[8%] left-[8%] w-[22%] max-w-[120px] will-change-transform">
+            <div className="drop-shadow-[0_16px_18px_rgba(120,90,90,0.18)]">
+              <PropA {...paletteAt(scene.length + 2)} />
+            </div>
           </motion.div>
-          <motion.div {...lag(0.1, 120)} className="absolute top-[8%] left-[8%] w-[22%] max-w-[120px] drop-shadow-[0_16px_18px_rgba(120,90,90,0.18)]">
-            <PropA {...paletteAt(scene.length + 2)} />
-          </motion.div>
-          <motion.div {...lag(0.16, 160)} className="absolute right-[7%] bottom-[9%] w-[24%] max-w-[130px] drop-shadow-[0_16px_18px_rgba(120,90,90,0.18)]">
-            <PropB {...paletteAt(scene.length + 4)} />
+          <motion.div {...lag(0.16, 160)} className="absolute right-[7%] bottom-[9%] w-[24%] max-w-[130px] will-change-transform">
+            <div className="drop-shadow-[0_16px_18px_rgba(120,90,90,0.18)]">
+              <PropB {...paletteAt(scene.length + 4)} />
+            </div>
           </motion.div>
         </motion.div>
       </AnimatePresence>

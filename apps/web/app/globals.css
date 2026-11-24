@@ -70,7 +70,39 @@ body {
   border: 1px solid rgb(255 255 255 / 0.8);
 }
 
+/* A live backdrop blur is expensive on phones: iOS Safari re-blurs it every frame
+   anything behind it moves (the floating backdrop never stops). Use a near-solid
+   cream there instead; desktops keep the frosted look. */
+@media (max-width: 767px), (hover: none) {
+  .glass {
+    background: rgb(254 248 242 / 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Endless gentle bobbing as a CSS animation, which the browser runs on the GPU
+   compositor (no JavaScript per frame). Tune per element with --float-* vars.
+   Keep shadows/filters on a static child so they're rasterized once. */
+@keyframes mgl-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(var(--float-x, 0px), var(--float-y, -12px), 0) rotate(var(--float-r, 0deg));
+  }
+}
+.float {
+  animation: mgl-float var(--float-dur, 6s) ease-in-out var(--float-delay, 0s) infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .float {
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after {

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { floatVars } from "./FlyingBackdrop";
 import { CakeIllo, DressIllo, GiftIllo, HeartIllo, SneakerIllo, TeeIllo } from "./illustrations";
 
 const ITEMS = [
@@ -24,12 +25,14 @@ export function HeroCollage() {
       ].map((b, i) => (
         <motion.span
           key={`clay-${i}`}
-          className="clay absolute"
-          style={{ left: b.l, top: b.t, width: b.s, height: b.s, ["--clay" as string]: b.c }}
+          className="absolute"
+          style={{ left: b.l, top: b.t, width: b.s, height: b.s }}
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
-          transition={{ scale: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 + b.d * 0.3 }, opacity: { duration: 0.6, delay: 0.6 }, y: { duration: 6 + i, repeat: Infinity, ease: "easeInOut" } }}
-        />
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ scale: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 + b.d * 0.3 }, opacity: { duration: 0.6, delay: 0.6 } }}
+        >
+          <span className="clay float block h-full w-full" style={{ ["--clay" as string]: b.c, ...floatVars({ y: -10, dur: 6 + i }) }} />
+        </motion.span>
       ))}
       {ITEMS.map(({ I, c, a, x, y, s, r, from }, i) => (
         <motion.div
@@ -40,13 +43,12 @@ export function HeroCollage() {
           animate={{ x: 0, opacity: 1, rotate: r }}
           transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 + i * 0.09 }}
         >
-          <motion.div
-            className="h-full w-full drop-shadow-[0_20px_30px_rgba(122,90,166,0.22)]"
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 4.5 + i * 0.6, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <I c={c} a={a} />
-          </motion.div>
+          {/* CSS float on the GPU; the shadow is on a static child so it's drawn once. */}
+          <div className="float h-full w-full" style={floatVars({ y: -12, dur: 4.5 + i * 0.6 })}>
+            <div className="h-full w-full drop-shadow-[0_20px_30px_rgba(122,90,166,0.22)]">
+              <I c={c} a={a} />
+            </div>
+          </div>
         </motion.div>
       ))}
     </div>

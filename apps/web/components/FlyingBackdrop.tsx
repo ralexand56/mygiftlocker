@@ -6,6 +6,9 @@ import { SCENE_ILLOS, paletteAt } from "./illustrations";
 
 type Slot = { side: "left" | "right"; x: number; y: number; size: number; r: number };
 
+/** Slots also shown on phones (the rest are hidden there to keep animation cheap). */
+const PHONE_SLOTS = new Set([0, 2, 4, 5, 7, 9]);
+
 /** Hand-placed so items frame the centered form without crowding it. */
 const SLOTS: Slot[] = [
   { side: "left", x: 2, y: 6, size: 150, r: -12 },
@@ -23,7 +26,9 @@ const SLOTS: Slot[] = [
 /**
  * Category-themed backdrop: on each step change the current illustrations slide
  * back out to their side while a fresh set flies in from the left and right,
- * staggered, then gently float. Transform/opacity only → GPU composited.
+ * staggered, then gently float. Motion drives the fly in/out; the endless float is a
+ * CSS animation (`.float`) so it runs on the compositor without JavaScript per frame,
+ * and the drop shadow sits on a static child so it's rasterized once, not every frame.
  */
 export function FlyingBackdrop({ scene }: { scene: Scene }) {
   const reduce = useReducedMotion();
@@ -43,7 +48,7 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
             return (
               <motion.div
                 key={i}
-                className="absolute will-change-transform"
+                className={`absolute will-change-transform ${PHONE_SLOTS.has(i) ? "" : "max-sm:hidden"}`}
                 style={{
                   top: `${slot.y}%`,
                   [slot.side]: `${slot.x}%`,
@@ -71,13 +76,14 @@ export function FlyingBackdrop({ scene }: { scene: Scene }) {
                       }
                 }
               >
-                <motion.div
-                  className="h-full w-full drop-shadow-[0_18px_24px_rgba(122,90,166,0.18)] max-sm:opacity-50"
-                  animate={reduce ? undefined : { y: [0, -14, 0], rotate: [0, slot.r > 0 ? 3 : -3, 0] }}
-                  transition={{ duration: 5 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
+                <div
+                  className="float h-full w-full"
+                  style={floatVars({ y: -14, r: slot.r > 0 ? 3 : -3, dur: 5 + (i % 4), delay: i * 0.3 })}
                 >
-                  <Illo {...colors} />
-                </motion.div>
+                  <div className="h-full w-full drop-shadow-[0_18px_24px_rgba(122,90,166,0.18)] max-sm:opacity-50">
+                    <Illo {...colors} />
+                  </div>
+                </div>
               </motion.div>
             );
           })}
@@ -96,20 +102,32 @@ const SPHERES = [
   { x: "9%", y: "40%", s: 20, c: "#d6e8f3", d: 13 },
 ];
 
+/** CSS custom properties for the `.float` keyframes in globals.css. */
+export function floatVars(v: { x?: number; y?: number; r?: number; dur?: number; delay?: number }): React.CSSProperties {
+  return {
+    ["--float-x" as string]: `${v.x ?? 0}px`,
+    ["--float-y" as string]: `${v.y ?? -12}px`,
+    ["--float-r" as string]: `${v.r ?? 0}deg`,
+    ["--float-dur" as string]: `${v.dur ?? 6}s`,
+    ["--float-delay" as string]: `${v.delay ?? 0}s`,
+  };
+}
+
 /** Soft clay spheres drifting behind everything — depth without noise. */
 function ClaySpheres() {
-  const reduce = useReducedMotion();
   return (
     <>
       {SPHERES.map((b, i) => (
         <motion.span
           key={i}
-          className="clay absolute"
-          style={{ left: b.x, top: b.y, width: b.s, height: b.s, ["--clay" as string]: b.c }}
+          className="absolute"
+          style={{ left: b.x, top: b.y, width: b.s, height: b.s }}
           initial={{ opacity: 0, scale: 0.6 }}
-          animate={reduce ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -18, 0], x: [0, i % 2 ? 10 : -10, 0] }}
-          transition={{ opacity: { duration: 1 }, scale: { duration: 1 }, y: { duration: b.d, repeat: Infinity, ease: "easeInOut" }, x: { duration: b.d * 1.3, repeat: Infinity, ease: "easeInOut" } }}
-        />
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <span className="clay float block h-full w-full" style={{ ["--clay" as string]: b.c, ...floatVars({ x: i % 2 ? 10 : -10, y: -18, dur: b.d }) }} />
+        </motion.span>
       ))}
     </>
   );

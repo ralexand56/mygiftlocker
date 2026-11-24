@@ -91,10 +91,12 @@ const column: Variants = {
   center: { transition: { staggerChildren: 0.09, delayChildren: 0.12 } },
   exit: { transition: { staggerChildren: 0.035 } },
 };
+// Opacity + transform only: these stay on the GPU. (Animating `filter: blur()` here made
+// iOS Safari repaint the whole column every frame.)
 const line: Variants = {
-  enter: (dir: number) => ({ opacity: 0, y: 22 * dir, filter: "blur(8px)" }),
-  center: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: EASE } },
-  exit: (dir: number) => ({ opacity: 0, y: -18 * dir, filter: "blur(8px)", transition: { duration: 0.28, ease: EASE_IN } }),
+  enter: (dir: number) => ({ opacity: 0, y: 22 * dir }),
+  center: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+  exit: (dir: number) => ({ opacity: 0, y: -18 * dir, transition: { duration: 0.24, ease: EASE_IN } }),
 };
 
 export function JoinFlow({ invite }: { invite: PublicInvite }) {
@@ -188,8 +190,9 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
           <LogoMark size={34} />
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/70 md:hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-apricot via-rose to-dusk"
-              animate={{ width: `${(done ? 1 : progress) * 100}%` }}
+              className="h-full w-full origin-left bg-gradient-to-r from-apricot via-rose to-dusk"
+              initial={false}
+              animate={{ scaleX: done ? 1 : progress }}
               transition={{ duration: 0.8, ease: EASE }}
             />
           </div>
