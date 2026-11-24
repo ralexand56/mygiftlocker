@@ -1,6 +1,7 @@
 export * from "./sizes";
 export * from "./dates";
 export * from "./events";
+export * from "./reminders";
 export * from "./people";
 export * from "./invite";
 export * from "./steps";
