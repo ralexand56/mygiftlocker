@@ -66,7 +66,7 @@ export const handler = async (event: ResolverEvent) => {
       case "removeExchange":
         return await removeExchange(str(args.exchangeId), callerSub);
       case "setReminders":
-        return await setReminders(str(args.token), args.on === true);
+        return await setReminders(str(args.token), args.enabled === true);
       default:
         throw new Error(`Unknown operation ${field}`);
     }

@@ -178,7 +178,7 @@ const schema = a
     /** From the email's unsubscribe link: turn reminders off (or back on). */
     setReminders: a
       .mutation()
-      .arguments({ token: a.string().required(), on: a.boolean().required() })
+      .arguments({ token: a.string().required(), enabled: a.boolean().required() })
       .returns(a.json())
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
