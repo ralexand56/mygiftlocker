@@ -1,5 +1,6 @@
 export * from "./sizes";
 export * from "./dates";
+export * from "./holidays";
 export * from "./events";
 export * from "./reminders";
 export * from "./people";

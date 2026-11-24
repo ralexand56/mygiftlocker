@@ -1,4 +1,5 @@
 import type { PartialDate } from "./dates";
+import type { HolidayId } from "./holidays";
 import type { SizeProfile } from "./sizes";
 
 export interface Address {
@@ -36,6 +37,10 @@ export interface Person {
   birthday?: PartialDate;
   anniversary?: PartialDate;
   otherDates?: { label: string; date: PartialDate }[];
+  /** Holidays the locker owner shops for this person (owner-set, not shared with them). */
+  holidays?: HolidayId[];
+  /** The locker owner's private note about this person (never shown to them). */
+  ownerNote?: string;
   favorites?: Favorites;
   /** Guardian user ids for managed (child) profiles. */
   guardians?: string[];

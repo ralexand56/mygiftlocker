@@ -1,20 +1,23 @@
 /**
- * Upcoming life events (birthdays, anniversaries, other dates) for the locker:
+ * Upcoming life events (birthdays, anniversaries, other dates, tagged holidays) for the locker:
  * per-person "next event", sorting, name search, and a month view for the calendar.
  */
-import { daysInMonth, daysUntil, nextOccurrence, type PartialDate } from "./dates";
+import { daysInMonth, nextOccurrence, type PartialDate } from "./dates";
+import { holiday, nextHoliday, type HolidayId } from "./holidays";
 import type { Person } from "./people";
 
-export type EventKind = "birthday" | "anniversary" | "other";
+export type EventKind = "birthday" | "anniversary" | "other" | "holiday";
 
 export interface LifeEvent {
   personId: string;
   personName: string;
   color: string;
   kind: EventKind;
-  /** "Birthday", "Anniversary", or the custom label. */
+  /** "Birthday", "Anniversary", the custom label, or the holiday's name. */
   label: string;
-  source: PartialDate;
+  /** Month/day for personal dates; absent for holidays (see holidayId). */
+  source?: PartialDate;
+  holidayId?: HolidayId;
 }
 
 export interface UpcomingEvent extends LifeEvent {
@@ -35,16 +38,19 @@ export function lifeEvents(p: Person): LifeEvent[] {
   if (p.birthday) out.push({ ...base, kind: "birthday", label: "Birthday", source: p.birthday });
   if (p.anniversary) out.push({ ...base, kind: "anniversary", label: "Anniversary", source: p.anniversary });
   for (const o of p.otherDates ?? []) out.push({ ...base, kind: "other", label: o.label || "Special day", source: o.date });
+  for (const id of p.holidays ?? []) out.push({ ...base, kind: "holiday", label: holiday(id).name, holidayId: id });
   return out;
 }
 
+const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
 function toUpcoming(e: LifeEvent, from: Date): UpcomingEvent {
-  const date = nextOccurrence(e.source, from);
+  const date = e.holidayId ? nextHoliday(e.holidayId, from) : nextOccurrence(e.source!, from);
   return {
     ...e,
     date,
-    days: daysUntil(e.source, from),
-    milestone: e.source.year ? date.getFullYear() - e.source.year : undefined,
+    days: Math.round((date.getTime() - midnight(from).getTime()) / 86_400_000),
+    milestone: e.source?.year ? date.getFullYear() - e.source.year : undefined,
   };
 }
 
@@ -104,14 +110,17 @@ export interface MonthEvent extends LifeEvent {
 /** Events falling in `month` (1-12) of `year`, ordered by day then name. */
 export function eventsInMonth(people: Person[], year: number, month: number): MonthEvent[] {
   const last = daysInMonth(month, year);
-  return people
-    .flatMap(lifeEvents)
-    .filter((e) => e.source.month === month)
-    .map((e) => {
-      const n = e.source.year ? year - e.source.year : undefined;
-      return { ...e, day: Math.min(e.source.day, last), milestone: n && n > 0 ? n : undefined };
-    })
-    .sort((a, b) => a.day - b.day || a.personName.localeCompare(b.personName));
+  const out: MonthEvent[] = [];
+  for (const e of people.flatMap(lifeEvents)) {
+    if (e.holidayId) {
+      const d = holiday(e.holidayId).dateIn(year);
+      if (d.getMonth() + 1 === month) out.push({ ...e, day: d.getDate() });
+    } else if (e.source!.month === month) {
+      const n = e.source!.year ? year - e.source!.year : undefined;
+      out.push({ ...e, day: Math.min(e.source!.day, last), milestone: n && n > 0 ? n : undefined });
+    }
+  }
+  return out.sort((a, b) => a.day - b.day || a.personName.localeCompare(b.personName));
 }
 
 /** "today", "tomorrow", or "in N days". */
