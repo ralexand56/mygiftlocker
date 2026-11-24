@@ -4,20 +4,28 @@ import {
   FIT_LABELS,
   convertShoe,
   daysUntil,
+  describeDays,
+  filterPeopleByName,
   formatPartialDate,
   isStale,
+  nextEvent,
+  sortPeople,
   summarizeSizes,
+  upcomingEvents,
   upcomingMilestone,
+  type EventKind,
+  type PeopleSort,
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, CalendarHeart, Gift, MapPin, Plus, Ruler, X } from "lucide-react";
+import { Baby, Cake, CalendarHeart, Gift, Heart, MapPin, Plus, Ruler, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Avatar, Button } from "@/components/ui";
+import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
 import { listLockerPeople } from "@/lib/invites";
 import { useDB } from "@/lib/store";
+import { LockerCalendar } from "./LockerCalendar";
 
 const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 
@@ -29,14 +37,10 @@ export function Locker() {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = people.find((p) => p.id === openId) ?? null;
 
-  const upcoming = useMemo(
-    () =>
-      people
-        .filter((p) => p.birthday)
-        .map((p) => ({ p, days: daysUntil(p.birthday!) }))
-        .sort((a, b) => a.days - b.days)[0],
-    [people],
-  );
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<PeopleSort>("next");
+  const shown = useMemo(() => sortPeople(filterPeopleByName(people, query), sort), [people, query, sort]);
+  const upcoming = useMemo(() => upcomingEvents(people)[0], [people]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenId(null);
@@ -62,7 +66,11 @@ export function Locker() {
           <h1 className="font-display text-5xl font-semibold tracking-tight">My locker</h1>
           {upcoming && (
             <p className="mt-2 text-ink-soft">
-              Next up: <b className="text-ink">{upcoming.p.name.split(" ")[0]}'s birthday</b> {upcoming.days === 0 ? "is today 🎉" : `in ${upcoming.days} days`}
+              Next up:{" "}
+              <b className="text-ink">
+                {upcoming.personName.split(" ")[0]}'s {upcoming.label.toLowerCase()}
+              </b>{" "}
+              {upcoming.days === 0 ? "is today 🎉" : describeDays(upcoming.days)}
             </p>
           )}
         </div>
@@ -96,41 +104,45 @@ export function Locker() {
         </motion.div>
       )}
 
-      <LayoutGroup>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {people.map((p, i) => (
-            <motion.button
-              key={p.id}
-              layoutId={`card-${p.id}`}
-              onClick={() => setOpenId(p.id)}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: openId === p.id ? 0 : 1, y: 0 }}
-              transition={{ ...hero, delay: openId ? 0 : i * 0.05 }}
-              whileHover={{ y: -6 }}
-              className="glass relative overflow-hidden rounded-[28px] p-6 text-left shadow-soft"
-              style={{ borderRadius: 28 }}
-            >
-              <motion.div layoutId={`bg-${p.id}`} className="absolute inset-x-0 top-0 h-24" style={{ background: `linear-gradient(135deg, ${p.color}, transparent)` }} />
-              <div className="relative flex items-center gap-4">
-                <motion.div layoutId={`avatar-${p.id}`} transition={hero}>
-                  <Avatar name={p.name} color={p.color} size={56} />
-                </motion.div>
-                <div className="min-w-0">
-                  <motion.h3 layoutId={`name-${p.id}`} transition={hero} className="truncate font-display text-xl font-semibold">
-                    {p.name}
-                  </motion.h3>
-                  <p className="text-sm text-ink-soft">{p.relationship ?? (p.kind === "child" ? "Child" : "Connection")}</p>
-                </div>
-              </div>
-              <p className="relative mt-5 text-sm font-semibold text-ink">{summarizeSizes(p.sizes) || "No sizes yet"}</p>
-              <div className="relative mt-3 flex flex-wrap gap-2 text-xs font-bold text-ink-soft">
-                {p.birthday && <span className="rounded-full bg-white/80 px-2.5 py-1">🎂 {daysUntil(p.birthday)}d</span>}
-                {p.kind === "child" && <span className="rounded-full bg-mint px-2.5 py-1">Managed</span>}
-                {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
-              </div>
-            </motion.button>
-          ))}
+      {people.length > 0 && (
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <label className="relative min-w-0 flex-1 basis-64">
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-ink-soft" />
+            <input
+              type="search"
+              className={`${inputCls} pl-11`}
+              placeholder="Search by name"
+              aria-label="Search by name"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-ink-soft">Sort</span>
+            <ChipGroup<PeopleSort>
+              label="Sort people"
+              options={["next", "name"]}
+              value={sort}
+              onChange={(v) => v && setSort(v)}
+              render={(v) => (v === "next" ? "Next event" : "Name")}
+            />
+          </div>
         </div>
+      )}
+
+      <LayoutGroup>
+        {people.length > 0 && shown.length === 0 && (
+          <p className="rounded-3xl bg-white/70 p-8 text-center text-ink-soft">No one matches “{query.trim()}”.</p>
+        )}
+        <ul className="grid gap-3">
+          {shown.map((p, i) => (
+            <li key={p.id}>
+              <PersonRow person={p} index={i} hidden={openId === p.id} onOpen={() => setOpenId(p.id)} />
+            </li>
+          ))}
+        </ul>
+
+        {people.length > 0 && <LockerCalendar people={people} onOpenPerson={setOpenId} />}
 
         <AnimatePresence>
           {open && (
@@ -161,6 +173,69 @@ export function Locker() {
         </AnimatePresence>
       </LayoutGroup>
     </div>
+  );
+}
+
+const EVENT_ICON: Record<EventKind, typeof Cake> = { birthday: Cake, anniversary: Heart, other: Sparkles };
+
+export function EventIcon({ kind, className }: { kind: EventKind; className?: string }) {
+  const Icon = EVENT_ICON[kind];
+  return <Icon className={className ?? "h-4 w-4"} />;
+}
+
+function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index: number; hidden: boolean; onOpen: () => void }) {
+  const next = nextEvent(p);
+  return (
+    <motion.button
+      layoutId={`card-${p.id}`}
+      onClick={onOpen}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: hidden ? 0 : 1, y: 0 }}
+      transition={{ ...hero, delay: hidden ? 0 : Math.min(index, 10) * 0.04 }}
+      whileHover={{ y: -3 }}
+      className="glass relative flex w-full items-center gap-4 overflow-hidden p-4 text-left shadow-soft sm:p-5"
+      style={{ borderRadius: 24 }}
+    >
+      <motion.div
+        layoutId={`bg-${p.id}`}
+        className="absolute inset-y-0 left-0 w-40"
+        style={{ background: `linear-gradient(90deg, ${p.color}, transparent)` }}
+      />
+      <motion.div layoutId={`avatar-${p.id}`} transition={hero} className="relative shrink-0">
+        <Avatar name={p.name} color={p.color} size={52} />
+      </motion.div>
+      <div className="relative min-w-0 flex-1">
+        <motion.h3 layoutId={`name-${p.id}`} transition={hero} className="truncate font-display text-xl font-semibold">
+          {p.name}
+        </motion.h3>
+        <p className="truncate text-sm text-ink-soft">
+          {p.relationship ?? (p.kind === "child" ? "Child" : "Connection")}
+          {summarizeSizes(p.sizes) ? ` · ${summarizeSizes(p.sizes)}` : ""}
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs font-bold text-ink-soft sm:hidden">
+          {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
+        </div>
+      </div>
+      <div className="relative hidden shrink-0 gap-1.5 text-xs font-bold text-ink-soft sm:flex">
+        {p.kind === "child" && <span className="rounded-full bg-mint px-2.5 py-1">Managed</span>}
+        {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
+      </div>
+      <div className="relative shrink-0 text-right">
+        {next ? (
+          <>
+            <p className="flex items-center justify-end gap-1.5 text-sm font-bold text-ink">
+              <EventIcon kind={next.kind} className="h-4 w-4 text-rose" />
+              {next.label}
+            </p>
+            <p className={`text-sm ${next.days <= 7 ? "font-bold text-rose-deep" : "text-ink-soft"}`}>
+              {next.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {describeDays(next.days)}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-ink-soft">No dates yet</p>
+        )}
+      </div>
+    </motion.button>
   );
 }
 

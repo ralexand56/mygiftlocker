@@ -1,3 +1,4 @@
+import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
@@ -15,6 +16,7 @@ const FEATURES = [
 export default function Home() {
   return (
     <main className="pastel-wash min-h-dvh overflow-x-clip">
+      <SignedInRedirect />
       <SiteHeader />
 
       <section className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-6 pb-20 md:grid-cols-[1.1fr_1fr] md:pt-16">
