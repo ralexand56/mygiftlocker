@@ -26,8 +26,15 @@ const SITE_URLS = [
 
 export const auth = defineAuth({
   loginWith: {
-    // Passwordless one-time codes by email (USER_AUTH / EMAIL_OTP).
-    email: { otpLogin: true },
+    // Passwordless one-time codes by email (USER_AUTH / EMAIL_OTP). New users get the
+    // verification email below; returning users get Cognito's standard sign-in code email.
+    email: {
+      otpLogin: true,
+      verificationEmailStyle: "CODE",
+      verificationEmailSubject: "Your My Gift Lockers code",
+      verificationEmailBody: (code) =>
+        `Welcome to My Gift Lockers! Your sign-in code is ${code()}. If you didn't ask for this, you can ignore this email.`,
+    },
     externalProviders: {
       google: {
         clientId: secret("GOOGLE_CLIENT_ID"),
@@ -41,5 +48,14 @@ export const auth = defineAuth({
   },
   userAttributes: {
     fullname: { required: false, mutable: true },
+  },
+  // Send auth emails through SES from our own domain (Cognito's default sender is capped
+  // at ~50/day). Requires the mygiftlockers.com SES identity (DKIM) in this region.
+  senders: {
+    email: {
+      fromEmail: "no-reply@mygiftlockers.com",
+      fromName: "My Gift Lockers",
+      replyTo: "hello@mygiftlockers.com",
+    },
   },
 });
