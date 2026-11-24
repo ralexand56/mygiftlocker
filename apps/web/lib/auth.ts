@@ -62,9 +62,16 @@ export async function signInWithGoogle(): Promise<void> {
 
 export type EmailStep = "code-sent" | "signed-in";
 
+const errName = (e: unknown) => (e as { name?: string }).name;
+
 /**
- * Step 1 of passwordless sign-in. Signs in existing users, or signs up new
- * ones; either way Cognito emails a one-time code.
+ * Step 1 of passwordless sign-in. Signs up new users or signs in existing ones;
+ * either way Cognito emails a one-time code.
+ *
+ * Sign-up goes first on purpose: the user pool hides unknown users at sign-in
+ * (PreventUserExistenceErrors), returning a fake code challenge and sending no
+ * email, so "sign in, then sign up on UserNotFound" never creates anyone.
+ * Sign-up does report an existing address (UsernameExistsException).
  */
 export async function startEmailSignIn(email: string): Promise<EmailStep> {
   if (!backendEnabled) {
@@ -73,14 +80,26 @@ export async function startEmailSignIn(email: string): Promise<EmailStep> {
   }
   const a = await auth();
   const username = email.trim().toLowerCase();
+  pendingSignUp = null;
+
+  try {
+    const res = await a.signUp({ username, options: { userAttributes: { email: username }, autoSignIn: { authFlowType: "USER_AUTH" } } });
+    if (res.isSignUpComplete) return "signed-in";
+    pendingSignUp = username;
+    return "code-sent";
+  } catch (e) {
+    if (errName(e) !== "UsernameExistsException") throw e;
+  }
+
   try {
     const res = await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
     return res.isSignedIn ? "signed-in" : "code-sent";
   } catch (e) {
-    if ((e as { name?: string }).name !== "UserNotFoundException") throw e;
-    const res = await a.signUp({ username, options: { userAttributes: { email: username }, autoSignIn: { authFlowType: "USER_AUTH" } } });
+    // Signed up earlier but never entered the code: send a fresh confirmation code.
+    if (errName(e) !== "UserNotConfirmedException") throw e;
+    await a.resendSignUpCode({ username });
     pendingSignUp = username;
-    return res.isSignUpComplete ? "signed-in" : "code-sent";
+    return "code-sent";
   }
 }
 
@@ -91,9 +110,16 @@ export async function confirmEmailCode(email: string, code: string): Promise<voi
   const a = await auth();
   const c = code.trim();
   if (pendingSignUp) {
-    await a.confirmSignUp({ username: pendingSignUp, confirmationCode: c });
+    const username = pendingSignUp;
+    await a.confirmSignUp({ username, confirmationCode: c });
     pendingSignUp = null;
-    await a.autoSignIn();
+    try {
+      await a.autoSignIn();
+    } catch {
+      // autoSignIn only works in the session that called signUp (not after a resend).
+      await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
+      throw new Error("Email verified! We just sent you a new code. Enter it to finish signing in.");
+    }
     return;
   }
   const res = await a.confirmSignIn({ challengeResponse: c });
