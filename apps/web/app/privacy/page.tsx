@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "What My Gift Locker collects, why, and the choices you have.",
+  description: "What My Gift Lockers collects, why, and the choices you have.",
 };
 
 const UPDATED = "November 23, 2026";
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <p className="mt-3 text-sm text-ink-soft">Last updated {UPDATED}</p>
 
         <p className="mt-8 text-lg text-ink-soft">
-          My Gift Locker (“we”, “us”) helps you keep the sizes, dates and wishes of the people you love in one place,
+          My Gift Lockers (“we”, “us”) helps you keep the sizes, dates and wishes of the people you love in one place,
           and run gift exchanges. This policy explains what we collect on mygiftlockers.com and in our apps, how we use
           it, and the choices you have. We don’t sell your information and we don’t show ads.
         </p>
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
 
         <Section title="Children">
           <p>
-            My Gift Locker is meant for adults. Parents and guardians may add their children’s sizes and dates to their
+            My Gift Lockers is meant for adults. Parents and guardians may add their children’s sizes and dates to their
             own locker; children don’t create accounts. If you believe a child has given us personal information
             directly, contact us and we’ll delete it.
           </p>
@@ -149,7 +149,7 @@ export default function PrivacyPage() {
 
         <p className="mt-14 text-sm">
           <Link href="/" className="font-bold text-plum underline">
-            ← Back to My Gift Locker
+            ← Back to My Gift Lockers
           </Link>
         </p>
       </article>

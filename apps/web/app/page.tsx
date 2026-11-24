@@ -26,7 +26,7 @@ export default function Home() {
             Every size, every date, <em className="text-rose not-italic">every</em> person you love.
           </h1>
           <p className="mt-6 max-w-lg text-lg text-ink-soft">
-            My Gift Locker keeps the details that make a gift feel personal — and makes gift exchanges with friends,
+            My Gift Lockers keeps the details that make a gift feel personal — and makes gift exchanges with friends,
             family and coworkers effortless.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
@@ -54,7 +54,7 @@ export default function Home() {
       </section>
 
       <footer className="pb-10 text-center text-sm text-ink-soft">
-        © {new Date().getFullYear()} My Gift Locker · mygiftlockers.com ·{" "}
+        © {new Date().getFullYear()} My Gift Lockers · mygiftlockers.com ·{" "}
         <a href="/privacy" className="underline hover:text-ink">
           Privacy
         </a>

@@ -244,7 +244,7 @@ function OrganizerTools({ ex }: { ex: Exchange }) {
           {ex.exclusions.length} exclusion{ex.exclusions.length === 1 ? "" : "s"}
           {ex.singleLoop ? " · one big circle" : ""}. Change the rules on the website.
         </Text>
-        <Button title="Share invite link" variant="soft" onPress={() => Share.share({ message: `Join "${ex.name}" on My Gift Locker and add your wishes: ${joinUrl}`, url: joinUrl })} style={{ marginTop: 14 }} />
+        <Button title="Share invite link" variant="soft" onPress={() => Share.share({ message: `Join "${ex.name}" on My Gift Lockers and add your wishes: ${joinUrl}`, url: joinUrl })} style={{ marginTop: 14 }} />
         <Button title={ex.status === "drawn" ? "Redo the draw" : "Draw names"} onPress={confirmDraw} disabled={ex.participants.length < 3} style={{ marginTop: 10 }} />
         {error && <Text style={{ color: colors.rose, fontFamily: fonts.bold, marginTop: 10 }}>{error}</Text>}
       </Card>

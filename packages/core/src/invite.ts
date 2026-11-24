@@ -79,7 +79,7 @@ export function smsHref(body: string): string {
 
 /** Message inviting someone to join a gift exchange. */
 export function exchangeJoinMessage(exchangeName: string, url: string): string {
-  return `You're invited to "${exchangeName}" 🎁 Join and add your top wishes on My Gift Locker: ${url}`;
+  return `You're invited to "${exchangeName}" 🎁 Join and add your top wishes on My Gift Lockers: ${url}`;
 }
 
 /** Message carrying a participant's private reveal link (only they should open it). */
@@ -91,7 +91,7 @@ export function exchangeRevealMessage(name: string, exchangeName: string, url: s
 export function inviteShareLinks(url: string, fromName: string, toName?: string): ShareLinks {
   const hi = toName ? `Hi ${toName}! ` : "Hi! ";
   const body = `${hi}${fromName} wants to get your gifts just right. Add your sizes & favorite things to their Gift Locker (takes 2 min): ${url}`;
-  const subject = `${fromName} invited you to My Gift Locker 🎁`;
+  const subject = `${fromName} invited you to My Gift Lockers 🎁`;
   const enc = encodeURIComponent;
   return {
     email: `mailto:?subject=${enc(subject)}&body=${enc(body)}`,

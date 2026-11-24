@@ -1,8 +1,8 @@
-# My Gift Locker: notes for Claude
+# My Gift Lockers: notes for Claude
 
 Monorepo (pnpm + Turborepo): `apps/web` (Next.js 16), `apps/mobile` (Expo SDK 58),
 `packages/core` (shared logic), `packages/brand`, `amplify/` (AWS Amplify Gen 2).
-Product name is **My Gift Locker** (not "M Gift Locker"). See README.md and docs/.
+Product name is **My Gift Lockers** (plural, matching mygiftlockers.com; not "My Gift Locker"). See README.md and docs/.
 
 ## Owner's dev machine (verified 2026-11-23)
 
