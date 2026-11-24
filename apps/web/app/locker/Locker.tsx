@@ -66,9 +66,12 @@ export function Locker() {
             </p>
           )}
         </div>
-        <Button href="/invite">
-          <Plus className="h-4 w-4" /> Invite someone
-        </Button>
+        {/* Empty lockers get the invite button in the welcome card instead. */}
+        {people.length > 0 && (
+          <Button href="/invite">
+            <Plus className="h-4 w-4" /> Invite someone
+          </Button>
+        )}
       </div>
 
       {people.length === 0 && !(authMode === "amplify" && (user === undefined || loadingPeople)) && (
