@@ -15,6 +15,8 @@ export interface InvitePayload {
   to?: { name?: string };
   ask: Record<InviteSection, boolean>;
   note?: string;
+  /** "connect": asks someone already in your locker to link their own profile to their card. */
+  purpose?: "profile" | "connect";
   createdAt: string;
 }
 

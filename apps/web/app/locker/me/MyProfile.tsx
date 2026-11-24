@@ -23,5 +23,13 @@ export function MyProfile() {
       </main>
     );
   if (!user || loading) return <main className="pastel-wash grid min-h-dvh place-items-center text-ink-soft">Loading…</main>;
-  return <JoinFlow invite={{ ...SELF_INVITE, to: { name: user.hasName ? user.name : undefined } }} self={{ initial: self ?? null, onSave: (p) => saveSelfProfile(user.sub, p) }} />;
+  // Back to where they came from (e.g. a connect link), else the locker.
+  const next = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
+  const doneHref = next && next.startsWith("/") && !next.startsWith("//") ? next : "/locker";
+  return (
+    <JoinFlow
+      invite={{ ...SELF_INVITE, to: { name: user.hasName ? user.name : undefined } }}
+      self={{ initial: self ?? null, onSave: (p) => saveSelfProfile(user.sub, p), doneHref }}
+    />
+  );
 }

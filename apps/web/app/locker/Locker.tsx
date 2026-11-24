@@ -11,6 +11,7 @@ import {
   formatPartialDate,
   isGifted,
   linkTitle,
+  smsHref,
   isStale,
   nextEvent,
   sortPeople,
@@ -25,7 +26,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, CalendarHeart, ExternalLink, Gift, Lock, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -34,6 +35,7 @@ import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
 import { listLockerPeople, updateOwnerFields, type OwnerFields } from "@/lib/invites";
 import { loadOrClaimSelf } from "@/lib/self";
+import { askToConnect, connectionsEnabled, endConnection } from "@/lib/connections";
 import { GiftLock } from "@/components/GiftLock";
 import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
@@ -43,7 +45,7 @@ const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 export function Locker() {
   const user = useUser();
   const localPeople = useDB((db) => db.people);
-  const { data: remotePeople, loading: loadingPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
+  const { data: remotePeople, loading: loadingPeople, reload: reloadPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
   const basePeople = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
   // Owner edits (holiday tags, notes) show immediately and are saved in the background.
   const [edits, setEdits] = useState<Record<string, Partial<Person>>>({});
@@ -215,6 +217,7 @@ export function Locker() {
                     onClose={() => setOpenId(null)}
                     onSaveOwner={(changes) => saveOwner(open.id, changes)}
                     onToggleGift={(e) => toggleGift(open, e)}
+                    onConnectionChanged={reloadPeople}
                   />
                 </motion.article>
               </div>
@@ -270,10 +273,12 @@ function PersonRow({
         </p>
         <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs font-bold text-ink-soft sm:hidden">
           {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
+          {p.linked && !p.linked.ended && <LiveBadge />}
         </div>
       </div>
       <div className="relative hidden shrink-0 gap-1.5 text-xs font-bold text-ink-soft sm:flex">
         {p.kind === "child" && <span className="rounded-full bg-mint px-2.5 py-1">Managed</span>}
+        {p.linked && !p.linked.ended && <LiveBadge />}
         {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
       </div>
       <div className="relative shrink-0 text-right">
@@ -309,7 +314,14 @@ function SelfCard({ self }: { self: Person | null }) {
         <UserRound className="h-6 w-6" />
       </span>
       <div className="min-w-0 flex-1 basis-56">
-        <p className="font-bold">{self ? "My profile" : "Add your own sizes and wishes"}</p>
+        <p className="font-bold">
+          {self ? "My profile" : "Add your own sizes and wishes"}
+          {self && connectionsEnabled && (
+            <a href="/locker/sharing" className="ml-2 text-sm font-bold text-plum underline">
+              Who can see it
+            </a>
+          )}
+        </p>
         <p className="truncate text-sm text-ink-soft">
           {self ? sizes || "No sizes yet" : "Fill it in once, then share it in gift exchanges instead of retyping it."}
         </p>
@@ -328,11 +340,13 @@ function PersonDetail({
   onClose,
   onSaveOwner,
   onToggleGift,
+  onConnectionChanged,
 }: {
   person: Person;
   onClose: () => void;
   onSaveOwner: (changes: OwnerChanges) => Promise<void>;
   onToggleGift: (e: UpcomingEvent) => void;
+  onConnectionChanged: () => void;
 }) {
   const comingUp = upcomingEventsFor(p).slice(0, 5);
   const shoe = p.sizes.shoe && p.sizes.fit ? convertShoe(p.sizes.shoe, p.sizes.fit) : null;
@@ -370,6 +384,7 @@ function PersonDetail({
           {p.name}
         </motion.h2>
         <p className="relative mt-1 text-ink-soft">{p.relationship}</p>
+        {connectionsEnabled && p.kind === "adult" && <ConnectionPanel person={p} onChanged={onConnectionChanged} />}
       </div>
 
       <div className="relative bg-white/90 px-7 pt-8 pb-10 md:overflow-y-auto md:px-10 md:pt-14">
@@ -577,6 +592,115 @@ export function WishlistLinkList({ links }: { links: string[] }) {
           {linkTitle(url)} <ExternalLink className="h-3.5 w-3.5" />
         </a>
       ))}
+    </div>
+  );
+}
+
+function LiveBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2.5 py-1" title="Updates automatically from their own profile">
+      <Link2 className="h-3 w-3" /> Live
+    </span>
+  );
+}
+
+/** Connected (live) status, or a way to ask the person to connect their own profile. */
+function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: () => void }) {
+  const user = useUser();
+  const first = p.name.split(" ")[0]!;
+  const [link, setLink] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
+
+  const ask = async () => {
+    if (!user) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      setLink(await askToConnect(p, user.sub, user.name));
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : "Couldn't create the link");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const stop = async () => {
+    if (!p.linked) return;
+    setBusy(true);
+    try {
+      await endConnection(p.linked.connectionId);
+      onChanged();
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : "Couldn't stop syncing");
+    } finally {
+      setBusy(false);
+      setConfirming(false);
+    }
+  };
+  const message = link ? `Hi ${first}! Connect your My Gift Lockers profile so I always have your current sizes and wishes: ${link}` : "";
+
+  const pill = "relative mt-4 rounded-2xl bg-white/80 px-4 py-3 text-sm shadow-soft";
+  if (p.linked && !p.linked.ended)
+    return (
+      <div className={pill}>
+        <p className="flex items-center justify-center gap-1.5 font-bold">
+          <Link2 className="h-4 w-4 text-plum" /> Connected to {first}'s profile
+        </p>
+        <p className="text-ink-soft">Updates automatically{p.linked.syncedAt ? ` · last ${day(p.linked.syncedAt)}` : ""}</p>
+        {confirming ? (
+          <p className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <span>Stop syncing? You keep what's here.</span>
+            <button onClick={stop} disabled={busy} className="rounded-full bg-ink px-3 py-1 font-bold text-white">
+              Stop
+            </button>
+            <button onClick={() => setConfirming(false)} className="rounded-full px-3 py-1 font-bold text-ink-soft">
+              Cancel
+            </button>
+          </p>
+        ) : (
+          <button onClick={() => setConfirming(true)} className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-ink-soft hover:text-ink">
+            <Unlink className="h-3 w-3" /> Stop syncing
+          </button>
+        )}
+        {note && <p className="mt-1 text-xs font-bold text-rose-deep">{note}</p>}
+      </div>
+    );
+
+  return (
+    <div className={pill}>
+      {p.linked?.ended && <p className="mb-1 text-ink-soft">No longer updating{p.linked.syncedAt ? ` · last update ${day(p.linked.syncedAt)}` : ""}</p>}
+      {!link ? (
+        <button onClick={ask} disabled={busy} className="inline-flex items-center gap-1.5 font-bold text-plum hover:underline">
+          <Link2 className="h-4 w-4" /> {busy ? "Creating link…" : `Ask ${first} to connect`}
+        </button>
+      ) : (
+        <>
+          <p className="font-bold">Send {first} this link</p>
+          <p className="text-xs text-ink-soft">When they connect, their changes show up here automatically.</p>
+          <div className="mt-2 flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => navigator.clipboard?.writeText(link).then(() => setNote("Link copied"))}
+              className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </button>
+            <a href={smsHref(message)} className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60">
+              <MessageCircle className="h-3.5 w-3.5" /> Text
+            </a>
+            {typeof navigator !== "undefined" && "share" in navigator && (
+              <button
+                onClick={() => navigator.share({ text: message }).catch(() => {})}
+                className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60"
+              >
+                <Share2 className="h-3.5 w-3.5" /> Share
+              </button>
+            )}
+          </div>
+        </>
+      )}
+      {note && <p className="mt-1 text-xs font-bold text-ink-soft">{note}</p>}
     </div>
   );
 }

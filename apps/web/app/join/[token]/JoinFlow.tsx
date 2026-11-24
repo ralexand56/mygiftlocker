@@ -37,6 +37,7 @@ import {
   newId,
   pastelFor,
   shoeSizes,
+  sharesFromAsk,
   stepsFor,
   summarizeSizes,
   type Address,
@@ -60,7 +61,8 @@ import { LogoMark } from "@/components/Logo";
 import { Button, ChipGroup, Field, Input, Textarea, inputCls } from "@/components/ui";
 import { submitInvite } from "@/lib/invites";
 import { useUser } from "@/lib/auth";
-import { rememberPendingSelf, saveSelfProfile } from "@/lib/self";
+import { rememberPendingSelf, saveSelfProfile, setPendingConnect } from "@/lib/self";
+import { connectProfile, connectionsEnabled } from "@/lib/connections";
 
 type PD = Partial<PartialDate>;
 interface Kid {
@@ -138,7 +140,13 @@ function formFrom(p: Person): FormState {
 /** The same questions, for the signed-in user's own profile. */
 export const SELF_INVITE: PublicInvite = { id: "self", from: { name: "you" }, ask: { sizes: true, address: true, dates: true, favorites: true, kids: false } };
 
-export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { initial: Person | null; onSave: (p: Person) => Promise<void> } }) {
+export function JoinFlow({
+  invite,
+  self,
+}: {
+  invite: PublicInvite;
+  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string };
+}) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => (self?.initial ? formFrom(self.initial) : { ...initial, name: invite.to?.name ?? "" }));
   const [index, setIndex] = useState(0);
@@ -155,6 +163,12 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
   }, []);
   const [done, setDone] = useState(false);
   const [submitted, setSubmitted] = useState<Person | null>(null);
+  // Signed-in invitees: save these answers as their own profile and keep the inviter updated.
+  const user = useUser();
+  const offerLink = !self && !!user && connectionsEnabled && !invite.id.startsWith("inv_");
+  const [saveMine, setSaveMine] = useState(true);
+  const [keepUpdated, setKeepUpdated] = useState(true);
+  const [outcome, setOutcome] = useState<{ saved: boolean; connected: boolean }>({ saved: false, connected: false });
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
   const step = steps[Math.min(index, steps.length - 1)]!;
@@ -233,12 +247,27 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
     try {
       if (self) {
         await self.onSave(person);
-        router.push("/locker");
+        router.push(self.doneHref ?? "/locker");
         return;
       }
-      await submitInvite(invite, person, kids);
-      // Kept in this browser so these answers become their own profile if they sign up.
-      rememberPendingSelf(person);
+      const claimToken = await submitInvite(invite, person, kids);
+      const result = { saved: false, connected: false };
+      if (offerLink && user && saveMine) {
+        try {
+          await saveSelfProfile(user.sub, person);
+          result.saved = true;
+          if (keepUpdated) {
+            await connectProfile(invite.id, sharesFromAsk(invite.ask), claimToken);
+            result.connected = true;
+          }
+        } catch {
+          /* their answers reached the inviter; the extras can be redone from the locker */
+        }
+      } else if (!user) {
+        // Kept in this browser so these answers become their own profile if they sign up.
+        rememberPendingSelf(person, invite, claimToken);
+      }
+      setOutcome(result);
       setSubmitted(person);
       setDone(true);
     } catch (e) {
@@ -269,7 +298,7 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
 
         <div className="relative flex flex-1 items-center">
           {done ? (
-            <Success name={form.name} from={invite.from.name} person={submitted} />
+            <Success name={form.name} from={invite.from.name} person={submitted} outcome={outcome} canConnect={connectionsEnabled && !invite.id.startsWith("inv_")} />
           ) : (
             <section
               className="glass relative grid w-full overflow-hidden rounded-[36px] shadow-lift md:min-h-[620px] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"
@@ -308,6 +337,30 @@ export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { init
                       <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} />
                     </motion.div>
 
+                    {step.id === "review" && offerLink && (
+                      <motion.div custom={dir} variants={line} className="mt-6 grid gap-2 rounded-2xl bg-white/70 p-4 text-sm">
+                        <label className="flex cursor-pointer items-start gap-3">
+                          <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#d45c86]" checked={saveMine} onChange={(e) => setSaveMine(e.target.checked)} />
+                          <span>
+                            <b>Save as my profile</b>
+                            <span className="block text-ink-soft">Replaces the profile in your account with these answers.</span>
+                          </span>
+                        </label>
+                        <label className={`flex items-start gap-3 ${saveMine ? "cursor-pointer" : "opacity-50"}`}>
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 h-4 w-4 accent-[#d45c86]"
+                            checked={saveMine && keepUpdated}
+                            disabled={!saveMine}
+                            onChange={(e) => setKeepUpdated(e.target.checked)}
+                          />
+                          <span>
+                            <b>Keep {invite.from.name} updated</b>
+                            <span className="block text-ink-soft">When you change your profile, their locker updates too. You can stop anytime.</span>
+                          </span>
+                        </label>
+                      </motion.div>
+                    )}
                     {submitError && step.id === "review" && <p className="mt-6 text-sm font-bold text-rose-deep">{submitError}</p>}
                     <motion.footer custom={dir} variants={line} className="mt-auto flex items-center gap-2 pt-9">
                       {index > 0 && (
@@ -885,9 +938,22 @@ const PERKS = [
   { icon: Users, text: "Reuse these answers in gift exchanges" },
 ];
 
-function Success({ name, from, person }: { name: string; from: string; person: Person | null }) {
+function Success({
+  name,
+  from,
+  person,
+  outcome,
+  canConnect,
+}: {
+  name: string;
+  from: string;
+  person: Person | null;
+  outcome: { saved: boolean; connected: boolean };
+  canConnect: boolean;
+}) {
   const user = useUser();
-  const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">(outcome.saved ? "saved" : "idle");
+  const [connect, setConnect] = useState(true);
   const bits = Array.from({ length: 28 });
   const saveMine = async () => {
     if (!user || !person) return;
@@ -927,6 +993,11 @@ function Success({ name, from, person }: { name: string; from: string; person: P
         {from} can now shop for you with confidence. Now do the same for the people <em>you</em> love.
       </p>
 
+      {user && outcome.connected && (
+        <p className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full bg-mint/70 px-4 py-2 text-sm font-bold">
+          <Check className="h-4 w-4" /> Saved as your profile · {from} will get your updates
+        </p>
+      )}
       {user ? (
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           {person && (
@@ -966,6 +1037,23 @@ function Success({ name, from, person }: { name: string; from: string; person: P
             ))}
           </ul>
           <p className="mt-3 text-sm text-ink-soft">What you just filled in becomes your own profile, so you won't type it again.</p>
+          {canConnect && (
+            <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl bg-cream/80 p-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-[#d45c86]"
+                checked={connect}
+                onChange={(e) => {
+                  setConnect(e.target.checked);
+                  setPendingConnect(e.target.checked);
+                }}
+              />
+              <span>
+                <b>Keep {from} updated</b>
+                <span className="block text-ink-soft">When you change your sizes or wishes later, their locker updates too.</span>
+              </span>
+            </label>
+          )}
           <Button href="/sign-in?next=/locker" className="mt-5 w-full">
             Create my free locker
           </Button>

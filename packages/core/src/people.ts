@@ -46,6 +46,8 @@ export interface Person {
   /** Occasions the owner has already bought a gift for (see gifts.ts). Owner-only. */
   gifted?: string[];
   favorites?: Favorites;
+  /** Set when this card stays in sync with the person's own profile (see connections.ts). */
+  linked?: { connectionId: string; syncedAt?: string; ended?: boolean };
   /** Guardian user ids for managed (child) profiles. */
   guardians?: string[];
   updatedAt: string;

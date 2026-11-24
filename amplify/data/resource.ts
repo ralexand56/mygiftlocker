@@ -47,6 +47,10 @@ const schema = a
         ownerNote: a.string(),
         /** Owner-set: occasions already gifted (gift keys from @mgl/core). Never returned to link holders. */
         gifted: a.string().array(),
+        /** Set when this card is linked to the person's own profile (Connection). */
+        connectionId: a.id(),
+        syncedAt: a.datetime(),
+        connectionEnded: a.boolean(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub"), allow.ownersDefinedIn("guardians").identityClaim("sub")]),
 
@@ -76,8 +80,38 @@ const schema = a
         note: a.string(),
         status: a.ref("InviteStatus"),
         acceptedProfileId: a.id(),
+        /** "connect": asks the person on an existing card (targetProfileId) to link their own profile. */
+        purpose: a.string(),
+        targetProfileId: a.id(),
+        /** One-time secret returned only to whoever answered; required to connect that card. */
+        claimToken: a.string(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub")]),
+
+    ConnectionStatus: a.enum(["active", "ended"]),
+
+    /**
+     * A locker card (profileId, owned by ownerSub) kept in sync with memberSub's own profile.
+     * Both sides can read it; every change goes through the exchange-api function.
+     */
+    Connection: a
+      .model({
+        ownerSub: a.string().required(),
+        memberSub: a.string().required(),
+        profileId: a.id().required(),
+        ownerName: a.string(),
+        memberName: a.string(),
+        /** ConnectionShares from @mgl/core. */
+        shares: a.json(),
+        status: a.ref("ConnectionStatus"),
+        syncedAt: a.datetime(),
+        endedAt: a.datetime(),
+      })
+      .secondaryIndexes((index) => [index("memberSub"), index("ownerSub")])
+      .authorization((allow) => [
+        allow.ownerDefinedIn("ownerSub").identityClaim("sub").to(["read"]),
+        allow.ownerDefinedIn("memberSub").identityClaim("sub").to(["read"]),
+      ]),
 
     ExchangeStatus: a.enum(["open", "drawn"]),
 
@@ -211,6 +245,38 @@ const schema = a
       .arguments({ token: a.string().required(), enabled: a.boolean().required() })
       .returns(a.json())
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    // ---- Connections (signed in) -------------------------------------------
+    /** Link the caller's own profile to the card an invite created (or targets). */
+    connectProfile: a
+      .mutation()
+      .arguments({ inviteId: a.id().required(), shares: a.json(), claimToken: a.string() })
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    /** Copy the caller's own profile onto every card they're connected to. */
+    syncMyProfile: a
+      .mutation()
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    /** Member: change what's shared. */
+    setConnectionSharing: a
+      .mutation()
+      .arguments({ connectionId: a.id().required(), shares: a.json().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    /** Either side: stop syncing. The card keeps the last shared version. */
+    endConnection: a
+      .mutation()
+      .arguments({ connectionId: a.id().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
     // ---- Organizer operations ---------------------------------------------

@@ -8,7 +8,8 @@
  * Someone who answers an invite and then creates an account gets those answers
  * as their profile: the invite flow keeps a copy in this browser until they sign in.
  */
-import { pastelFor, type Person } from "@mgl/core";
+import { pastelFor, sharesFromAsk, type Person, type PublicInvite } from "@mgl/core";
+import { connectProfile, syncMyProfile } from "./connections";
 import { api, backendEnabled, parseJson } from "./amplify";
 import { readDB, update } from "./store";
 
@@ -54,26 +55,55 @@ export async function saveSelfProfile(sub: string, p: Person): Promise<void> {
   const { data: existing } = await c.models.SelfProfile.get({ ownerSub: sub });
   const { errors } = existing ? await c.models.SelfProfile.update(fields) : await c.models.SelfProfile.create(fields);
   if (errors?.length) throw new Error(errors[0]!.message);
+  // Connected lockers get the update; a failure here shouldn't undo the save.
+  await syncMyProfile().catch(() => {});
+}
+
+interface Pending {
+  person: Person;
+  at: number;
+  /** The invite they answered, so their card can be connected after sign-up. */
+  invite?: Pick<PublicInvite, "id" | "ask"> & { fromName: string; claimToken?: string };
+  /** Their choice on the thank-you screen: keep the inviter updated. */
+  connect?: boolean;
+}
+
+function readPending(): Pending | null {
+  try {
+    const raw = localStorage.getItem(PENDING);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Pending;
+    if (Date.now() - p.at > 30 * 86_400_000) return (clearPendingSelf(), null);
+    return p;
+  } catch {
+    return null;
+  }
 }
 
 /** Called when someone finishes an invite: keep their answers in this browser for a while. */
-export function rememberPendingSelf(p: Person): void {
+export function rememberPendingSelf(p: Person, invite?: PublicInvite, claimToken?: string): void {
   try {
-    localStorage.setItem(PENDING, JSON.stringify({ person: p, at: Date.now() }));
+    const entry: Pending = {
+      person: p,
+      at: Date.now(),
+      connect: true,
+      invite: invite && { id: invite.id, ask: invite.ask, fromName: invite.from.name, claimToken },
+    };
+    localStorage.setItem(PENDING, JSON.stringify(entry));
+  } catch {}
+}
+
+export function setPendingConnect(on: boolean): void {
+  const p = readPending();
+  if (!p) return;
+  try {
+    localStorage.setItem(PENDING, JSON.stringify({ ...p, connect: on }));
   } catch {}
 }
 
 /** Answers from a recent invite in this browser (last 30 days), if any. */
 export function pendingSelf(): Person | null {
-  try {
-    const raw = localStorage.getItem(PENDING);
-    if (!raw) return null;
-    const { person, at } = JSON.parse(raw) as { person: Person; at: number };
-    if (Date.now() - at > 30 * 86_400_000) return (clearPendingSelf(), null);
-    return person;
-  } catch {
-    return null;
-  }
+  return readPending()?.person ?? null;
 }
 
 export function clearPendingSelf(): void {
@@ -88,12 +118,16 @@ export function clearPendingSelf(): void {
  */
 export async function loadOrClaimSelf(sub: string): Promise<Person | null> {
   const existing = await getSelfProfile(sub);
-  const pending = pendingSelf();
+  const pending = readPending();
   if (existing || !pending) {
     if (existing && pending) clearPendingSelf();
     return existing;
   }
-  await saveSelfProfile(sub, pending);
+  await saveSelfProfile(sub, pending.person);
   clearPendingSelf();
-  return { ...pending, id: "self" };
+  // They asked on the thank-you screen to keep the inviter updated.
+  if (pending.connect && pending.invite?.claimToken) {
+    await connectProfile(pending.invite.id, sharesFromAsk(pending.invite.ask), pending.invite.claimToken).catch(() => {});
+  }
+  return { ...pending.person, id: "self" };
 }

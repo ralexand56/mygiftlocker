@@ -11,6 +11,11 @@ import {
   DrawError,
   cleanAddress,
   cleanShared,
+  cleanShares,
+  sharesFromAsk,
+  syncedFields,
+  type ConnectionShares,
+  type Person,
   cleanWishlistLinks,
   cleanWishlist,
   drawNames,
@@ -70,6 +75,14 @@ export const handler = async (event: ResolverEvent) => {
         return await draw(str(args.exchangeId), callerSub);
       case "removeExchange":
         return await removeExchange(str(args.exchangeId), callerSub);
+      case "connectProfile":
+        return await connectProfile(str(args.inviteId), parseJson(args.shares), optStr(args.claimToken), callerSub);
+      case "syncMyProfile":
+        return await syncMyProfile(callerSub);
+      case "setConnectionSharing":
+        return await setConnectionSharing(str(args.connectionId), parseJson(args.shares), callerSub);
+      case "endConnection":
+        return await endConnection(str(args.connectionId), callerSub);
       case "setReminders":
         return await setReminders(str(args.token), args.enabled === true);
       default:
@@ -260,12 +273,14 @@ async function getPublicInvite(inviteId: string): Promise<PublicInvite> {
     to: inv.toName ? { name: inv.toName } : undefined,
     ask: (parseJson(inv.ask) ?? {}) as PublicInvite["ask"],
     note: inv.note ?? undefined,
+    purpose: inv.purpose === "connect" ? "connect" : undefined,
   };
 }
 
 async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
   if (!inv || inv.status === "revoked") throw new UserError("This invite link is no longer active.");
+  if (inv.purpose === "connect") throw new UserError("This link is for connecting profiles.");
   const p = (profile ?? {}) as Record<string, unknown>;
   const name = typeof p.name === "string" ? p.name.trim().slice(0, 80) : "";
   if (!name) throw new UserError("Please add your name.");
@@ -300,7 +315,141 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
       });
     }
   }
-  await client.models.Invite.update({ id: inv.id, status: "accepted", acceptedProfileId: created?.id });
+  // Only the person who answered gets this, so only they can later link their own profile to the card.
+  const claimToken = randomBytes(24).toString("base64url");
+  await client.models.Invite.update({ id: inv.id, status: "accepted", acceptedProfileId: created?.id, claimToken });
+  return { ok: true, claimToken };
+}
+
+// ---- connections -------------------------------------------------------------
+
+type Connection = Schema["Connection"]["type"];
+
+const needSignIn = (sub: string | undefined): string => {
+  if (!sub) throw new UserError("Please sign in.");
+  return sub;
+};
+
+async function loadSelf(sub: string): Promise<(Pick<Person, "sizes" | "favorites" | "birthday" | "anniversary" | "address"> & { name: string }) | null> {
+  const { data: p } = await client.models.SelfProfile.get({ ownerSub: sub });
+  if (!p) return null;
+  const d = (x: { month: number; day: number; year?: number | null } | null | undefined) => (x ? { month: x.month, day: x.day, year: x.year ?? undefined } : undefined);
+  return {
+    name: p.name,
+    sizes: (parseJson(p.sizes) ?? {}) as Person["sizes"],
+    favorites: parseJson(p.favorites) as Person["favorites"],
+    birthday: d(p.birthday),
+    anniversary: d(p.anniversary),
+    address: parseJson(p.address) as Person["address"],
+  };
+}
+
+async function connectionsOf(memberSub: string): Promise<Connection[]> {
+  const { data } = await client.models.Connection.listConnectionByMemberSub({ memberSub }, { limit: 500 });
+  return data;
+}
+
+/** Writes the shared parts of the member's profile onto one card. */
+async function pushTo(conn: Connection, self: NonNullable<Awaited<ReturnType<typeof loadSelf>>>, now: string) {
+  const { data: card } = await client.models.Profile.get({ id: conn.profileId });
+  // The card must still exist and still belong to the connection's owner.
+  if (!card || card.ownerSub !== conn.ownerSub) return false;
+  const f = syncedFields(self, cleanShares(parseJson(conn.shares)));
+  const json = (v: unknown) => (v === undefined ? undefined : v === null ? null : JSON.stringify(v).slice(0, 20_000));
+  await client.models.Profile.update({
+    id: card.id,
+    ...(f.sizes !== undefined && { sizes: json(f.sizes) }),
+    ...(f.favorites !== undefined && { favorites: json(f.favorites) }),
+    ...(f.birthday !== undefined && { birthday: f.birthday }),
+    ...(f.anniversary !== undefined && { anniversary: f.anniversary }),
+    ...(f.address !== undefined && { address: json(f.address) }),
+    connectionId: conn.id,
+    connectionEnded: false,
+    syncedAt: now,
+  });
+  await client.models.Connection.update({ id: conn.id, syncedAt: now });
+  return true;
+}
+
+async function connectProfile(inviteId: string, sharesIn: unknown, claimToken: string | undefined, callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  const { data: inv } = await client.models.Invite.get({ id: inviteId });
+  if (!inv || inv.status === "revoked") throw new UserError("This link is no longer active.");
+  if (inv.ownerSub === sub) throw new UserError("That's your own link. Send it to the person you want to connect with.");
+  const isConnectLink = inv.purpose === "connect";
+  const profileId = isConnectLink ? inv.targetProfileId : inv.acceptedProfileId;
+  if (!profileId) throw new UserError("Answer the invite first, then connect.");
+  const mine = await connectionsOf(sub);
+  const alreadyMine = mine.some((c) => c.profileId === profileId && c.ownerSub === inv.ownerSub);
+  if (isConnectLink) {
+    // Single use: once accepted, only the person who accepted can reconnect.
+    if (inv.status === "accepted" && !alreadyMine) throw new UserError("This link has already been used. Ask for a new one.");
+  } else if (!claimToken || !inv.claimToken || !tokensMatch(inv.claimToken, claimToken)) {
+    throw new UserError("Only the person who answered this invite can connect it.");
+  }
+  const { data: card } = await client.models.Profile.get({ id: profileId });
+  if (!card || card.ownerSub !== inv.ownerSub) throw new UserError("That card isn't in their locker anymore.");
+  const self = await loadSelf(sub);
+  if (!self) throw new UserError("Create your profile first.");
+
+  // One live connection per card: replace any earlier one of mine.
+  for (const c of mine.filter((c) => c.status === "active" && c.profileId === profileId))
+    await client.models.Connection.update({ id: c.id, status: "ended", endedAt: new Date().toISOString() });
+
+  const fallback = sharesFromAsk(parseJson(inv.ask) as Partial<ConnectionShares> | undefined);
+  const shares = cleanShares(sharesIn, fallback);
+  const now = new Date().toISOString();
+  const { data: conn, errors } = await client.models.Connection.create({
+    ownerSub: inv.ownerSub!,
+    memberSub: sub,
+    profileId,
+    ownerName: inv.fromName,
+    memberName: self.name,
+    shares: JSON.stringify(shares),
+    status: "active",
+  });
+  if (!conn) throw new Error(errors?.[0]?.message ?? "Couldn't connect");
+  await pushTo(conn, self, now);
+  // Spent either way: the claim code and the connect link each work once.
+  await client.models.Invite.update({ id: inv.id, status: "accepted", claimToken: null });
+  return { ok: true, connectionId: conn.id, ownerName: inv.fromName, shares };
+}
+
+async function syncMyProfile(callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  const self = await loadSelf(sub);
+  if (!self) return { ok: true, updated: 0 };
+  const now = new Date().toISOString();
+  const live = (await connectionsOf(sub)).filter((c) => c.status === "active");
+  const results = await Promise.all(live.map((c) => pushTo(c, self, now)));
+  return { ok: true, updated: results.filter(Boolean).length };
+}
+
+async function loadConnection(id: string, sub: string): Promise<Connection> {
+  const { data } = await client.models.Connection.get({ id });
+  if (!data || (data.memberSub !== sub && data.ownerSub !== sub)) throw new UserError("Connection not found.");
+  return data;
+}
+
+async function setConnectionSharing(id: string, sharesIn: unknown, callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  const conn = await loadConnection(id, sub);
+  if (conn.memberSub !== sub) throw new UserError("Only they can change what they share.");
+  if (conn.status !== "active") throw new UserError("This connection has ended.");
+  const shares = cleanShares(sharesIn, cleanShares(parseJson(conn.shares)));
+  const { data: updated } = await client.models.Connection.update({ id, shares: JSON.stringify(shares) });
+  const self = await loadSelf(sub);
+  if (updated && self) await pushTo(updated, self, new Date().toISOString());
+  return { ok: true, shares };
+}
+
+async function endConnection(id: string, callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  const conn = await loadConnection(id, sub);
+  const now = new Date().toISOString();
+  await client.models.Connection.update({ id, status: "ended", endedAt: now });
+  const { data: card } = await client.models.Profile.get({ id: conn.profileId });
+  if (card && card.ownerSub === conn.ownerSub) await client.models.Profile.update({ id: card.id, connectionEnded: true });
   return { ok: true };
 }
 

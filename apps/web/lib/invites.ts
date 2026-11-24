@@ -36,20 +36,22 @@ export async function loadInvite(segment: string): Promise<PublicInvite> {
   return unwrap<PublicInvite>(await api().queries.getPublicInvite({ inviteId: segment }, { authMode: "apiKey" }));
 }
 
-export async function submitInvite(invite: PublicInvite, profile: Person, kids: Person[]): Promise<void> {
+/** Returns the one-time claim code (backend only) that lets the answerer connect their profile later. */
+export async function submitInvite(invite: PublicInvite, profile: Person, kids: Person[]): Promise<string | undefined> {
   // Demo invites (encoded in the link) have ids like "inv_…"; backend ids are UUIDs.
   if (!backendEnabled || invite.id.startsWith("inv_")) {
     upsertPerson(profile);
     kids.forEach(upsertPerson);
-    return;
+    return undefined;
   }
   const strip = ({ name, sizes, address, birthday, anniversary, favorites }: Person) => ({ name, sizes, address, birthday, anniversary, favorites });
-  unwrap(
+  const res = unwrap<{ claimToken?: string }>(
     await api().mutations.submitInvite(
       { inviteId: invite.id, profile: JSON.stringify(strip(profile)), kids: JSON.stringify(kids.map(strip)) },
       { authMode: "apiKey" },
     ),
   );
+  return res?.claimToken;
 }
 
 /** People in the signed-in user's locker. */
@@ -71,6 +73,7 @@ export async function listLockerPeople(): Promise<Person[]> {
     holidays: cleanHolidays(p.holidays),
     ownerNote: p.ownerNote ?? undefined,
     gifted: cleanGifted(p.gifted),
+    linked: p.connectionId ? { connectionId: p.connectionId, syncedAt: p.syncedAt ?? undefined, ended: !!p.connectionEnded } : undefined,
     updatedAt: p.updatedAt,
   }));
 }

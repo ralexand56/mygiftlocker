@@ -34,7 +34,7 @@ export interface JoinResult {
 }
 
 /** The invite as the invitee sees it. */
-export type PublicInvite = Pick<InvitePayload, "id" | "from" | "to" | "ask" | "note">;
+export type PublicInvite = Pick<InvitePayload, "id" | "from" | "to" | "ask" | "note" | "purpose">;
 
 /** Tokens are 24 random bytes, base64url. */
 export function isPlausibleToken(t: unknown): t is string {
