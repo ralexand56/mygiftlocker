@@ -47,13 +47,16 @@ import {
   type StepId,
 } from "@mgl/core";
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { ArrowLeft, ArrowRight, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, BellRing, Check, Gift, Pencil, Plus, Ruler, Sparkles, Trash2, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { StepRail, StepShowcase } from "@/components/StepShowcase";
 import { LogoMark } from "@/components/Logo";
 import { Button, ChipGroup, Field, Input, Textarea, inputCls } from "@/components/ui";
 import { submitInvite } from "@/lib/invites";
+import { useUser } from "@/lib/auth";
+import { rememberPendingSelf, saveSelfProfile } from "@/lib/self";
 
 type PD = Partial<PartialDate>;
 interface Kid {
@@ -107,8 +110,30 @@ const line: Variants = {
   exit: (dir: number) => ({ opacity: 0, y: -18 * dir, transition: { duration: 0.24, ease: EASE_IN } }),
 };
 
-export function JoinFlow({ invite }: { invite: PublicInvite }) {
-  const [form, setForm] = useState<FormState>(() => ({ ...initial, name: invite.to?.name ?? "" }));
+/** Prefill the form from a saved profile (editing "My profile"). */
+function formFrom(p: Person): FormState {
+  const wishes = [...(p.favorites?.wishes ?? [])];
+  while (wishes.length < 3) wishes.push("");
+  return {
+    ...initial,
+    name: p.name,
+    sizes: p.sizes ?? {},
+    address: p.address ?? initial.address,
+    birthday: p.birthday ?? {},
+    anniversary: p.anniversary ?? {},
+    colors: p.favorites?.colors ?? [],
+    likes: p.favorites?.likes ?? "",
+    avoid: p.favorites?.avoid ?? "",
+    wishes,
+  };
+}
+
+/** The same questions, for the signed-in user's own profile. */
+export const SELF_INVITE: PublicInvite = { id: "self", from: { name: "you" }, ask: { sizes: true, address: true, dates: true, favorites: true, kids: false } };
+
+export function JoinFlow({ invite, self }: { invite: PublicInvite; self?: { initial: Person | null; onSave: (p: Person) => Promise<void> } }) {
+  const router = useRouter();
+  const [form, setForm] = useState<FormState>(() => (self?.initial ? formFrom(self.initial) : { ...initial, name: invite.to?.name ?? "" }));
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [sys, setSys] = useState<SizeSystem>("US");
@@ -118,9 +143,11 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
     const guess = systemForLocale(locale);
     if (guess) setSys(guess);
     const country = countryForLocale(locale);
-    if (country) setForm((f) => (f.address.line1 ? f : { ...f, address: { ...f.address, country } }));
+    if (country && !self?.initial?.address) setForm((f) => (f.address.line1 ? f : { ...f, address: { ...f.address, country } }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [done, setDone] = useState(false);
+  const [submitted, setSubmitted] = useState<Person | null>(null);
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
   const step = steps[Math.min(index, steps.length - 1)]!;
@@ -194,7 +221,15 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
     setSending(true);
     setSubmitError(null);
     try {
+      if (self) {
+        await self.onSave(person);
+        router.push("/locker");
+        return;
+      }
       await submitInvite(invite, person, kids);
+      // Kept in this browser so these answers become their own profile if they sign up.
+      rememberPendingSelf(person);
+      setSubmitted(person);
       setDone(true);
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Couldn't send. Try again.");
@@ -224,7 +259,7 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
 
         <div className="relative flex flex-1 items-center">
           {done ? (
-            <Success name={form.name} from={invite.from.name} />
+            <Success name={form.name} from={invite.from.name} person={submitted} />
           ) : (
             <section
               className="glass relative grid w-full overflow-hidden rounded-[36px] shadow-lift md:min-h-[620px] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"
@@ -251,7 +286,7 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
                       {step.eyebrow}
                     </motion.p>
                     <motion.h1 custom={dir} variants={line} className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-[2.6rem]">
-                      {step.id === "welcome" ? `${invite.from.name} wants your gifts to be just right` : step.title}
+                      {step.id === "welcome" ? (self ? "Your own profile" : `${invite.from.name} wants your gifts to be just right`) : step.title}
                     </motion.h1>
                     {step.subtitle && (
                       <motion.p custom={dir} variants={line} className="mt-2 text-ink-soft">
@@ -278,7 +313,7 @@ export function JoinFlow({ invite }: { invite: PublicInvite }) {
                         )}
                         {step.id === "review" ? (
                           <Button onClick={submit} disabled={sending}>
-                            <Sparkles className="h-4 w-4" /> {sending ? "Sending…" : `Share with ${invite.from.name}`}
+                            <Sparkles className="h-4 w-4" /> {sending ? (self ? "Saving…" : "Sending…") : self ? "Save my profile" : `Share with ${invite.from.name}`}
                           </Button>
                         ) : (
                           <Button onClick={() => go(1)} disabled={!canContinue}>
@@ -474,7 +509,14 @@ function StepBody({
       return (
         <>
           {invite.note && <blockquote className="mb-6 rounded-2xl bg-white/70 p-4 text-ink-soft italic">“{invite.note}”</blockquote>}
-          <Field label="What's your name?" hint={`Only ${invite.from.name} (and people you choose) will see what you share.`}>
+          <Field
+            label="What's your name?"
+            hint={
+              invite.id === "self"
+                ? "Only you see this. You choose when to share it, like with your Secret Santa in a gift exchange."
+                : `Only ${invite.from.name} (and people you choose) will see what you share.`
+            }
+          >
             <Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Your name" autoComplete="name" />
           </Field>
         </>
@@ -779,14 +821,33 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
   );
 }
 
-function Success({ name, from }: { name: string; from: string }) {
+const PERKS = [
+  { icon: Ruler, text: "Everyone's sizes in one place" },
+  { icon: BellRing, text: "Reminder emails before birthdays and holidays" },
+  { icon: Gift, text: "Lock in each gift once it's bought" },
+  { icon: Users, text: "Reuse these answers in gift exchanges" },
+];
+
+function Success({ name, from, person }: { name: string; from: string; person: Person | null }) {
+  const user = useUser();
+  const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const bits = Array.from({ length: 28 });
+  const saveMine = async () => {
+    if (!user || !person) return;
+    setSaved("saving");
+    try {
+      await saveSelfProfile(user.sub, person);
+      setSaved("saved");
+    } catch {
+      setSaved("error");
+    }
+  };
   return (
     <motion.section
       initial={{ scale: 0.85, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", stiffness: 180, damping: 16 }}
-      className="glass relative w-full rounded-[32px] p-10 text-center shadow-lift"
+      className="glass relative w-full rounded-[32px] p-8 text-center shadow-lift md:p-10"
     >
       {bits.map((_, i) => {
         const angle = (i / bits.length) * Math.PI * 2;
@@ -802,18 +863,57 @@ function Success({ name, from }: { name: string; from: string }) {
         );
       })}
       <motion.div initial={{ y: 20, rotate: -10 }} animate={{ y: 0, rotate: 0 }} transition={{ type: "spring", delay: 0.1 }} className="mx-auto mb-5 w-fit">
-        <LogoMark size={88} />
+        <LogoMark size={80} />
       </motion.div>
       <h1 className="font-display text-4xl font-semibold">Thank you, {name.split(" ")[0]}!</h1>
-      <p className="mx-auto mt-3 max-w-sm text-ink-soft">
-        {from} can now shop for you with confidence. Want to keep track of the people <em>you</em> shop for?
+      <p className="mx-auto mt-3 max-w-md text-ink-soft">
+        {from} can now shop for you with confidence. Now do the same for the people <em>you</em> love.
       </p>
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button href="/locker">Open my locker</Button>
-        <Button href="/exchange" variant="soft">
-          Start a gift exchange
-        </Button>
-      </div>
+
+      {user ? (
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {person && (
+            <Button onClick={saveMine} disabled={saved === "saving" || saved === "saved"} variant={saved === "saved" ? "soft" : undefined}>
+              {saved === "saved" ? (
+                <>
+                  <Check className="h-4 w-4" /> Saved as my profile
+                </>
+              ) : saved === "saving" ? (
+                "Saving…"
+              ) : (
+                "Save these answers as my profile"
+              )}
+            </Button>
+          )}
+          <Button href="/locker" variant="soft">
+            Open my locker
+          </Button>
+          {saved === "error" && <p className="w-full text-sm font-bold text-rose-deep">Couldn't save. Try again.</p>}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mx-auto mt-7 max-w-md rounded-3xl bg-white/75 p-6 text-left shadow-soft"
+        >
+          <p className="font-display text-2xl font-semibold">Start your own locker, free</p>
+          <ul className="mt-3 grid gap-2.5">
+            {PERKS.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 text-ink">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blush">
+                  <Icon className="h-4 w-4" />
+                </span>
+                {text}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-sm text-ink-soft">What you just filled in becomes your own profile, so you won't type it again.</p>
+          <Button href="/sign-in?next=/locker" className="mt-5 w-full">
+            Create my free locker
+          </Button>
+        </motion.div>
+      )}
     </motion.section>
   );
 }

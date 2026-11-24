@@ -1,6 +1,7 @@
 "use client";
 
-import { formatBudget, type PublicExchange } from "@mgl/core";
+import { formatBudget, sharedFromPerson, summarizeSizes, type Person, type PublicExchange } from "@mgl/core";
+import { UserRound } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,6 +9,8 @@ import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Field, Input } from "@/components/ui";
 import { getPublicExchange, joinExchange, useAsync } from "@/lib/exchanges";
+import { useUser } from "@/lib/auth";
+import { getSelfProfile } from "@/lib/self";
 
 export function JoinExchange({ id }: { id: string }) {
   const { data: ex, error, loading } = useAsync(() => getPublicExchange(id), [id]);
@@ -32,6 +35,19 @@ function Form({ ex }: { ex: PublicExchange }) {
 
   const closed = ex.status === "drawn";
 
+  // Signed-in people can fill this from their own profile and share their sizes with their Santa.
+  const user = useUser();
+  const { data: self } = useAsync(async () => (user ? getSelfProfile(user.sub) : null), [user?.sub]);
+  const shareable = self ? sharedFromPerson(self) : undefined;
+  const [filled, setFilled] = useState(false);
+  const [share, setShare] = useState(true);
+  const fillFromProfile = (p: Person) => {
+    setName((n) => n || p.name);
+    const mine = (p.favorites?.wishes ?? []).filter(Boolean);
+    setWishes((ws) => ws.map((w, i) => (w.title ? w : { title: mine[i] ?? "", url: "" })));
+    setFilled(true);
+  };
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +60,7 @@ function Form({ ex }: { ex: PublicExchange }) {
         name.trim(),
         email.trim() || undefined,
         wishes.filter((w) => w.title.trim()).map((w) => ({ title: w.title.trim(), url: w.url.trim() || undefined })),
+        share ? shareable : undefined,
       );
       // Remember this browser's private link so a returning visitor lands on it.
       try {
@@ -73,6 +90,45 @@ function Form({ ex }: { ex: PublicExchange }) {
             <p className="mt-6 font-bold">Names have already been drawn — ask the organizer to add you.</p>
           ) : (
             <div className="mt-7 grid gap-4">
+              {self ? (
+                <div className="rounded-2xl bg-white/75 p-4 shadow-soft">
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-lavender/60">
+                      <UserRound className="h-5 w-5" />
+                    </span>
+                    <p className="min-w-0 flex-1 text-sm">
+                      <b className="block">{filled ? "Filled in from your profile" : "Use your My Gift Lockers profile"}</b>
+                      <span className="text-ink-soft">{filled ? "Change anything below." : "Your name and wishes, no retyping."}</span>
+                    </p>
+                    {!filled && (
+                      <Button variant="soft" onClick={() => fillFromProfile(self)} className="px-4! py-2! text-sm!">
+                        Fill in
+                      </Button>
+                    )}
+                  </div>
+                  {shareable && (
+                    <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl bg-cream/80 p-3 text-sm">
+                      <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#d45c86]" checked={share} onChange={(e) => setShare(e.target.checked)} />
+                      <span>
+                        <b>Show my sizes and favorites to whoever draws me</b>
+                        <span className="block text-ink-soft">
+                          {[shareable.sizes && summarizeSizes(shareable.sizes), shareable.favorites?.likes && `Loves ${shareable.favorites.likes}`].filter(Boolean).join(" · ") ||
+                            "From your profile"}
+                          . Never your address or birthday.
+                        </span>
+                      </span>
+                    </label>
+                  )}
+                </div>
+              ) : user === null ? (
+                <p className="rounded-2xl bg-white/60 p-3 text-sm text-ink-soft">
+                  Have a My Gift Lockers account?{" "}
+                  <a href={`/sign-in?next=${encodeURIComponent(`/exchange/${ex.id}/join`)}`} className="font-bold text-plum underline">
+                    Sign in
+                  </a>{" "}
+                  to fill this in from your profile.
+                </p>
+              ) : null}
               <Field label="Your name">
                 <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
               </Field>

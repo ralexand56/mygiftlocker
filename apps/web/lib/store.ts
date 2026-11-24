@@ -14,6 +14,8 @@ interface DB {
   exchanges: Exchange[];
   invites: InvitePayload[];
   me: { id: string; name: string } | null;
+  /** Demo mode: the user's own profile. */
+  self?: Person | null;
 }
 
 const KEY = "mgl:v1";

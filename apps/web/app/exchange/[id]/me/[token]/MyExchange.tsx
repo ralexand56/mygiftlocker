@@ -1,12 +1,14 @@
 "use client";
 
-import { formatBudget, pastelFor, type MyExchangeView, type WishItem } from "@mgl/core";
+import { FIT_LABELS, formatBudget, pastelFor, sharedFromPerson, summarizeSizes, type MyExchangeView, type SharedProfile, type WishItem } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Ruler } from "lucide-react";
 import { useState } from "react";
 import { Avatar, Button, Card, Input } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getMyExchange, saveWishlist, useAsync } from "@/lib/exchanges";
+import { getMyExchange, saveShared, saveWishlist, useAsync } from "@/lib/exchanges";
+import { useUser } from "@/lib/auth";
+import { getSelfProfile } from "@/lib/self";
 
 export function MyExchange({ id, token }: { id: string; token: string }) {
   const { data: view, error, loading, reload } = useAsync(() => getMyExchange(id, token), [id, token]);
@@ -40,7 +42,10 @@ function View({ view, token, onSaved }: { view: MyExchangeView; token: string; o
         <div className="mt-6">{match ? <Reveal match={match} /> : <Waiting />}</div>
         <p className="mt-4 text-xs text-ink-soft">Bookmark this page: it's your private link for this exchange.</p>
       </div>
-      <WishlistEditor exchangeId={ex.id} wishCount={ex.wishCount} wishlist={me.wishlist} token={token} onSaved={onSaved} />
+      <div className="grid content-start gap-6">
+        <WishlistEditor exchangeId={ex.id} wishCount={ex.wishCount} wishlist={me.wishlist} token={token} onSaved={onSaved} />
+        <ShareCard exchangeId={ex.id} token={token} shared={me.shared} onSaved={onSaved} />
+      </div>
     </div>
   );
 }
@@ -98,6 +103,7 @@ function Reveal({ match }: { match: MyExchangeView["match"] & {} }) {
                 <p className="text-center text-ink-soft">They haven't added wishes yet — check back soon.</p>
               )}
             </div>
+            {match.shared && <SharedDetails name={match.name} shared={match.shared} />}
           </motion.div>
         )}
       </AnimatePresence>
@@ -143,6 +149,116 @@ function WishlistEditor({ exchangeId, wishCount, wishlist, token, onSaved }: { e
       <Button className="mt-5 w-full" onClick={save}>
         {saved ? "Saved ✓" : "Save wishes"}
       </Button>
+    </Card>
+  );
+}
+
+/** Sizes and favorites the match chose to share. */
+function SharedDetails({ name, shared }: { name: string; shared: SharedProfile }) {
+  const s = shared.sizes ?? {};
+  const f = shared.favorites ?? {};
+  const rows: [string, string | undefined][] = [
+    ["Section", s.fit ? FIT_LABELS[s.fit] : undefined],
+    ["Top", s.top],
+    ["Pants", s.waist ? `${s.waist} × ${s.inseam ?? "?"}` : (s.womensNumeric ?? s.bottomAlpha)],
+    ["Dress", s.dress],
+    ["Outerwear", s.outerwear],
+    ["Shoe (US)", s.shoe ? `${s.shoe}${s.shoeWidth && s.shoeWidth !== "Regular" ? ` ${s.shoeWidth}` : ""}` : undefined],
+    ["Foot", s.footLengthCm ? `${s.footLengthCm} cm` : undefined],
+    ["Ring", s.ring?.toString()],
+    ["Hat", s.hat],
+  ];
+  const shown = rows.filter(([, v]) => v);
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-6 text-left">
+      <p className="mb-2 flex items-center gap-2 text-sm font-extrabold tracking-wide text-ink-soft uppercase">
+        <Ruler className="h-4 w-4" /> {name.split(" ")[0]} shared
+      </p>
+      {shown.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {shown.map(([k, v]) => (
+            <div key={k} className="rounded-2xl bg-white p-3 shadow-soft">
+              <p className="text-xs font-bold text-ink-soft">{k}</p>
+              <p className="font-display text-lg font-semibold">{v}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {(f.likes || f.colors?.length || f.avoid) && (
+        <div className="mt-2 rounded-2xl bg-white p-4 shadow-soft">
+          {f.likes && <p>Loves: {f.likes}</p>}
+          {!!f.colors?.length && <p className="mt-1 text-sm text-ink-soft">Colors: {f.colors.join(", ")}</p>}
+          {f.avoid && <p className="mt-1 text-sm text-rose-deep">Avoid: {f.avoid}</p>}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Share your own sizes with your Santa (signed in), update them, or stop sharing. */
+function ShareCard({ exchangeId, token, shared, onSaved }: { exchangeId: string; token: string; shared?: SharedProfile; onSaved: () => void }) {
+  const user = useUser();
+  const { data: self } = useAsync(async () => (user ? getSelfProfile(user.sub) : null), [user?.sub]);
+  const fromProfile = self ? sharedFromPerson(self) : undefined;
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async (value: SharedProfile | null) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await saveShared(exchangeId, token, value);
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save");
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (!shared && user === null)
+    return (
+      <Card className="p-6">
+        <h2 className="font-display text-xl font-semibold">Help your Santa with sizes</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Keep your sizes in a free My Gift Lockers profile and share them here.{" "}
+          <a href={`/sign-in?next=${encodeURIComponent(`/exchange/${exchangeId}/me/${token}`)}`} className="font-bold text-plum underline">
+            Sign in or create one
+          </a>
+          .
+        </p>
+      </Card>
+    );
+  if (!shared && !fromProfile) {
+    if (!user) return null;
+    return (
+      <Card className="p-6">
+        <h2 className="font-display text-xl font-semibold">Help your Santa with sizes</h2>
+        <p className="mt-1 text-sm text-ink-soft">Add your sizes to your profile, then come back to share them here.</p>
+        <Button href="/locker/me" variant="soft" className="mt-4">
+          Add my sizes
+        </Button>
+      </Card>
+    );
+  }
+  return (
+    <Card className="p-6">
+      <h2 className="font-display text-xl font-semibold">{shared ? "Your Santa can see your sizes" : "Share your sizes with your Santa?"}</h2>
+      <p className="mt-1 text-sm text-ink-soft">
+        {[shared?.sizes && summarizeSizes(shared.sizes), shared?.favorites?.likes && `Loves ${shared.favorites.likes}`].filter(Boolean).join(" · ") ||
+          (shared ? "Your favorites" : "Sizes and favorites from your profile. Never your address or birthday.")}
+      </p>
+      {error && <p className="mt-2 text-sm font-bold text-rose-deep">{error}</p>}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {fromProfile && (
+          <Button onClick={() => run(fromProfile)} disabled={busy} variant={shared ? "soft" : undefined}>
+            {shared ? "Update from my profile" : "Share them"}
+          </Button>
+        )}
+        {shared && (
+          <Button variant="ghost" onClick={() => run(null)} disabled={busy}>
+            Stop sharing
+          </Button>
+        )}
+      </div>
     </Card>
   );
 }

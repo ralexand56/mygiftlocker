@@ -6,6 +6,7 @@
  */
 import { upcomingEvents, type EventKind, type UpcomingEvent } from "./events";
 import { shortPlace } from "./addresses";
+import { isGifted } from "./gifts";
 import { holiday, type HolidayId } from "./holidays";
 import type { Person } from "./people";
 import { summarizeSizes } from "./sizes";
@@ -21,12 +22,13 @@ export interface DueReminder extends UpcomingEvent {
 
 const leadDays = (kind: EventKind): readonly number[] => (kind === "holiday" ? HOLIDAY_LEAD_DAYS : PERSONAL_LEAD_DAYS);
 
-/** Events whose lead time matches today, soonest first. */
+/** Events whose lead time matches today, soonest first. Occasions already marked gifted are skipped. */
 export function dueReminders(people: Person[], today: Date): DueReminder[] {
   const byId = new Map(people.map((p) => [p.id, p]));
   return upcomingEvents(people, today)
     .filter((e) => leadDays(e.kind).includes(e.days))
-    .map((e) => ({ ...e, person: byId.get(e.personId)! }));
+    .map((e) => ({ ...e, person: byId.get(e.personId)! }))
+    .filter((e) => !isGifted(e.person, e));
 }
 
 /** Local midnight of the current calendar day in `timeZone` (e.g. "America/New_York"). */

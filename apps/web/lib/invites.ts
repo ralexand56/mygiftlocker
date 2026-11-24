@@ -5,7 +5,7 @@
  * its id; the invitee's answers become a Profile in the inviter's locker. In demo
  * mode the link carries the whole invite (encoded) and answers stay in this browser.
  */
-import { cleanHolidays, decodeInvite, encodeInvite, type HolidayId, type InvitePayload, type Person, type PublicInvite } from "@mgl/core";
+import { cleanGifted, cleanHolidays, decodeInvite, encodeInvite, type HolidayId, type InvitePayload, type Person, type PublicInvite } from "@mgl/core";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
 import { patchPerson, readDB, saveInvite, upsertPerson } from "./store";
 
@@ -70,13 +70,17 @@ export async function listLockerPeople(): Promise<Person[]> {
     guardians: p.guardians?.filter((g): g is string => !!g),
     holidays: cleanHolidays(p.holidays),
     ownerNote: p.ownerNote ?? undefined,
+    gifted: cleanGifted(p.gifted),
     updatedAt: p.updatedAt,
   }));
 }
 
-/** The locker owner's own fields on a person: holiday tags and a private note. */
-export async function updateOwnerFields(id: string, changes: { holidays?: HolidayId[]; ownerNote?: string }): Promise<void> {
+export type OwnerFields = { holidays?: HolidayId[]; ownerNote?: string; gifted?: string[] };
+
+/** The locker owner's own fields on a person: holiday tags, a private note, gifted locks. */
+export async function updateOwnerFields(id: string, changes: OwnerFields): Promise<void> {
   const clean = {
+    ...(changes.gifted && { gifted: cleanGifted(changes.gifted) }),
     ...(changes.holidays && { holidays: cleanHolidays(changes.holidays) }),
     ...(changes.ownerNote !== undefined && { ownerNote: changes.ownerNote.trim().slice(0, 2000) }),
   };

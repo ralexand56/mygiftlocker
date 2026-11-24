@@ -45,8 +45,24 @@ const schema = a
         holidays: a.string().array(),
         /** Owner's private note about this person. Never returned to link holders. */
         ownerNote: a.string(),
+        /** Owner-set: occasions already gifted (gift keys from @mgl/core). Never returned to link holders. */
+        gifted: a.string().array(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub"), allow.ownersDefinedIn("guardians").identityClaim("sub")]),
+
+    /** The signed-in user's own sizes, dates and favorites. One per account; not part of their locker. */
+    SelfProfile: a
+      .model({
+        ownerSub: a.string().required(),
+        name: a.string().required(),
+        sizes: a.json(),
+        address: a.json(),
+        birthday: a.ref("PartialDate"),
+        anniversary: a.ref("PartialDate"),
+        favorites: a.json(),
+      })
+      .identifier(["ownerSub"])
+      .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub")]),
 
     InviteStatus: a.enum(["pending", "accepted", "revoked"]),
 
@@ -99,6 +115,8 @@ const schema = a
         managedBySub: a.string(),
         /** WishItem[] from @mgl/core */
         wishlist: a.json(),
+        /** SharedProfile from @mgl/core: sizes and favorites they chose to show their Santa. */
+        shared: a.json(),
         joinedAt: a.datetime(),
       })
       .secondaryIndexes((index) => [index("exchangeId")])
@@ -125,7 +143,7 @@ const schema = a
 
     joinExchange: a
       .mutation()
-      .arguments({ exchangeId: a.id().required(), name: a.string().required(), email: a.string(), wishlist: a.json() })
+      .arguments({ exchangeId: a.id().required(), name: a.string().required(), email: a.string(), wishlist: a.json(), shared: a.json() })
       .returns(a.json())
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
@@ -140,6 +158,14 @@ const schema = a
     saveWishlist: a
       .mutation()
       .arguments({ exchangeId: a.id().required(), token: a.string().required(), wishlist: a.json().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    /** Share (or with null, stop sharing) sizes and favorites with whoever draws you. */
+    saveShared: a
+      .mutation()
+      .arguments({ exchangeId: a.id().required(), token: a.string().required(), shared: a.json() })
       .returns(a.json())
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),

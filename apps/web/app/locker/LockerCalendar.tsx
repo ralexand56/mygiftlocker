@@ -1,10 +1,11 @@
 "use client";
 
-import { MONTHS, daysInMonth, eventsInMonth, type MonthEvent, type Person } from "@mgl/core";
+import { MONTHS, daysInMonth, eventsInMonth, isGifted, type MonthEvent, type Person, type UpcomingEvent } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/ui";
+import { GiftLock } from "@/components/GiftLock";
 import { EventIcon } from "./EventIcon";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -40,7 +41,16 @@ const milestoneText = (e: MonthEvent) =>
   e.milestone ? (e.kind === "birthday" ? ` · turns ${e.milestone}` : ` · ${e.milestone} ${e.milestone === 1 ? "year" : "years"}`) : "";
 
 /** Month calendar of everyone's birthdays, anniversaries and other dates, with that month's list below. */
-export function LockerCalendar({ people, onOpenPerson }: { people: Person[]; onOpenPerson: (id: string) => void }) {
+export function LockerCalendar({
+  people,
+  onOpenPerson,
+  onToggleGift,
+}: {
+  people: Person[];
+  onOpenPerson: (id: string) => void;
+  onToggleGift: (p: Person, e: UpcomingEvent) => void;
+}) {
+  const byId = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
   const today = new Date();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() + 1 });
   const [direction, setDirection] = useState(1);
@@ -159,8 +169,12 @@ export function LockerCalendar({ people, onOpenPerson }: { people: Person[]; onO
               const e = r.event;
               const when = new Date(view.year, view.month - 1, r.day);
               const isHoliday = e.kind === "holiday";
+              const person = byId.get(e.personId);
+              // Personal dates in the future get a lock; holiday rows (several people) use each person's card.
+              const occasion = { ...e, date: when, days: 0 };
+              const lockable = !isHoliday && person && !isPast(r.day);
               return (
-                <li key={r.key}>
+                <li key={r.key} className="relative">
                   <button
                     onClick={() => onOpenPerson(r.people[0]!.id)}
                     className={`flex w-full items-center gap-3 rounded-2xl bg-white/80 p-3 text-left shadow-soft hover:bg-white ${isPast(r.day) ? "opacity-60" : ""}`}
@@ -184,7 +198,18 @@ export function LockerCalendar({ people, onOpenPerson }: { people: Person[]; onO
                       </span>
                     </span>
                     {isToday(r.day) && <span className="rounded-full bg-rose px-2.5 py-1 text-xs font-bold text-white">Today</span>}
+                    {lockable && <span className="w-9 shrink-0" aria-hidden />}
                   </button>
+                  {lockable && (
+                    <span className="absolute top-1/2 right-3 -translate-y-1/2">
+                      <GiftLock
+                        locked={isGifted(person, occasion)}
+                        onToggle={() => onToggleGift(person, occasion)}
+                        label={`${e.personName.split(" ")[0]}'s ${e.label.toLowerCase()}`}
+                        size={32}
+                      />
+                    </span>
+                  )}
                 </li>
               );
             })}

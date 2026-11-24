@@ -171,6 +171,7 @@ function toPerson(p: Profile): OwnedPerson {
     favorites: parse(p.favorites),
     holidays: cleanHolidays(p.holidays),
     ownerNote: p.ownerNote ?? undefined,
+    gifted: p.gifted?.filter((g): g is string => !!g),
     updatedAt: p.updatedAt,
   };
 }

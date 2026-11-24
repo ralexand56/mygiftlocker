@@ -9,25 +9,31 @@ import {
   filterPeopleByName,
   formatAddress,
   formatPartialDate,
+  isGifted,
   isStale,
   nextEvent,
   sortPeople,
   summarizeSizes,
   upcomingEvents,
+  upcomingEventsFor,
   upcomingMilestone,
+  withGifted,
+  type UpcomingEvent,
   type HolidayId,
   type PeopleSort,
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, CalendarHeart, Gift, Lock, MapPin, Plus, Ruler, Search, X } from "lucide-react";
+import { Baby, CalendarHeart, Gift, Lock, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
 import { HolidayLists } from "./HolidayLists";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
-import { listLockerPeople, updateOwnerFields } from "@/lib/invites";
+import { listLockerPeople, updateOwnerFields, type OwnerFields } from "@/lib/invites";
+import { loadOrClaimSelf } from "@/lib/self";
+import { GiftLock } from "@/components/GiftLock";
 import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
 
@@ -45,7 +51,7 @@ export function Locker() {
   const [holidaysOpen, setHolidaysOpen] = useState(false);
 
   /** Optimistically apply, then save; roll back and rethrow if the save fails. */
-  const saveOwner = async (id: string, changes: { holidays?: HolidayId[]; ownerNote?: string }) => {
+  const saveOwner = async (id: string, changes: OwnerFields) => {
     const before = edits[id];
     setEdits((e) => ({ ...e, [id]: { ...e[id], ...changes } }));
     try {
@@ -56,6 +62,9 @@ export function Locker() {
     }
   };
   const open = people.find((p) => p.id === openId) ?? null;
+  const toggleGift = (p: Person, e: UpcomingEvent) => saveOwner(p.id, { gifted: withGifted(p, e, !isGifted(p, e)) }).catch(() => {});
+  // Their own profile (claimed from a recent invite in this browser, if they just signed up).
+  const { data: self } = useAsync(async () => (user ? loadOrClaimSelf(user.sub) : null), [user?.sub]);
 
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PeopleSort>("next");
@@ -157,6 +166,12 @@ export function Locker() {
         </div>
       )}
 
+      {user && !loadingPeople && (
+        <div className={people.length ? "" : "mx-auto mt-5 max-w-xl"}>
+          <SelfCard self={self ?? null} />
+        </div>
+      )}
+
       <HolidayLists open={holidaysOpen} people={people} onClose={() => setHolidaysOpen(false)} onSave={saveOwner} />
 
       <LayoutGroup>
@@ -166,12 +181,12 @@ export function Locker() {
         <ul className="grid gap-3">
           {shown.map((p, i) => (
             <li key={p.id}>
-              <PersonRow person={p} index={i} hidden={openId === p.id} onOpen={() => setOpenId(p.id)} />
+              <PersonRow person={p} index={i} hidden={openId === p.id} onOpen={() => setOpenId(p.id)} onToggleGift={(e) => toggleGift(p, e)} />
             </li>
           ))}
         </ul>
 
-        {people.length > 0 && <LockerCalendar people={people} onOpenPerson={setOpenId} />}
+        {people.length > 0 && <LockerCalendar people={people} onOpenPerson={setOpenId} onToggleGift={toggleGift} />}
 
         <AnimatePresence>
           {open && (
@@ -194,7 +209,12 @@ export function Locker() {
                   aria-modal
                   aria-label={open.name}
                 >
-                  <PersonDetail person={open} onClose={() => setOpenId(null)} onSaveOwner={(changes) => saveOwner(open.id, changes)} />
+                  <PersonDetail
+                    person={open}
+                    onClose={() => setOpenId(null)}
+                    onSaveOwner={(changes) => saveOwner(open.id, changes)}
+                    onToggleGift={(e) => toggleGift(open, e)}
+                  />
                 </motion.article>
               </div>
             </>
@@ -205,12 +225,23 @@ export function Locker() {
   );
 }
 
-function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index: number; hidden: boolean; onOpen: () => void }) {
+function PersonRow({
+  person: p,
+  index,
+  hidden,
+  onOpen,
+  onToggleGift,
+}: {
+  person: Person;
+  index: number;
+  hidden: boolean;
+  onOpen: () => void;
+  onToggleGift: (e: UpcomingEvent) => void;
+}) {
   const next = nextEvent(p);
   return (
-    <motion.button
+    <motion.div
       layoutId={`card-${p.id}`}
-      onClick={onOpen}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: hidden ? 0 : 1, y: 0 }}
       transition={{ ...hero, delay: hidden ? 0 : Math.min(index, 10) * 0.04 }}
@@ -218,6 +249,8 @@ function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index
       className="glass relative flex w-full items-center gap-4 overflow-hidden p-4 text-left shadow-soft sm:p-5"
       style={{ borderRadius: 24 }}
     >
+      {/* The whole card opens the person; the lock sits above it as its own button. */}
+      <button type="button" onClick={onOpen} aria-label={`Open ${p.name}`} className="absolute inset-0 z-[1] rounded-[24px]" />
       <motion.div
         layoutId={`bg-${p.id}`}
         className="absolute inset-y-0 left-0 w-40"
@@ -257,13 +290,50 @@ function PersonRow({ person: p, index, hidden, onOpen }: { person: Person; index
           <p className="text-sm text-ink-soft">No dates yet</p>
         )}
       </div>
-    </motion.button>
+      {next && (
+        <div className="relative z-[2] -my-1 -mr-1 shrink-0">
+          <GiftLock locked={isGifted(p, next)} onToggle={() => onToggleGift(next)} label={`${p.name.split(" ")[0]}'s ${next.label.toLowerCase()}`} size={38} />
+        </div>
+      )}
+    </motion.div>
   );
 }
 
-type OwnerChanges = { holidays?: HolidayId[]; ownerNote?: string };
+/** The user's own profile: what they share in gift exchanges. */
+function SelfCard({ self }: { self: Person | null }) {
+  const sizes = self ? summarizeSizes(self.sizes) : "";
+  return (
+    <div className="mb-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/60 p-4 ring-1 ring-lavender/40 sm:p-5">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-lavender/60">
+        <UserRound className="h-6 w-6" />
+      </span>
+      <div className="min-w-0 flex-1 basis-56">
+        <p className="font-bold">{self ? "My profile" : "Add your own sizes and wishes"}</p>
+        <p className="truncate text-sm text-ink-soft">
+          {self ? sizes || "No sizes yet" : "Fill it in once, then share it in gift exchanges instead of retyping it."}
+        </p>
+      </div>
+      <Button href="/locker/me" variant="soft">
+        <Pencil className="h-4 w-4" /> {self ? "Edit" : "Add mine"}
+      </Button>
+    </div>
+  );
+}
 
-function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onClose: () => void; onSaveOwner: (changes: OwnerChanges) => Promise<void> }) {
+type OwnerChanges = OwnerFields;
+
+function PersonDetail({
+  person: p,
+  onClose,
+  onSaveOwner,
+  onToggleGift,
+}: {
+  person: Person;
+  onClose: () => void;
+  onSaveOwner: (changes: OwnerChanges) => Promise<void>;
+  onToggleGift: (e: UpcomingEvent) => void;
+}) {
+  const comingUp = upcomingEventsFor(p).slice(0, 5);
   const shoe = p.sizes.shoe && p.sizes.fit ? convertShoe(p.sizes.shoe, p.sizes.fit) : null;
   const sizes: [string, string | undefined][] = [
     ["Section", p.sizes.fit ? FIT_LABELS[p.sizes.fit] : undefined],
@@ -349,6 +419,30 @@ function PersonDetail({ person: p, onClose, onSaveOwner }: { person: Person; onC
                   ) : null,
                 )}
               </div>
+            </motion.section>
+          )}
+
+          {comingUp.length > 0 && (
+            <motion.section variants={item}>
+              <SectionTitle icon={Gift}>Gift checklist</SectionTitle>
+              <ul className="grid gap-2">
+                {comingUp.map((e) => {
+                  const done = isGifted(p, e);
+                  return (
+                    <li key={`${e.kind}-${e.label}`} className={`flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft transition-opacity ${done ? "opacity-80" : ""}`}>
+                      <EventIcon kind={e.kind} holidayId={e.holidayId} className="h-4 w-4 text-rose" />
+                      <span className="min-w-0 flex-1">
+                        <span className={`block font-bold ${done ? "text-ink-soft line-through decoration-rose/60" : ""}`}>{e.label}</span>
+                        <span className="text-sm text-ink-soft">
+                          {e.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {e.days === 0 ? "today" : describeDays(e.days)}
+                        </span>
+                      </span>
+                      <GiftLock locked={done} onToggle={() => onToggleGift(e)} label={`${p.name.split(" ")[0]}'s ${e.label.toLowerCase()}`} showText size={28} />
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-1.5 text-xs text-ink-soft">Locked occasions skip their reminder emails.</p>
             </motion.section>
           )}
 

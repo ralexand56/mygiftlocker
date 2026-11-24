@@ -7,6 +7,7 @@
  */
 import {
   DrawError,
+  cleanShared,
   cleanWishlist,
   drawNames,
   newId,
@@ -15,6 +16,7 @@ import {
   type MyExchangeView,
   type Participant,
   type PublicExchange,
+  type SharedProfile,
   type WishItem,
 } from "@mgl/core";
 import { useCallback, useEffect, useState } from "react";
@@ -210,16 +212,32 @@ export async function getPublicExchange(exchangeId: string): Promise<PublicExcha
   return unwrap<PublicExchange>(await api().queries.getPublicExchange({ exchangeId }, pub));
 }
 
-export async function joinExchange(exchangeId: string, name: string, email: string | undefined, wishlist: { title: string; url?: string }[]): Promise<JoinResult> {
+export async function joinExchange(
+  exchangeId: string,
+  name: string,
+  email: string | undefined,
+  wishlist: { title: string; url?: string }[],
+  shared?: SharedProfile,
+): Promise<JoinResult> {
   if (!backendEnabled) {
     const ex = readDB().exchanges.find((x) => x.id === exchangeId);
     if (!ex) throw new Error("We couldn't find that gift exchange.");
     if (ex.status === "drawn") throw new Error("Names have already been drawn. Ask the organizer to add you.");
-    const p: Participant = { id: newId("pt_"), name, email, token: token(), joinedAt: new Date().toISOString(), wishlist: cleanWishlist(wishlist, ex.wishCount) };
+    const p: Participant = {
+      id: newId("pt_"),
+      name,
+      email,
+      token: token(),
+      joinedAt: new Date().toISOString(),
+      wishlist: cleanWishlist(wishlist, ex.wishCount),
+      shared: cleanShared(shared),
+    };
     patchExchange(exchangeId, (x) => ({ ...x, participants: [...x.participants, p] }));
     return { participantId: p.id, token: p.token };
   }
-  return unwrap<JoinResult>(await api().mutations.joinExchange({ exchangeId, name, email, wishlist: JSON.stringify(wishlist) }, pub));
+  return unwrap<JoinResult>(
+    await api().mutations.joinExchange({ exchangeId, name, email, wishlist: JSON.stringify(wishlist), shared: shared ? JSON.stringify(shared) : undefined }, pub),
+  );
 }
 
 export async function getMyExchange(exchangeId: string, tok: string): Promise<MyExchangeView> {
@@ -230,9 +248,9 @@ export async function getMyExchange(exchangeId: string, tok: string): Promise<My
     const receiver = ex.assignments?.[me.id] ? ex.participants.find((p) => p.id === ex.assignments![me.id]) : undefined;
     return {
       exchange: localPublic(ex),
-      me: { id: me.id, name: me.name, wishlist: me.wishlist },
+      me: { id: me.id, name: me.name, wishlist: me.wishlist, shared: me.shared },
       people: ex.participants.map((p) => ({ id: p.id, name: p.name, wishCount: p.wishlist.length })),
-      match: receiver ? { name: receiver.name, wishlist: receiver.wishlist } : null,
+      match: receiver ? { name: receiver.name, wishlist: receiver.wishlist, shared: receiver.shared } : null,
     };
   }
   return unwrap<MyExchangeView>(await api().queries.getMyExchange({ exchangeId, token: tok }, pub));
@@ -246,6 +264,19 @@ export async function saveWishlist(exchangeId: string, tok: string, wishlist: { 
     return clean;
   }
   return unwrap<{ wishlist: WishItem[] }>(await api().mutations.saveWishlist({ exchangeId, token: tok, wishlist: JSON.stringify(wishlist) }, pub)).wishlist;
+}
+
+/** Share sizes and favorites with whoever draws you; null stops sharing. */
+export async function saveShared(exchangeId: string, tok: string, shared: SharedProfile | null): Promise<SharedProfile | undefined> {
+  if (!backendEnabled) {
+    const clean = cleanShared(shared);
+    patchExchange(exchangeId, (x) => ({ ...x, participants: x.participants.map((p) => (p.token === tok ? { ...p, shared: clean } : p)) }));
+    return clean;
+  }
+  const res = unwrap<{ shared: SharedProfile | null }>(
+    await api().mutations.saveShared({ exchangeId, token: tok, shared: shared ? JSON.stringify(shared) : null }, pub),
+  );
+  return res.shared ?? undefined;
 }
 
 // ---------------------------------------------------------------------------

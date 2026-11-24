@@ -10,6 +10,7 @@ import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtim
 import {
   DrawError,
   cleanAddress,
+  cleanShared,
   cleanWishlist,
   drawNames,
   isPlausibleToken,
@@ -53,11 +54,13 @@ export const handler = async (event: ResolverEvent) => {
       case "getPublicExchange":
         return await getPublicExchange(str(args.exchangeId));
       case "joinExchange":
-        return await joinExchange(str(args.exchangeId), str(args.name), optStr(args.email), parseJson(args.wishlist));
+        return await joinExchange(str(args.exchangeId), str(args.name), optStr(args.email), parseJson(args.wishlist), parseJson(args.shared));
       case "getMyExchange":
         return await getMyExchange(str(args.exchangeId), str(args.token));
       case "saveWishlist":
         return await saveWishlist(str(args.exchangeId), str(args.token), parseJson(args.wishlist));
+      case "saveShared":
+        return await saveShared(str(args.exchangeId), str(args.token), parseJson(args.shared));
       case "getPublicInvite":
         return await getPublicInvite(str(args.inviteId));
       case "submitInvite":
@@ -116,7 +119,7 @@ async function getPublicExchange(exchangeId: string): Promise<PublicExchange> {
   return toPublic(ex, await loadParticipants(exchangeId));
 }
 
-async function joinExchange(exchangeId: string, name: string, email: string | undefined, wishlist: unknown): Promise<JoinResult> {
+async function joinExchange(exchangeId: string, name: string, email: string | undefined, wishlist: unknown, shared: unknown): Promise<JoinResult> {
   const ex = await loadExchange(exchangeId);
   if (ex.status === "drawn") throw new UserError("Names have already been drawn. Ask the organizer to add you.");
   const cleanName = name.trim().slice(0, 80);
@@ -132,6 +135,7 @@ async function joinExchange(exchangeId: string, name: string, email: string | un
     email: email?.trim().slice(0, 200) || undefined,
     token,
     wishlist: JSON.stringify(cleanWishlist(wishlist, ex.wishCount)),
+    shared: sharedJson(shared),
     joinedAt: new Date().toISOString(),
   });
   if (!data) throw new Error(errors?.[0]?.message ?? "Could not join");
@@ -152,6 +156,12 @@ async function findByToken(exchangeId: string, token: string) {
   return { ex, people, me };
 }
 
+const sharedJson = (v: unknown) => {
+  const clean = cleanShared(v);
+  return clean ? JSON.stringify(clean) : null;
+};
+const sharedOf = (p: Participant) => cleanShared(parseJson(p.shared));
+
 const wishes = (p: Participant): WishItem[] => {
   const raw = typeof p.wishlist === "string" ? JSON.parse(p.wishlist) : p.wishlist;
   return Array.isArray(raw) ? (raw as WishItem[]) : [];
@@ -164,11 +174,11 @@ async function getMyExchange(exchangeId: string, token: string): Promise<MyExcha
     const { data: rows } = await client.models.Assignment.listAssignmentByExchangeId({ exchangeId }, { limit: 1000 });
     const mine = rows.find((r) => r.giverId === me.id);
     const receiver = mine && people.find((p) => p.id === mine.receiverId);
-    if (receiver) match = { name: receiver.name, wishlist: wishes(receiver) };
+    if (receiver) match = { name: receiver.name, wishlist: wishes(receiver), shared: sharedOf(receiver) };
   }
   return {
     exchange: toPublic(ex, people),
-    me: { id: me.id, name: me.name, wishlist: wishes(me) },
+    me: { id: me.id, name: me.name, wishlist: wishes(me), shared: sharedOf(me) },
     people: people.map((p) => ({ id: p.id, name: p.name, wishCount: wishes(p).length })),
     match,
   };
@@ -179,6 +189,13 @@ async function saveWishlist(exchangeId: string, token: string, wishlist: unknown
   const clean = cleanWishlist(wishlist, ex.wishCount);
   await client.models.Participant.update({ id: me.id, wishlist: JSON.stringify(clean) });
   return { wishlist: clean };
+}
+
+async function saveShared(exchangeId: string, token: string, shared: unknown) {
+  const { me } = await findByToken(exchangeId, token);
+  const json = sharedJson(shared);
+  await client.models.Participant.update({ id: me.id, shared: json });
+  return { shared: json ? JSON.parse(json) : null };
 }
 
 async function draw(exchangeId: string, callerSub: string | undefined) {

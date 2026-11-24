@@ -11,3 +11,5 @@ export * from "./exchange";
 export * from "./schemas";
 export * from "./demo";
 export * from "./api";
+export * from "./gifts";
+export * from "./shared";

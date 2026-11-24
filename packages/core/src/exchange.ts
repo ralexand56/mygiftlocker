@@ -1,3 +1,4 @@
+import type { SharedProfile } from "./shared";
 /**
  * Gift exchange ("draw names") domain + matching.
  *
@@ -27,6 +28,8 @@ export interface Participant {
   wishlist: WishItem[];
   /** Set when a parent manages this participant (e.g. a young child). */
   managedBy?: string;
+  /** Sizes and favorites they chose to share with whoever draws them. */
+  shared?: SharedProfile;
   joinedAt: string;
 }
 

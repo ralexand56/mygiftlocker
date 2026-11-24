@@ -41,6 +41,8 @@ export interface Person {
   holidays?: HolidayId[];
   /** The locker owner's private note about this person (never shown to them). */
   ownerNote?: string;
+  /** Occasions the owner has already bought a gift for (see gifts.ts). Owner-only. */
+  gifted?: string[];
   favorites?: Favorites;
   /** Guardian user ids for managed (child) profiles. */
   guardians?: string[];

@@ -4,6 +4,7 @@
  */
 import type { ExchangeStatus, WishItem } from "./exchange";
 import type { InvitePayload } from "./invite";
+import type { SharedProfile } from "./shared";
 
 /** What anyone holding the join link may see. No emails, tokens or matches. */
 export interface PublicExchange {
@@ -21,10 +22,10 @@ export interface PublicExchange {
 /** What a participant sees on their private page (link = exchange id + their token). */
 export interface MyExchangeView {
   exchange: PublicExchange;
-  me: { id: string; name: string; wishlist: WishItem[] };
+  me: { id: string; name: string; wishlist: WishItem[]; shared?: SharedProfile };
   people: { id: string; name: string; wishCount: number }[];
   /** Only after the draw, and only their own. */
-  match: { name: string; wishlist: WishItem[] } | null;
+  match: { name: string; wishlist: WishItem[]; shared?: SharedProfile } | null;
 }
 
 export interface JoinResult {
