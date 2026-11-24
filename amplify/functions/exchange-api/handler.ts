@@ -63,6 +63,8 @@ export const handler = async (event: ResolverEvent) => {
         return await submitInvite(str(args.inviteId), parseJson(args.profile), parseJson(args.kids));
       case "drawNames":
         return await draw(str(args.exchangeId), callerSub);
+      case "removeExchange":
+        return await removeExchange(str(args.exchangeId), callerSub);
       default:
         throw new Error(`Unknown operation ${field}`);
     }
@@ -200,6 +202,18 @@ async function draw(exchangeId: string, callerSub: string | undefined) {
   );
   await client.models.Exchange.update({ id: exchangeId, status: "drawn", drawnAt: new Date().toISOString() });
   return { ok: true, count: ids.length };
+}
+
+/** Organizer only. Assignments go first so an interrupted delete never leaves orphaned matches. */
+async function removeExchange(exchangeId: string, callerSub: string | undefined) {
+  const ex = await loadExchange(exchangeId);
+  if (!callerSub || ex.adminSub !== callerSub) throw new UserError("Only the organizer can delete this exchange.");
+  const { data: assignments } = await client.models.Assignment.listAssignmentByExchangeId({ exchangeId }, { limit: 1000 });
+  await Promise.all(assignments.map((a) => client.models.Assignment.delete({ id: a.id })));
+  const people = await loadParticipants(exchangeId);
+  await Promise.all(people.map((p) => client.models.Participant.delete({ id: p.id })));
+  await client.models.Exchange.delete({ id: exchangeId });
+  return { ok: true, deleted: { assignments: assignments.length, participants: people.length } };
 }
 
 // ---- invites ---------------------------------------------------------------

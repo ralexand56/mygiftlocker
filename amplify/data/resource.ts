@@ -160,6 +160,14 @@ const schema = a
       .returns(a.json())
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
+
+    /** Deletes the exchange with its participants and assignments (organizers can't delete assignments directly). */
+    removeExchange: a
+      .mutation()
+      .arguments({ exchangeId: a.id().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
   })
   .authorization((allow) => [allow.resource(exchangeApi)]);
 

@@ -194,10 +194,8 @@ export async function resetDraw(exchangeId: string): Promise<void> {
 
 export async function deleteExchange(exchangeId: string): Promise<void> {
   if (!backendEnabled) return deleteLocal(exchangeId);
-  const c = api();
-  const { data: people } = await c.models.Participant.listParticipantByExchangeId({ exchangeId }, { limit: 500 });
-  await Promise.all(people.map((p) => c.models.Participant.delete({ id: p.id })));
-  await c.models.Exchange.delete({ id: exchangeId });
+  // Server-side so the drawn assignments (read-only to organizers) are removed too.
+  unwrap(await api().mutations.removeExchange({ exchangeId }));
 }
 
 // ---------------------------------------------------------------------------
