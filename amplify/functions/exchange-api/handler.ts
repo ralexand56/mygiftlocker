@@ -76,13 +76,19 @@ export const handler = async (event: ResolverEvent) => {
       case "removeExchange":
         return await removeExchange(str(args.exchangeId), callerSub);
       case "connectProfile":
-        return await connectProfile(str(args.inviteId), parseJson(args.shares), optStr(args.claimToken), callerSub);
+        return await connectProfile(
+          str(args.inviteId),
+          parseJson(args.shares),
+          optStr(args.claimToken),
+          callerSub,
+          args.addBack === true ? { profileId: optStr(args.backProfileId) } : undefined,
+        );
       case "syncMyProfile":
         return await syncMyProfile(callerSub);
       case "setConnectionSharing":
         return await setConnectionSharing(str(args.connectionId), parseJson(args.shares), callerSub);
       case "endConnection":
-        return await endConnection(str(args.connectionId), callerSub);
+        return await endConnection(str(args.connectionId), callerSub, args.both === true);
       case "setReminders":
         return await setReminders(str(args.token), args.enabled === true);
       default:
@@ -274,6 +280,8 @@ async function getPublicInvite(inviteId: string): Promise<PublicInvite> {
     ask: (parseJson(inv.ask) ?? {}) as PublicInvite["ask"],
     note: inv.note ?? undefined,
     purpose: inv.purpose === "connect" ? "connect" : undefined,
+    // Only offered while the sender still has a profile to share.
+    shareBack: inv.purpose === "connect" && inv.shareBack && inv.ownerSub && (await loadSelf(inv.ownerSub)) ? cleanShares(parseJson(inv.shareBack)) : undefined,
   };
 }
 
@@ -371,7 +379,55 @@ async function pushTo(conn: Connection, self: NonNullable<Awaited<ReturnType<typ
   return true;
 }
 
-async function connectProfile(inviteId: string, sharesIn: unknown, claimToken: string | undefined, callerSub: string | undefined) {
+async function endConnections(conns: Connection[], now: string) {
+  for (const c of conns) {
+    await client.models.Connection.update({ id: c.id, status: "ended", endedAt: now });
+    const { data: card } = await client.models.Profile.get({ id: c.profileId });
+    if (card && card.ownerSub === c.ownerSub && card.connectionId === c.id) await client.models.Profile.update({ id: card.id, connectionEnded: true });
+  }
+}
+
+/**
+ * The reverse direction of a two-way connection: `theirSub`'s profile kept on a card in `mySub`'s locker.
+ * Only called when theirSub offered it on their connect link.
+ */
+async function connectBack(mySub: string, myName: string, theirSub: string, theirName: string, shares: ConnectionShares, cardId: string | undefined, now: string) {
+  const theirs = await loadSelf(theirSub);
+  if (!theirs) return null;
+  let profileId: string;
+  if (cardId) {
+    const { data: card } = await client.models.Profile.get({ id: cardId });
+    if (!card || card.ownerSub !== mySub || card.kind !== "adult") throw new UserError("Pick one of the grown-ups in your locker, or add a new card.");
+    profileId = card.id;
+  } else {
+    const { data: card } = await client.models.Profile.create({ ownerSub: mySub, name: theirs.name || theirName, kind: "adult", color: pastelFor(theirs.name || theirName) });
+    if (!card) throw new Error("Couldn't add them to your locker");
+    profileId = card.id;
+  }
+  // One live connection per card.
+  const { data: onMine } = await client.models.Connection.listConnectionByOwnerSub({ ownerSub: mySub }, { limit: 500 });
+  await endConnections(onMine.filter((c) => c.status === "active" && (c.profileId === profileId || c.memberSub === theirSub)), now);
+  const { data: conn } = await client.models.Connection.create({
+    ownerSub: mySub,
+    memberSub: theirSub,
+    profileId,
+    ownerName: myName,
+    memberName: theirs.name,
+    shares: JSON.stringify(shares),
+    status: "active",
+  });
+  if (!conn) throw new Error("Couldn't connect back");
+  await pushTo(conn, theirs, now);
+  return profileId;
+}
+
+async function connectProfile(
+  inviteId: string,
+  sharesIn: unknown,
+  claimToken: string | undefined,
+  callerSub: string | undefined,
+  addBack?: { profileId?: string },
+) {
   const sub = needSignIn(callerSub);
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
   if (!inv || inv.status === "revoked") throw new UserError("This link is no longer active.");
@@ -410,9 +466,12 @@ async function connectProfile(inviteId: string, sharesIn: unknown, claimToken: s
   });
   if (!conn) throw new Error(errors?.[0]?.message ?? "Couldn't connect");
   await pushTo(conn, self, now);
+  // Two-way: only if the sender offered it on this connect link and the caller asked for it.
+  const offered = isConnectLink && inv.shareBack ? cleanShares(parseJson(inv.shareBack)) : null;
+  const backProfileId = offered && addBack ? await connectBack(sub, self.name, inv.ownerSub!, inv.fromName, offered, addBack.profileId, now) : null;
   // Spent either way: the claim code and the connect link each work once.
   await client.models.Invite.update({ id: inv.id, status: "accepted", claimToken: null });
-  return { ok: true, connectionId: conn.id, ownerName: inv.fromName, shares };
+  return { ok: true, connectionId: conn.id, ownerName: inv.fromName, shares, backProfileId };
 }
 
 async function syncMyProfile(callerSub: string | undefined) {
@@ -443,14 +502,18 @@ async function setConnectionSharing(id: string, sharesIn: unknown, callerSub: st
   return { ok: true, shares };
 }
 
-async function endConnection(id: string, callerSub: string | undefined) {
+async function endConnection(id: string, callerSub: string | undefined, both: boolean) {
   const sub = needSignIn(callerSub);
   const conn = await loadConnection(id, sub);
   const now = new Date().toISOString();
-  await client.models.Connection.update({ id, status: "ended", endedAt: now });
-  const { data: card } = await client.models.Profile.get({ id: conn.profileId });
-  if (card && card.ownerSub === conn.ownerSub) await client.models.Profile.update({ id: card.id, connectionEnded: true });
-  return { ok: true };
+  const ending = [conn];
+  if (both) {
+    // The reverse direction: the same two people with roles swapped.
+    const reverse = (await connectionsOf(conn.ownerSub)).filter((c) => c.status === "active" && c.ownerSub === conn.memberSub);
+    ending.push(...reverse);
+  }
+  await endConnections(ending, now);
+  return { ok: true, ended: ending.length };
 }
 
 // ---- helpers ---------------------------------------------------------------

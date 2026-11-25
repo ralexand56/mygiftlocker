@@ -85,6 +85,8 @@ const schema = a
         targetProfileId: a.id(),
         /** One-time secret returned only to whoever answered; required to connect that card. */
         claimToken: a.string(),
+        /** Connect links: ConnectionShares the sender offers back (two-way). Their consent, set when they make the link. */
+        shareBack: a.json(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub")]),
 
@@ -248,10 +250,14 @@ const schema = a
       .handler(a.handler.function(exchangeApi)),
 
     // ---- Connections (signed in) -------------------------------------------
-    /** Link the caller's own profile to the card an invite created (or targets). */
+    /**
+     * Link the caller's own profile to the card an invite created (or targets).
+     * addBack: on connect links that offer it, also keep the sender's profile in the caller's
+     * locker, on backProfileId (one of the caller's cards) or a new card.
+     */
     connectProfile: a
       .mutation()
-      .arguments({ inviteId: a.id().required(), shares: a.json(), claimToken: a.string() })
+      .arguments({ inviteId: a.id().required(), shares: a.json(), claimToken: a.string(), addBack: a.boolean(), backProfileId: a.id() })
       .returns(a.json())
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
@@ -271,10 +277,10 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
-    /** Either side: stop syncing. The card keeps the last shared version. */
+    /** Either side: stop syncing. The card keeps the last shared version. both: also end the reverse direction. */
     endConnection: a
       .mutation()
-      .arguments({ connectionId: a.id().required() })
+      .arguments({ connectionId: a.id().required(), both: a.boolean() })
       .returns(a.json())
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),

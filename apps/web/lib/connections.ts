@@ -17,10 +17,26 @@ export interface MyConnection {
   syncedAt?: string;
 }
 
-/** Link my own profile to the card an invite created (or, for "connect" links, targets). */
-export async function connectProfile(inviteId: string, shares?: ConnectionShares, claimToken?: string): Promise<{ ownerName: string }> {
+/**
+ * Link my own profile to the card an invite created (or, for "connect" links, targets).
+ * addBack (two-way connect links): also keep the sender's profile in my locker, on `profileId` or a new card.
+ */
+export async function connectProfile(
+  inviteId: string,
+  shares?: ConnectionShares,
+  claimToken?: string,
+  addBack?: { profileId?: string },
+): Promise<{ ownerName: string; backProfileId?: string | null }> {
   if (!backendEnabled) return { ownerName: "" };
-  return unwrap(await api().mutations.connectProfile({ inviteId, shares: shares ? JSON.stringify(shares) : undefined, claimToken }));
+  return unwrap(
+    await api().mutations.connectProfile({
+      inviteId,
+      shares: shares ? JSON.stringify(shares) : undefined,
+      claimToken,
+      addBack: !!addBack,
+      backProfileId: addBack?.profileId,
+    }),
+  );
 }
 
 /** Push my profile to everyone I'm connected with. Call after saving it. */
@@ -49,12 +65,25 @@ export async function setSharing(connectionId: string, shares: ConnectionShares)
   unwrap(await api().mutations.setConnectionSharing({ connectionId, shares: JSON.stringify(shares) }));
 }
 
-export async function endConnection(connectionId: string): Promise<void> {
-  unwrap(await api().mutations.endConnection({ connectionId }));
+/** both: also stop sharing my profile back with them (two-way connections). */
+export async function endConnection(connectionId: string, both = false): Promise<void> {
+  unwrap(await api().mutations.endConnection({ connectionId, both }));
 }
 
-/** Owner: a link asking the person on this card to connect their own profile. */
-export async function askToConnect(person: Person, ownerSub: string, fromName: string): Promise<string> {
+/** For a card synced from someone's profile: do I also share mine back with them? */
+export async function sharesBack(connectionId: string, mySub: string): Promise<boolean> {
+  if (!backendEnabled) return false;
+  const { data: conn } = await api().models.Connection.get({ id: connectionId });
+  if (!conn || conn.ownerSub !== mySub) return false;
+  const { data } = await api().models.Connection.listConnectionByMemberSub({ memberSub: mySub }, { limit: 200 });
+  return data.some((c) => c.status === "active" && c.ownerSub === conn.memberSub);
+}
+
+/**
+ * Owner: a link asking the person on this card to connect their own profile.
+ * shareBack: what of my own profile they may keep in their locker in return (two-way).
+ */
+export async function askToConnect(person: Person, ownerSub: string, fromName: string, shareBack?: ConnectionShares): Promise<string> {
   const { data, errors } = await api().models.Invite.create({
     ownerSub,
     fromName,
@@ -63,6 +92,7 @@ export async function askToConnect(person: Person, ownerSub: string, fromName: s
     status: "pending",
     purpose: "connect",
     targetProfileId: person.id,
+    shareBack: shareBack ? JSON.stringify(shareBack) : undefined,
   });
   if (!data) throw new Error(errors?.[0]?.message ?? "Couldn't create the link");
   return `${window.location.origin}/connect/${data.id}`;

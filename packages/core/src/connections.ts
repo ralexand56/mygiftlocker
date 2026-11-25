@@ -63,3 +63,14 @@ export function describeShares(s: ConnectionShares): string {
   if (!on.length) return "nothing yet";
   return on.length === 1 ? on[0]! : `${on.slice(0, -1).join(", ")} and ${on.at(-1)}`;
 }
+
+/**
+ * The card in someone's locker most likely to be `name` (same full name, else same first name),
+ * so a two-way connection links it instead of adding a duplicate.
+ */
+export function likelyCardFor<T extends Pick<Person, "id" | "name" | "kind">>(people: T[], name: string): T | undefined {
+  const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
+  const first = (s: string) => norm(s).split(" ")[0]!;
+  const adults = people.filter((p) => p.kind === "adult");
+  return adults.find((p) => norm(p.name) === norm(name)) ?? (adults.filter((p) => first(p.name) === first(name)).length === 1 ? adults.find((p) => first(p.name) === first(name)) : undefined);
+}

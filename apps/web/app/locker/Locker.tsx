@@ -20,6 +20,8 @@ import {
   upcomingEventsFor,
   upcomingMilestone,
   withGifted,
+  DEFAULT_SHARES,
+  type ConnectionShares,
   type UpcomingEvent,
   type HolidayId,
   type PeopleSort,
@@ -34,8 +36,9 @@ import { HolidayLists } from "./HolidayLists";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
 import { listLockerPeople, updateOwnerFields, type OwnerFields } from "@/lib/invites";
-import { loadOrClaimSelf } from "@/lib/self";
-import { askToConnect, connectionsEnabled, endConnection } from "@/lib/connections";
+import { getSelfProfile, loadOrClaimSelf } from "@/lib/self";
+import { askToConnect, connectionsEnabled, endConnection, sharesBack } from "@/lib/connections";
+import { ShareToggles } from "@/components/ShareToggles";
 import { GiftLock } from "@/components/GiftLock";
 import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
@@ -612,6 +615,14 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [setup, setSetup] = useState(false);
+  const [shareBack, setShareBack] = useState(true);
+  const [backShares, setBackShares] = useState<ConnectionShares>(DEFAULT_SHARES);
+  const [stopBoth, setStopBoth] = useState(true);
+  const [offeredBack, setOfferedBack] = useState(false);
+  const live = !!p.linked && !p.linked.ended;
+  const { data: self, loading: selfLoading } = useAsync(async () => (user && setup ? getSelfProfile(user.sub) : null), [user?.sub, setup]);
+  const { data: mutual } = useAsync(async () => (user && live ? sharesBack(p.linked!.connectionId, user.sub) : false), [user?.sub, live, p.linked?.connectionId]);
   const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
 
   const ask = async () => {
@@ -619,7 +630,10 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
     setBusy(true);
     setNote(null);
     try {
-      setLink(await askToConnect(p, user.sub, user.name));
+      const offer = !!self && shareBack;
+      setLink(await askToConnect(p, user.sub, user.name, offer ? backShares : undefined));
+      setOfferedBack(offer);
+      setSetup(false);
     } catch (e) {
       setNote(e instanceof Error ? e.message : "Couldn't create the link");
     } finally {
@@ -630,7 +644,7 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
     if (!p.linked) return;
     setBusy(true);
     try {
-      await endConnection(p.linked.connectionId);
+      await endConnection(p.linked.connectionId, !!mutual && stopBoth);
       onChanged();
     } catch (e) {
       setNote(e instanceof Error ? e.message : "Couldn't stop syncing");
@@ -648,17 +662,28 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
         <p className="flex items-center justify-center gap-1.5 font-bold">
           <Link2 className="h-4 w-4 text-plum" /> Connected to {first}'s profile
         </p>
-        <p className="text-ink-soft">Updates automatically{p.linked.syncedAt ? ` · last ${day(p.linked.syncedAt)}` : ""}</p>
+        <p className="text-ink-soft">
+          Updates automatically{p.linked.syncedAt ? ` · last ${day(p.linked.syncedAt)}` : ""}
+          {mutual && ` · ${first} gets your updates too`}
+        </p>
         {confirming ? (
-          <p className="mt-2 flex flex-wrap items-center justify-center gap-2">
-            <span>Stop syncing? You keep what's here.</span>
-            <button onClick={stop} disabled={busy} className="rounded-full bg-ink px-3 py-1 font-bold text-white">
-              Stop
-            </button>
-            <button onClick={() => setConfirming(false)} className="rounded-full px-3 py-1 font-bold text-ink-soft">
-              Cancel
-            </button>
-          </p>
+          <div className="mt-2">
+            <p className="flex flex-wrap items-center justify-center gap-2">
+              <span>Stop syncing? You keep what's here.</span>
+              <button onClick={stop} disabled={busy} className="rounded-full bg-ink px-3 py-1 font-bold text-white">
+                Stop
+              </button>
+              <button onClick={() => setConfirming(false)} className="rounded-full px-3 py-1 font-bold text-ink-soft">
+                Cancel
+              </button>
+            </p>
+            {mutual && (
+              <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-ink-soft">
+                <input type="checkbox" checked={stopBoth} onChange={(e) => setStopBoth(e.target.checked)} className="h-4 w-4 accent-plum" />
+                Also stop sending {first} my updates
+              </label>
+            )}
+          </div>
         ) : (
           <button onClick={() => setConfirming(true)} className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-ink-soft hover:text-ink">
             <Unlink className="h-3 w-3" /> Stop syncing
@@ -671,14 +696,12 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
   return (
     <div className={pill}>
       {p.linked?.ended && <p className="mb-1 text-ink-soft">No longer updating{p.linked.syncedAt ? ` · last update ${day(p.linked.syncedAt)}` : ""}</p>}
-      {!link ? (
-        <button onClick={ask} disabled={busy} className="inline-flex items-center gap-1.5 font-bold text-plum hover:underline">
-          <Link2 className="h-4 w-4" /> {busy ? "Creating link…" : `Ask ${first} to connect`}
-        </button>
-      ) : (
+      {link ? (
         <>
           <p className="font-bold">Send {first} this link</p>
-          <p className="text-xs text-ink-soft">When they connect, their changes show up here automatically.</p>
+          <p className="text-xs text-ink-soft">
+            When they connect, their changes show up here automatically{offeredBack ? `, and they can add you to their locker too` : ""}.
+          </p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             <button
               onClick={() => navigator.clipboard?.writeText(link).then(() => setNote("Link copied"))}
@@ -699,6 +722,54 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
             )}
           </div>
         </>
+      ) : setup ? (
+        <div className="text-left">
+          <p className="text-center font-bold">Ask {first} to connect</p>
+          <p className="text-center text-xs text-ink-soft">Their sizes and wishes stay up to date here. They choose what to share.</p>
+          {selfLoading ? (
+            <p className="mt-3 text-center text-ink-soft">Loading…</p>
+          ) : self ? (
+            <>
+              <label className="mt-3 flex cursor-pointer items-start gap-2.5 rounded-2xl bg-cream/70 p-3">
+                <input type="checkbox" checked={shareBack} onChange={(e) => setShareBack(e.target.checked)} className="mt-0.5 h-4 w-4 accent-plum" />
+                <span>
+                  <b className="block">Share my profile back with {first}</b>
+                  <span className="text-xs text-ink-soft">They can add you to their locker, and it stays up to date when you change yours.</span>
+                </span>
+              </label>
+              {shareBack && (
+                <div className="mt-2">
+                  <p className="mb-1.5 text-xs font-bold text-ink-soft">What {first} can see of mine</p>
+                  <ShareToggles value={backShares} onChange={setBackShares} />
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="mt-3 rounded-2xl bg-cream/70 p-3 text-xs text-ink-soft">
+              Want {first} to have your sizes too?{" "}
+              <a href="/locker/me?next=/locker" className="font-bold text-plum underline">
+                Add your profile
+              </a>{" "}
+              first, and you can share it back.
+            </p>
+          )}
+          <div className="mt-3 flex justify-center gap-2">
+            <button
+              onClick={ask}
+              disabled={busy || selfLoading || (!!self && shareBack && !Object.values(backShares).some(Boolean))}
+              className="rounded-full bg-ink px-4 py-1.5 font-bold text-white disabled:opacity-50"
+            >
+              {busy ? "Creating link…" : "Create link"}
+            </button>
+            <button onClick={() => setSetup(false)} className="rounded-full px-3 py-1.5 font-bold text-ink-soft">
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setSetup(true)} className="inline-flex items-center gap-1.5 font-bold text-plum hover:underline">
+          <Link2 className="h-4 w-4" /> Ask {first} to connect
+        </button>
       )}
       {note && <p className="mt-1 text-xs font-bold text-ink-soft">{note}</p>}
     </div>

@@ -5,6 +5,7 @@
 import type { ExchangeStatus, WishItem } from "./exchange";
 import type { InvitePayload } from "./invite";
 import type { SharedProfile } from "./shared";
+import type { ConnectionShares } from "./connections";
 
 /** What anyone holding the join link may see. No emails, tokens or matches. */
 export interface PublicExchange {
@@ -34,7 +35,10 @@ export interface JoinResult {
 }
 
 /** The invite as the invitee sees it. */
-export type PublicInvite = Pick<InvitePayload, "id" | "from" | "to" | "ask" | "note" | "purpose">;
+export type PublicInvite = Pick<InvitePayload, "id" | "from" | "to" | "ask" | "note" | "purpose"> & {
+  /** Connect links: what the sender shares back if the recipient adds them to their own locker. */
+  shareBack?: ConnectionShares;
+};
 
 /** Tokens are 24 random bytes, base64url. */
 export function isPlausibleToken(t: unknown): t is string {
