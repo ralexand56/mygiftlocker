@@ -8,7 +8,7 @@ import type { SizeProfile } from "./sizes";
 
 export interface SharedProfile {
   sizes?: SizeProfile;
-  favorites?: Pick<Favorites, "colors" | "likes" | "avoid" | "wishlists">;
+  favorites?: Pick<Favorites, "colors" | "likes" | "teams" | "avoid" | "wishlists">;
 }
 
 const text = (v: unknown, max: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : undefined);
@@ -47,8 +47,8 @@ export function cleanShared(input: unknown): SharedProfile | undefined {
   const f = (s.favorites ?? {}) as Record<string, unknown>;
   const colors = Array.isArray(f.colors) ? f.colors.map((c) => text(c, 30)).filter((c): c is string => !!c).slice(0, 8) : [];
   const links = cleanWishlistLinks(f.wishlists);
-  const favorites = { colors: colors.length ? colors : undefined, likes: text(f.likes, 500), avoid: text(f.avoid, 500), wishlists: links.length ? links : undefined };
-  const hasFavorites = !!(favorites.colors || favorites.likes || favorites.avoid || favorites.wishlists);
+  const favorites = { colors: colors.length ? colors : undefined, likes: text(f.likes, 500), teams: text(f.teams, 200), avoid: text(f.avoid, 500), wishlists: links.length ? links : undefined };
+  const hasFavorites = !!(favorites.colors || favorites.likes || favorites.teams || favorites.avoid || favorites.wishlists);
   if (!sizes && !hasFavorites) return undefined;
   return { ...(sizes && { sizes }), ...(hasFavorites && { favorites }) };
 }

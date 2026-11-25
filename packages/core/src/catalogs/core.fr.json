@@ -233,7 +233,8 @@
     "openLocker": "Ouvrir mon casier",
     "why": "Vous recevez cet e-mail car vous gardez les dates de vos proches dans My Gift Lockers.",
     "stopText": "Ne plus recevoir ces rappels : {url}",
-    "stop": "Ne plus recevoir ces rappels"
+    "stop": "Ne plus recevoir ces rappels",
+    "teams": "Équipes : {v}"
   },
   "authEmail": {
     "subject": "Votre code My Gift Lockers",

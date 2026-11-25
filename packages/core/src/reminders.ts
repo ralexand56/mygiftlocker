@@ -74,6 +74,7 @@ function details(p: Person, t: Tr): string[] {
   const wishes = p.favorites?.wishes?.filter(Boolean).slice(0, 3) ?? [];
   if (wishes.length) lines.push(t("email.wishes", { v: wishes.join(", ") }));
   if (p.favorites?.likes) lines.push(t("email.loves", { v: p.favorites.likes }));
+  if (p.favorites?.teams) lines.push(t("email.teams", { v: p.favorites.teams }));
   if (p.favorites?.avoid) lines.push(t("email.avoid", { v: p.favorites.avoid }));
   for (const url of p.favorites?.wishlists?.slice(0, 2) ?? []) lines.push(`${linkTitle(url, t)}: ${url}`);
   if (p.address?.city) lines.push(t("email.shipsTo", { v: shortPlace(p.address, "US", t) }));

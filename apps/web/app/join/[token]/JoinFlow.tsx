@@ -87,6 +87,7 @@ interface FormState {
   anniversary: PD;
   colors: string[];
   likes: string;
+  teams: string;
   avoid: string;
   wishes: string[];
   wishlists: string[];
@@ -101,6 +102,7 @@ const initial: FormState = {
   anniversary: {},
   colors: [],
   likes: "",
+  teams: "",
   avoid: "",
   wishes: ["", "", ""],
   wishlists: [""],
@@ -137,6 +139,7 @@ function formFrom(p: Person): FormState {
     anniversary: p.anniversary ?? {},
     colors: p.favorites?.colors ?? [],
     likes: p.favorites?.likes ?? "",
+    teams: p.favorites?.teams ?? "",
     avoid: p.favorites?.avoid ?? "",
     wishes,
     wishlists: p.favorites?.wishlists?.length ? [...p.favorites.wishlists] : [""],
@@ -230,6 +233,7 @@ export function JoinFlow({
       favorites: {
         colors: form.colors,
         likes: form.likes || undefined,
+        teams: form.teams.trim() || undefined,
         avoid: form.avoid || undefined,
         wishes: form.wishes.filter(Boolean),
         wishlists: cleanWishlistLinks(form.wishlists),
@@ -742,6 +746,9 @@ function StepBody({
           <Group label={t("loves")}>
             <Textarea value={form.likes} onChange={(e) => set("likes", e.target.value)} placeholder={t("lovesPlaceholder")} />
           </Group>
+          <Group label={t("teams")}>
+            <Input value={form.teams} onChange={(e) => set("teams", e.target.value)} maxLength={200} placeholder={t("teamsPlaceholder")} />
+          </Group>
           <Group label={t("avoid")}>
             <Input value={form.avoid} onChange={(e) => set("avoid", e.target.value)} placeholder={t("avoidPlaceholder")} />
           </Group>
@@ -935,6 +942,7 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
     [tr("core.events.birthday"), complete(form.birthday), "dates"],
     [tr("core.events.anniversary"), complete(form.anniversary), "dates"],
     [t("loves"), form.likes || form.colors.map((c) => tc(c as "blush")).join(", ") || undefined, "favorites"],
+    [t("teams"), form.teams.trim() || undefined, "favorites"],
     [t("lists"), cleanWishlistLinks(form.wishlists).map((u) => linkTitle(u, tr)).join(", ") || undefined, "favorites"],
     [t("kids"), form.kids.map((k) => k.name).filter(Boolean).join(", ") || undefined, "kids"],
   ];

@@ -15,6 +15,8 @@ export interface Address {
 export interface Favorites {
   colors?: string[];
   likes?: string;
+  /** Favorite sports teams, as they write them ("Chicago Cubs, Real Madrid"). */
+  teams?: string;
   avoid?: string; // allergies, dislikes, "please no more mugs"
   wishes?: string[];
   /** Links to wish lists kept elsewhere (Amazon, Target, Etsy…). */

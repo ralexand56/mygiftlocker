@@ -376,7 +376,8 @@
       "shipTo": "Ship to",
       "favorites": "Favorites",
       "colors": "Colors: {v}",
-      "avoid": "Avoid: {v}"
+      "avoid": "Avoid: {v}",
+      "teams": "Teams: {v}"
     },
     "owner": {
       "title": "Just for you",
@@ -493,7 +494,9 @@
       "avoidPlaceholder": "Allergies, dislikes, 'no more mugs!'",
       "wishes": "Top 3 wishes",
       "wish": "Wish #{n}",
-      "lists": "Wish lists & registries (optional)"
+      "lists": "Wish lists & registries (optional)",
+      "teams": "Favorite sports teams (optional)",
+      "teamsPlaceholder": "Chicago Cubs, Real Madrid, the Lakers…"
     },
     "links": {
       "placeholder": "Paste an Amazon wish list or registry link",
@@ -526,7 +529,8 @@
       "lists": "Lists & registries",
       "kids": "Kids",
       "skipped": "Skipped",
-      "edit": "Edit {label}"
+      "edit": "Edit {label}",
+      "teams": "Teams"
     },
     "success": {
       "title": "Thank you, {name}!",
@@ -735,7 +739,8 @@
       "update": "Update from my profile",
       "shareThem": "Share them",
       "stop": "Stop sharing"
-    }
+    },
+    "teams": "Teams: {v}"
   },
   "gifts": {
     "eyebrow": "Gift ideas",

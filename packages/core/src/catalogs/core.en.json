@@ -233,7 +233,8 @@
     "openLocker": "Open my locker",
     "why": "You're getting this because you keep people's dates in My Gift Lockers.",
     "stopText": "Stop these reminders: {url}",
-    "stop": "Stop these reminders"
+    "stop": "Stop these reminders",
+    "teams": "Teams: {v}"
   },
   "authEmail": {
     "subject": "Your My Gift Lockers code",

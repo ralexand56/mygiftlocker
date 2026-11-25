@@ -200,9 +200,10 @@ function SharedDetails({ name, shared }: { name: string; shared: SharedProfile }
         </div>
       )}
       {!!f.wishlists?.length && <WishlistLinkList links={f.wishlists} />}
-      {(f.likes || f.colors?.length || f.avoid) && (
+      {(f.likes || f.teams || f.colors?.length || f.avoid) && (
         <div className="mt-2 rounded-2xl bg-white p-4 shadow-soft">
           {f.likes && <p>{t("lovesColon", { v: f.likes })}</p>}
+          {f.teams && <p className="mt-1 text-sm">🏟️ {t("teams", { v: f.teams })}</p>}
           {!!f.colors?.length && <p className="mt-1 text-sm text-ink-soft">{t("colors", { v: f.colors.map((c) => tc(c as "blush")).join(", ") })}</p>}
           {f.avoid && <p className="mt-1 text-sm text-rose-deep">{t("avoid", { v: f.avoid })}</p>}
         </div>

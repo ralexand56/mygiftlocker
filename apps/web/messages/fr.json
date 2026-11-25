@@ -376,7 +376,8 @@
       "shipTo": "Livrer à",
       "favorites": "Préférences",
       "colors": "Couleurs : {v}",
-      "avoid": "À éviter : {v}"
+      "avoid": "À éviter : {v}",
+      "teams": "Équipes : {v}"
     },
     "owner": {
       "title": "Rien que pour vous",
@@ -493,7 +494,9 @@
       "avoidPlaceholder": "Allergies, ce que vous n’aimez pas, « plus de mugs ! »",
       "wishes": "Vos 3 souhaits principaux",
       "wish": "Souhait n° {n}",
-      "lists": "Listes de souhaits et listes de cadeaux (facultatif)"
+      "lists": "Listes de souhaits et listes de cadeaux (facultatif)",
+      "teams": "Équipes de sport préférées (facultatif)",
+      "teamsPlaceholder": "PSG, Real Madrid, les Lakers…"
     },
     "links": {
       "placeholder": "Collez le lien d’une liste d’envies Amazon ou d’une liste de cadeaux",
@@ -526,7 +529,8 @@
       "lists": "Listes de souhaits et de cadeaux",
       "kids": "Enfants",
       "skipped": "Passé",
-      "edit": "Modifier : {label}"
+      "edit": "Modifier : {label}",
+      "teams": "Équipes"
     },
     "success": {
       "title": "Merci, {name} !",
@@ -735,7 +739,8 @@
       "update": "Mettre à jour depuis mon profil",
       "shareThem": "Les partager",
       "stop": "Arrêter de partager"
-    }
+    },
+    "teams": "Équipes : {v}"
   },
   "gifts": {
     "eyebrow": "Idées cadeaux",

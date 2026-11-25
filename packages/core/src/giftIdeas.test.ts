@@ -36,7 +36,7 @@ describe("gift ideas", () => {
       sizes: { fit: "womens", top: "S", shoe: 7.5 },
       address: { line1: "1 Secret St", city: "Portland", region: "OR", postalCode: "97201", country: "US" },
       birthday: { month: 12, day: 1, year: 1991 },
-      favorites: { likes: "pottery", wishes: ["matcha set"], colors: ["sage"] },
+      favorites: { likes: "pottery", teams: "Portland Thorns", wishes: ["matcha set"], colors: ["sage"] },
       ownerNote: "Just moved",
       updatedAt: "",
     };
@@ -44,6 +44,7 @@ describe("gift ideas", () => {
     expect(text).toContain("Sizes (US): Top S · Shoe 7.5");
     expect(text).toContain("Birthday in 7 days (turning 35)");
     expect(text).toContain("My private notes about them: Just moved");
+    expect(text).toContain("Favorite sports teams: Portland Thorns");
     expect(text).not.toContain("Secret St");
   });
 });

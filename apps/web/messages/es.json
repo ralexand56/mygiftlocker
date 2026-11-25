@@ -376,7 +376,8 @@
       "shipTo": "Enviar a",
       "favorites": "Favoritos",
       "colors": "Colores: {v}",
-      "avoid": "Evitar: {v}"
+      "avoid": "Evitar: {v}",
+      "teams": "Equipos: {v}"
     },
     "owner": {
       "title": "Solo para ti",
@@ -493,7 +494,9 @@
       "avoidPlaceholder": "Alergias, cosas que no te gustan, «¡no más tazas!»",
       "wishes": "Tus 3 deseos principales",
       "wish": "Deseo n.º {n}",
-      "lists": "Listas de deseos y de regalos (opcional)"
+      "lists": "Listas de deseos y de regalos (opcional)",
+      "teams": "Equipos favoritos (opcional)",
+      "teamsPlaceholder": "América, Real Madrid, los Lakers…"
     },
     "links": {
       "placeholder": "Pega un enlace de lista de deseos de Amazon o de una mesa de regalos",
@@ -526,7 +529,8 @@
       "lists": "Listas y mesas de regalos",
       "kids": "Hijos",
       "skipped": "Omitido",
-      "edit": "Editar: {label}"
+      "edit": "Editar: {label}",
+      "teams": "Equipos"
     },
     "success": {
       "title": "¡Gracias, {name}!",
@@ -735,7 +739,8 @@
       "update": "Actualizar desde mi perfil",
       "shareThem": "Compartirlas",
       "stop": "Dejar de compartir"
-    }
+    },
+    "teams": "Equipos: {v}"
   },
   "gifts": {
     "eyebrow": "Ideas de regalo",

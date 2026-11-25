@@ -233,7 +233,8 @@
     "openLocker": "Abrir meu armário",
     "why": "Você recebe este e-mail porque guarda as datas das pessoas queridas no My Gift Lockers.",
     "stopText": "Parar de receber estes lembretes: {url}",
-    "stop": "Parar de receber estes lembretes"
+    "stop": "Parar de receber estes lembretes",
+    "teams": "Times: {v}"
   },
   "authEmail": {
     "subject": "Seu código do My Gift Lockers",

@@ -107,6 +107,7 @@ export function giftContext(p: Person, today = new Date()): string {
   const f = p.favorites;
   if (f?.colors?.length) lines.push(`Favorite colors: ${f.colors.join(", ")}`);
   if (f?.likes) lines.push(`Loves: ${f.likes}`);
+  if (f?.teams) lines.push(`Favorite sports teams: ${f.teams}`);
   if (f?.avoid) lines.push(`Avoid: ${f.avoid}`);
   const wishes = f?.wishes?.filter(Boolean) ?? [];
   if (wishes.length) lines.push(`Their own wishes: ${wishes.join("; ")}`);
