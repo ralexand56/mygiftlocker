@@ -48,6 +48,10 @@ export interface Person {
   favorites?: Favorites;
   /** Set when this card stays in sync with the person's own profile (see connections.ts). */
   linked?: { connectionId: string; syncedAt?: string; ended?: boolean };
+  /** Owner-only photos (storage paths), at most MAX_PERSON_PHOTOS; used for gift ideas. Adults only. */
+  photos?: string[];
+  /** The last "find the perfect gift" list, so reopening it is free. */
+  giftIdeas?: { ideas: import("./giftIdeas").GiftIdea[]; request?: string; at: string };
   /** Guardian user ids for managed (child) profiles. */
   guardians?: string[];
   updatedAt: string;

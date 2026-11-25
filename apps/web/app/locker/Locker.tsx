@@ -32,7 +32,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Sparkles, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -48,6 +48,9 @@ import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
 import { useTranslations } from "next-intl";
 import { useIntlTag, useTr } from "@/lib/i18n";
+import { GiftFinder } from "./GiftFinder";
+import { PersonPhotos } from "./PersonPhotos";
+import { photosEnabled } from "@/lib/gifts";
 
 const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 
@@ -76,6 +79,8 @@ export function Locker() {
     }
   };
   const open = people.find((p) => p.id === openId) ?? null;
+  /** Fields already saved elsewhere (photos, gift lists): just show them. */
+  const patchLocal = (id: string, changes: Partial<Person>) => setEdits((e) => ({ ...e, [id]: { ...e[id], ...changes } }));
   const toggleGift = (p: Person, e: UpcomingEvent) => saveOwner(p.id, { gifted: withGifted(p, e, !isGifted(p, e)) }).catch(() => {});
   // Their own profile (claimed from a recent invite in this browser, if they just signed up).
   const { data: self } = useAsync(async () => (user ? loadOrClaimSelf(user.sub) : null), [user?.sub]);
@@ -86,7 +91,8 @@ export function Locker() {
   const upcoming = useMemo(() => upcomingEvents(people)[0], [people]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenId(null);
+    // The gift finder sits on top of the card and closes first.
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !document.querySelector("[data-gift-finder]") && setOpenId(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
@@ -226,6 +232,7 @@ export function Locker() {
                     onSaveOwner={(changes) => saveOwner(open.id, changes)}
                     onToggleGift={(e) => toggleGift(open, e)}
                     onConnectionChanged={reloadPeople}
+                    onLocalChange={(changes) => patchLocal(open.id, changes)}
                   />
                 </motion.article>
               </div>
@@ -351,15 +358,19 @@ function PersonDetail({
   onSaveOwner,
   onToggleGift,
   onConnectionChanged,
+  onLocalChange,
 }: {
   person: Person;
   onClose: () => void;
   onSaveOwner: (changes: OwnerChanges) => Promise<void>;
   onToggleGift: (e: UpcomingEvent) => void;
   onConnectionChanged: () => void;
+  onLocalChange: (changes: Partial<Person>) => void;
 }) {
   const t = useTranslations("locker.detail");
+  const tg = useTranslations("gifts");
   const tc = useTranslations("colors");
+  const [finding, setFinding] = useState(false);
   const tr = useTr();
   const tag = useIntlTag();
   const comingUp = upcomingEventsFor(p).slice(0, 5);
@@ -399,6 +410,15 @@ function PersonDetail({
           {p.name}
         </motion.h2>
         <p className="relative mt-1 text-ink-soft">{p.relationship}</p>
+        <motion.button
+          type="button"
+          onClick={() => setFinding(true)}
+          whileHover={{ y: -3, scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className="relative mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-rose to-plum px-6 py-3 font-bold text-white shadow-lift"
+        >
+          <Sparkles className="h-4 w-4" /> {p.giftIdeas ? tg("open") : tg("find")}
+        </motion.button>
         {connectionsEnabled && p.kind === "adult" && <ConnectionPanel person={p} onChanged={onConnectionChanged} />}
       </div>
 
@@ -480,6 +500,11 @@ function PersonDetail({
 
           <motion.section variants={item}>
             <OwnerSection person={p} onSave={onSaveOwner} />
+            {photosEnabled && p.kind === "adult" && (
+              <div className="mt-3">
+                <PersonPhotos person={p} onChange={(photos) => onLocalChange({ photos })} />
+              </div>
+            )}
           </motion.section>
 
           {p.address && (
@@ -515,6 +540,9 @@ function PersonDetail({
           )}
         </motion.div>
       </div>
+      <AnimatePresence>
+        {finding && <GiftFinder person={p} onClose={() => setFinding(false)} onSaved={(giftIdeas) => onLocalChange({ giftIdeas })} />}
+      </AnimatePresence>
     </div>
   );
 }

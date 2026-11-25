@@ -108,7 +108,8 @@
         "profile": "<strong>Seu próprio perfil e suas conexões.</strong> Se você salvar seu próprio perfil, ele é copiado para os armários das pessoas com quem você escolhe se conectar, apenas nas partes que você escolhe compartilhar.",
         "exchanges": "<strong>Amigo secreto.</strong> O nome, a data, o orçamento e a mensagem do amigo secreto; o nome de cada participante, o e-mail opcional e a lista de desejos; as exclusões; e quem tirou quem.",
         "invites": "<strong>Convites.</strong> Quando alguém preenche um convite que você enviou, os dados que essa pessoa escolhe compartilhar com você.",
-        "technical": "<strong>Dados técnicos.</strong> Nosso provedor de hospedagem mantém registros padrão do servidor (como endereço IP, tipo de navegador e horário da requisição) para operar e proteger o serviço. Guardamos sua escolha de idioma em um cookie. Não usamos rastreadores de publicidade nem de análise."
+        "technical": "<strong>Dados técnicos.</strong> Nosso provedor de hospedagem mantém registros padrão do servidor (como endereço IP, tipo de navegador e horário da requisição) para operar e proteger o serviço. Guardamos sua escolha de idioma em um cookie. Não usamos rastreadores de publicidade nem de análise.",
+        "photos": "<strong>Fotos e ideias de presente.</strong> As fotos que você adiciona a um cartão (até 5, só adultos) e os dados do cartão, incluindo suas anotações privadas, são usados para sugerir presentes. Elas ficam guardadas de forma privada na sua conta."
       }
     },
     "use": {
@@ -117,7 +118,8 @@
         "service": "Para oferecer o serviço: mostrar seu armário, organizar amigos secretos, sortear nomes e revelar quem tirou quem.",
         "signIn": "Para você entrar e manter sua conta segura.",
         "reminders": "Para enviar lembretes por e-mail antes de aniversários, bodas e datas comemorativas do seu armário. Todo lembrete tem um link para parar de recebê-los.",
-        "contact": "Para responder quando você entrar em contato."
+        "contact": "Para responder quando você entrar em contato.",
+        "ai": "Para sugerir presentes: quando você pede ideias, os dados do cartão, suas anotações e as fotos são enviados ao modelo Claude, da Anthropic, executado no Amazon Bedrock, para criar a lista. O Amazon Bedrock não os usa para treinar modelos."
       },
       "noSale": "Não vendemos nem alugamos informações pessoais, e não as usamos para publicidade."
     },
@@ -127,7 +129,8 @@
         "locker": "Seu armário é privado (e visível para os corresponsáveis que você adicionar ao perfil de uma criança).",
         "exchange": "Participantes de um amigo secreto veem os detalhes do amigo secreto e, depois do sorteio, apenas quem tiraram e a lista de desejos dessa pessoa, pelo link privado. Organizadores podem gerenciar os participantes e ver o resultado do sorteio.",
         "connections": "As pessoas com quem você conecta seu perfil veem as partes que você compartilha, até você mudar isso ou se desconectar.",
-        "links": "Qualquer pessoa com um link privado de amigo secreto ou de convite pode usá-lo, então compartilhe os links só com quem deve recebê-los."
+        "links": "Qualquer pessoa com um link privado de amigo secreto ou de convite pode usá-lo, então compartilhe os links só com quem deve recebê-los.",
+        "affiliate": "Os links de compra podem ser links de afiliado (por exemplo, Amazon Associates), que podem nos render uma comissão sem custo para você. A loja sabe que você veio do nosso site, não para quem é o presente."
       }
     },
     "providers": {
@@ -731,5 +734,57 @@
       "shareThem": "Compartilhar",
       "stop": "Parar de compartilhar"
     }
+  },
+  "gifts": {
+    "eyebrow": "Ideias de presente",
+    "title": "Presentes para {name}",
+    "close": "Fechar",
+    "find": "Encontrar o presente perfeito",
+    "open": "Ideias de presente",
+    "retry": "Tentar de novo",
+    "errors": {
+      "notFound": "Esse cartão não está mais no seu armário.",
+      "limit": "Você já usou as {n} listas de presentes de hoje. Amanhã tem mais!",
+      "declined": "Não conseguimos gerar ideias para esse pedido. Tente pedir de outro jeito.",
+      "failed": "Algo deu errado ao gerar as ideias. Tente de novo.",
+      "timeout": "Está demorando mais que o normal. Tente de novo em um minuto."
+    },
+    "stores": {
+      "amazon": "Amazon",
+      "etsy": "Etsy",
+      "target": "Target",
+      "walmart": "Walmart"
+    },
+    "shop": "Ver na {store}",
+    "notThis": "Isso não: {title}",
+    "notThisShort": "Isso não",
+    "allHidden": "Você esvaziou a lista. Peça algo novo abaixo.",
+    "chips": {
+      "under50": "Até US$ 50",
+      "experience": "Uma experiência, não um objeto",
+      "handmade": "Feito à mão ou personalizado",
+      "lastMinute": "Ideias de última hora",
+      "splurge": "Algo especial, sem economizar"
+    },
+    "placeholder": "Peça o que quiser: “algo para o jardim de {name}, até US$ 40”",
+    "askLabel": "O que você está procurando?",
+    "send": "Ver ideias",
+    "aiNote": "As ideias são criadas por IA a partir deste cartão, incluindo suas anotações e fotos. Confira tamanhos e detalhes antes de comprar.",
+    "disclosure": "Podemos ganhar uma comissão pelas compras feitas por estes links.",
+    "thinking": {
+      "0": "Lendo os tamanhos e preferências de {name}…",
+      "1": "Olhando suas anotações e fotos…",
+      "2": "Vendo as datas que estão chegando…",
+      "3": "Escolhendo ideias que {name} vai amar…"
+    }
+  },
+  "photos": {
+    "title": "Fotos de {name}",
+    "alt": "Foto de {name}",
+    "add": "Adicionar foto",
+    "remove": "Remover foto",
+    "hint": "Até {max}. Só você vê; elas ajudam a escolher presentes com o estilo da pessoa.",
+    "uploadFailed": "Não foi possível adicionar a foto. Tente JPEG ou PNG.",
+    "removeFailed": "Não foi possível remover a foto. Tente de novo."
   }
 }

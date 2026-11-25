@@ -5,7 +5,18 @@
  * its id; the invitee's answers become a Profile in the inviter's locker. In demo
  * mode the link carries the whole invite (encoded) and answers stay in this browser.
  */
-import { cleanGifted, cleanHolidays, decodeInvite, encodeInvite, type HolidayId, type InvitePayload, type Person, type PublicInvite } from "@mgl/core";
+import {
+  MAX_PERSON_PHOTOS,
+  cleanGiftIdeas,
+  cleanGifted,
+  cleanHolidays,
+  decodeInvite,
+  encodeInvite,
+  type HolidayId,
+  type InvitePayload,
+  type Person,
+  type PublicInvite,
+} from "@mgl/core";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
 import { patchPerson, readDB, saveInvite, upsertPerson } from "./store";
 import { currentTr } from "./i18n-current";
@@ -75,11 +86,20 @@ export async function listLockerPeople(): Promise<Person[]> {
     ownerNote: p.ownerNote ?? undefined,
     gifted: cleanGifted(p.gifted),
     linked: p.connectionId ? { connectionId: p.connectionId, syncedAt: p.syncedAt ?? undefined, ended: !!p.connectionEnded } : undefined,
+    photos: p.photos?.filter((x): x is string => !!x),
+    giftIdeas: savedIdeas(p.giftIdeas),
     updatedAt: p.updatedAt,
   }));
 }
 
-export type OwnerFields = { holidays?: HolidayId[]; ownerNote?: string; gifted?: string[] };
+export type OwnerFields = { holidays?: HolidayId[]; ownerNote?: string; gifted?: string[]; photos?: string[] };
+
+/** The saved gift list on a card, validated. */
+function savedIdeas(v: unknown): Person["giftIdeas"] {
+  const o = parseJson<{ ideas?: unknown; request?: string; at?: string } | null>(v ?? "null");
+  const ideas = cleanGiftIdeas(o?.ideas);
+  return ideas.length && o?.at ? { ideas, request: o.request, at: o.at } : undefined;
+}
 
 /** The locker owner's own fields on a person: holiday tags, a private note, gifted locks. */
 export async function updateOwnerFields(id: string, changes: OwnerFields): Promise<void> {
@@ -87,6 +107,7 @@ export async function updateOwnerFields(id: string, changes: OwnerFields): Promi
     ...(changes.gifted && { gifted: cleanGifted(changes.gifted) }),
     ...(changes.holidays && { holidays: cleanHolidays(changes.holidays) }),
     ...(changes.ownerNote !== undefined && { ownerNote: changes.ownerNote.trim().slice(0, 2000) }),
+    ...(changes.photos && { photos: changes.photos.slice(0, MAX_PERSON_PHOTOS) }),
   };
   if (!backendEnabled) return patchPerson(id, clean);
   unwrap(await api().models.Profile.update({ id, ...clean }));

@@ -108,7 +108,8 @@
         "profile": "<strong>Your own profile and connections.</strong> If you save your own profile, it’s copied to the lockers of the people you choose to connect with, limited to the parts you choose to share.",
         "exchanges": "<strong>Gift exchanges.</strong> The exchange name, date, budget and message; each participant’s name, optional email and wishlist; exclusions; and who drew whom.",
         "invites": "<strong>Invites.</strong> When someone fills in an invite you sent, the details they choose to share with you.",
-        "technical": "<strong>Technical data.</strong> Our hosting provider keeps standard server logs (such as IP address, browser type and request time) to run and secure the service. We remember your language choice in a cookie. We don’t use advertising or analytics trackers."
+        "technical": "<strong>Technical data.</strong> Our hosting provider keeps standard server logs (such as IP address, browser type and request time) to run and secure the service. We remember your language choice in a cookie. We don’t use advertising or analytics trackers.",
+        "photos": "<strong>Photos and gift ideas.</strong> Photos you add to a card (up to 5, adults only) and the card’s details, including your private notes, are used to suggest gifts. They’re stored privately in your account."
       }
     },
     "use": {
@@ -117,7 +118,8 @@
         "service": "To provide the service: show your locker, run exchanges, draw names and reveal matches.",
         "signIn": "To sign you in and keep your account secure.",
         "reminders": "To email you reminders before birthdays, anniversaries and holidays in your locker. Every reminder has a link to stop them.",
-        "contact": "To respond when you contact us."
+        "contact": "To respond when you contact us.",
+        "ai": "To suggest gifts: when you ask for gift ideas, the card’s details, your notes and its photos are sent to Anthropic’s Claude model running in Amazon Bedrock to generate the list. Amazon Bedrock doesn’t use them to train models."
       },
       "noSale": "We don’t sell or rent personal information, and we don’t use it for advertising."
     },
@@ -127,7 +129,8 @@
         "locker": "Your locker is private to you (and to co-guardians you add for a child’s profile).",
         "exchange": "Exchange participants can see the exchange details and, after names are drawn, only their own match and that person’s wishlist, through their private link. Organizers can manage participants and may view assignments.",
         "connections": "People you connect your profile with see the parts you share, until you change that or disconnect.",
-        "links": "Anyone holding a private exchange or invite link can use it, so share links only with the people they’re meant for."
+        "links": "Anyone holding a private exchange or invite link can use it, so share links only with the people they’re meant for.",
+        "affiliate": "Shop links may be affiliate links (for example Amazon Associates), which can earn us a commission at no cost to you. The store sees that you came from us, not who the gift is for."
       }
     },
     "providers": {
@@ -731,5 +734,57 @@
       "shareThem": "Share them",
       "stop": "Stop sharing"
     }
+  },
+  "gifts": {
+    "eyebrow": "Gift ideas",
+    "title": "Gifts for {name}",
+    "close": "Close",
+    "find": "Find the perfect gift",
+    "open": "Gift ideas",
+    "retry": "Try again",
+    "errors": {
+      "notFound": "That card isn't in your locker anymore.",
+      "limit": "You've used today's {n} gift lists. More tomorrow!",
+      "declined": "We couldn't make ideas for that request. Try asking another way.",
+      "failed": "Something went wrong making ideas. Try again.",
+      "timeout": "This is taking longer than usual. Try again in a minute."
+    },
+    "stores": {
+      "amazon": "Amazon",
+      "etsy": "Etsy",
+      "target": "Target",
+      "walmart": "Walmart"
+    },
+    "shop": "Shop {store}",
+    "notThis": "Not this: {title}",
+    "notThisShort": "Not this",
+    "allHidden": "You've cleared the list. Ask for something new below.",
+    "chips": {
+      "under50": "Under $50",
+      "experience": "An experience, not a thing",
+      "handmade": "Handmade or personalized",
+      "lastMinute": "Last-minute ideas",
+      "splurge": "A real splurge"
+    },
+    "placeholder": "Ask for anything: “something for {name}'s garden, under $40”",
+    "askLabel": "What are you looking for?",
+    "send": "Get ideas",
+    "aiNote": "Ideas are made by AI from what's in this card, including your notes and photos. Check sizes and details before buying.",
+    "disclosure": "We may earn a commission from purchases through these links.",
+    "thinking": {
+      "0": "Reading {name}'s sizes and favorites…",
+      "1": "Looking through your notes and photos…",
+      "2": "Checking what's coming up…",
+      "3": "Picking ideas {name} will love…"
+    }
+  },
+  "photos": {
+    "title": "Photos of {name}",
+    "alt": "Photo of {name}",
+    "add": "Add a photo",
+    "remove": "Remove photo",
+    "hint": "Up to {max}. Only you see them; they help pick gifts that match their style.",
+    "uploadFailed": "Couldn't add that photo. Try a JPEG or PNG.",
+    "removeFailed": "Couldn't remove the photo. Try again."
   }
 }

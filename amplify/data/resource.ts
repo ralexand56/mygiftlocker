@@ -2,6 +2,7 @@ import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 import { eventReminders } from "../functions/event-reminders/resource";
 import { exchangeApi } from "../functions/exchange-api/resource";
 import { authMessage } from "../functions/auth-message/resource";
+import { giftIdeas } from "../functions/gift-ideas/resource";
 
 /**
  * Data model. Mirrors the TypeScript types in packages/core.
@@ -52,6 +53,10 @@ const schema = a
         connectionId: a.id(),
         syncedAt: a.datetime(),
         connectionEnded: a.boolean(),
+        /** Owner-only: storage paths of up to 5 photos (adults only), used for gift ideas. */
+        photos: a.string().array(),
+        /** The last gift list ({ ideas, request, at }), so reopening it is free. */
+        giftIdeas: a.json(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub"), allow.ownersDefinedIn("guardians").identityClaim("sub")]),
 
@@ -90,6 +95,35 @@ const schema = a
         shareBack: a.json(),
       })
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub")]),
+
+    GiftJobStatus: a.enum(["pending", "running", "done", "error"]),
+
+    /**
+     * One "find the perfect gift" run. The owner creates it (status pending) and calls
+     * findGifts; the gift-ideas function fills in ideas or an error. The owner polls it.
+     */
+    GiftJob: a
+      .model({
+        ownerSub: a.string().required(),
+        profileId: a.id().required(),
+        /** What they asked for in their own words ("under $50, something for her garden"). */
+        request: a.string(),
+        locale: a.string(),
+        status: a.ref("GiftJobStatus"),
+        /** GiftIdea[] from @mgl/core. */
+        ideas: a.json(),
+        error: a.string(),
+      })
+      .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub").to(["create", "read", "delete"])]),
+
+    /** "ownerSub#YYYY-MM-DD": gift lists run that day, for the daily cap. */
+    GiftUsage: a
+      .model({
+        id: a.id().required(),
+        ownerSub: a.string().required(),
+        count: a.integer().required(),
+      })
+      .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub").to(["read"])]),
 
     ConnectionStatus: a.enum(["active", "ended"]),
 
@@ -296,6 +330,17 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
+    // ---- Gift ideas (signed in) ----------------------------------------------
+    /**
+     * Runs a GiftJob the caller created. Asynchronous: returns at once; the function writes
+     * the result to the job. photoUrls are short-lived signed URLs for the person's photos.
+     */
+    findGifts: a
+      .mutation()
+      .arguments({ jobId: a.id().required(), photoUrls: a.string().array() })
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(giftIdeas).async()),
+
     // ---- Organizer operations ---------------------------------------------
     drawNames: a
       .mutation()
@@ -312,7 +357,7 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
   })
-  .authorization((allow) => [allow.resource(exchangeApi), allow.resource(eventReminders), allow.resource(authMessage).to(["query"])]);
+  .authorization((allow) => [allow.resource(exchangeApi), allow.resource(eventReminders), allow.resource(authMessage).to(["query"]), allow.resource(giftIdeas)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

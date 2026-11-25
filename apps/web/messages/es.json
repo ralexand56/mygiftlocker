@@ -108,7 +108,8 @@
         "profile": "<strong>Tu propio perfil y tus conexiones.</strong> Si guardas tu propio perfil, se copia en los casilleros de las personas con quienes decides conectarte, solo en las partes que eliges compartir.",
         "exchanges": "<strong>Intercambios de regalos.</strong> El nombre, la fecha, el presupuesto y el mensaje del intercambio; el nombre de cada participante, su correo opcional y su lista de deseos; las exclusiones; y a quién le tocó quién.",
         "invites": "<strong>Invitaciones.</strong> Cuando alguien completa una invitación que enviaste, los datos que decide compartir contigo.",
-        "technical": "<strong>Datos técnicos.</strong> Nuestro proveedor de hosting guarda registros estándar del servidor (como la dirección IP, el tipo de navegador y la hora de la solicitud) para operar y proteger el servicio. Recordamos tu idioma en una cookie. No usamos rastreadores de publicidad ni de analítica."
+        "technical": "<strong>Datos técnicos.</strong> Nuestro proveedor de hosting guarda registros estándar del servidor (como la dirección IP, el tipo de navegador y la hora de la solicitud) para operar y proteger el servicio. Recordamos tu idioma en una cookie. No usamos rastreadores de publicidad ni de analítica.",
+        "photos": "<strong>Fotos e ideas de regalo.</strong> Las fotos que agregas a una tarjeta (hasta 5, solo adultos) y los datos de la tarjeta, incluidas tus notas privadas, se usan para sugerir regalos. Se guardan de forma privada en tu cuenta."
       }
     },
     "use": {
@@ -117,7 +118,8 @@
         "service": "Para dar el servicio: mostrar tu casillero, organizar intercambios, sortear nombres y revelar a quién le toca a cada uno.",
         "signIn": "Para que inicies sesión y mantener tu cuenta segura.",
         "reminders": "Para enviarte recordatorios antes de los cumpleaños, aniversarios y fiestas de tu casillero. Cada recordatorio incluye un enlace para dejar de recibirlos.",
-        "contact": "Para responderte cuando nos escribas."
+        "contact": "Para responderte cuando nos escribas.",
+        "ai": "Para sugerir regalos: cuando pides ideas, los datos de la tarjeta, tus notas y sus fotos se envían al modelo Claude de Anthropic, que se ejecuta en Amazon Bedrock, para crear la lista. Amazon Bedrock no los usa para entrenar modelos."
       },
       "noSale": "No vendemos ni alquilamos información personal, y no la usamos para publicidad."
     },
@@ -127,7 +129,8 @@
         "locker": "Tu casillero es privado (y visible para los cotutores que agregues al perfil de un niño).",
         "exchange": "Los participantes de un intercambio pueden ver los detalles del intercambio y, después del sorteo, solo a quién le tocó regalar y la lista de deseos de esa persona, mediante su enlace privado. Los organizadores pueden administrar a los participantes y ver las asignaciones.",
         "connections": "Las personas con las que conectas tu perfil ven las partes que compartes, hasta que lo cambies o te desconectes.",
-        "links": "Cualquier persona que tenga un enlace privado de intercambio o de invitación puede usarlo, así que compártelos solo con quienes corresponde."
+        "links": "Cualquier persona que tenga un enlace privado de intercambio o de invitación puede usarlo, así que compártelos solo con quienes corresponde.",
+        "affiliate": "Los enlaces de compra pueden ser enlaces de afiliado (por ejemplo, Amazon Associates), que pueden darnos una comisión sin costo para ti. La tienda sabe que vienes de nuestro sitio, no para quién es el regalo."
       }
     },
     "providers": {
@@ -731,5 +734,57 @@
       "shareThem": "Compartirlas",
       "stop": "Dejar de compartir"
     }
+  },
+  "gifts": {
+    "eyebrow": "Ideas de regalo",
+    "title": "Regalos para {name}",
+    "close": "Cerrar",
+    "find": "Encontrar el regalo perfecto",
+    "open": "Ideas de regalo",
+    "retry": "Intentar de nuevo",
+    "errors": {
+      "notFound": "Esa tarjeta ya no está en tu casillero.",
+      "limit": "Ya usaste las {n} listas de regalos de hoy. ¡Mañana hay más!",
+      "declined": "No pudimos generar ideas para eso. Intenta pedirlo de otra forma.",
+      "failed": "Algo salió mal al generar las ideas. Inténtalo de nuevo.",
+      "timeout": "Está tardando más de lo normal. Vuelve a intentarlo en un minuto."
+    },
+    "stores": {
+      "amazon": "Amazon",
+      "etsy": "Etsy",
+      "target": "Target",
+      "walmart": "Walmart"
+    },
+    "shop": "Ver en {store}",
+    "notThis": "Esto no: {title}",
+    "notThisShort": "Esto no",
+    "allHidden": "Vaciaste la lista. Pide algo nuevo abajo.",
+    "chips": {
+      "under50": "Menos de $50",
+      "experience": "Una experiencia, no un objeto",
+      "handmade": "Hecho a mano o personalizado",
+      "lastMinute": "Ideas de último minuto",
+      "splurge": "Algo especial, sin límite"
+    },
+    "placeholder": "Pide lo que quieras: «algo para el jardín de {name}, menos de $40»",
+    "askLabel": "¿Qué estás buscando?",
+    "send": "Ver ideas",
+    "aiNote": "Las ideas las crea una IA con lo que hay en esta tarjeta, incluidas tus notas y fotos. Revisa tallas y detalles antes de comprar.",
+    "disclosure": "Podemos ganar una comisión por las compras hechas con estos enlaces.",
+    "thinking": {
+      "0": "Leyendo las tallas y gustos de {name}…",
+      "1": "Revisando tus notas y fotos…",
+      "2": "Viendo qué fechas se acercan…",
+      "3": "Eligiendo ideas que le encantarán a {name}…"
+    }
+  },
+  "photos": {
+    "title": "Fotos de {name}",
+    "alt": "Foto de {name}",
+    "add": "Agregar una foto",
+    "remove": "Quitar foto",
+    "hint": "Hasta {max}. Solo tú las ves; ayudan a elegir regalos con su estilo.",
+    "uploadFailed": "No se pudo agregar la foto. Prueba con JPEG o PNG.",
+    "removeFailed": "No se pudo quitar la foto. Inténtalo de nuevo."
   }
 }

@@ -16,3 +16,4 @@ export * from "./shared";
 export * from "./links";
 export * from "./connections";
 export * from "./i18n";
+export * from "./giftIdeas";

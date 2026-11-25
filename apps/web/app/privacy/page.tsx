@@ -10,12 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("titles"))("privacy"), description: t("description") };
 }
 
-const UPDATED = new Date(2026, 10, 24);
+const UPDATED = new Date(2026, 10, 25);
 const CONTACT = "privacy@mygiftlockers.com";
 
-const COLLECT = ["account", "locker", "profile", "exchanges", "invites", "technical"] as const;
-const USE = ["service", "signIn", "reminders", "contact"] as const;
-const SEE = ["locker", "exchange", "connections", "links"] as const;
+const COLLECT = ["account", "locker", "photos", "profile", "exchanges", "invites", "technical"] as const;
+const USE = ["service", "ai", "signIn", "reminders", "contact"] as const;
+const SEE = ["locker", "exchange", "connections", "links", "affiliate"] as const;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

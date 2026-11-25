@@ -108,7 +108,8 @@
         "profile": "<strong>Votre propre profil et vos connexions.</strong> Si vous enregistrez votre propre profil, il est copié dans les casiers des personnes avec qui vous choisissez de vous relier, uniquement pour les parties que vous choisissez de partager.",
         "exchanges": "<strong>Échanges de cadeaux.</strong> Le nom, la date, le budget et le message de l’échange ; le nom de chaque participant, son e-mail facultatif et sa liste de souhaits ; les exclusions ; et qui a tiré qui.",
         "invites": "<strong>Invitations.</strong> Lorsque quelqu’un remplit une invitation que vous avez envoyée, les informations qu’il choisit de partager avec vous.",
-        "technical": "<strong>Données techniques.</strong> Notre hébergeur conserve des journaux serveur standard (adresse IP, type de navigateur, heure de la requête, par exemple) pour faire fonctionner et sécuriser le service. Nous mémorisons votre choix de langue dans un cookie. Nous n’utilisons aucun traceur publicitaire ou d’analyse."
+        "technical": "<strong>Données techniques.</strong> Notre hébergeur conserve des journaux serveur standard (adresse IP, type de navigateur, heure de la requête, par exemple) pour faire fonctionner et sécuriser le service. Nous mémorisons votre choix de langue dans un cookie. Nous n’utilisons aucun traceur publicitaire ou d’analyse.",
+        "photos": "<strong>Photos et idées cadeaux.</strong> Les photos que vous ajoutez à une fiche (jusqu’à 5, adultes uniquement) et les informations de la fiche, y compris vos notes privées, servent à suggérer des cadeaux. Elles sont stockées de façon privée dans votre compte."
       }
     },
     "use": {
@@ -117,7 +118,8 @@
         "service": "Pour fournir le service : afficher votre casier, organiser les échanges, tirer les noms au sort et révéler les attributions.",
         "signIn": "Pour vous connecter et sécuriser votre compte.",
         "reminders": "Pour vous envoyer des rappels par e-mail avant les anniversaires et les fêtes de votre casier. Chaque rappel contient un lien pour ne plus en recevoir.",
-        "contact": "Pour vous répondre lorsque vous nous contactez."
+        "contact": "Pour vous répondre lorsque vous nous contactez.",
+        "ai": "Pour suggérer des cadeaux : lorsque vous demandez des idées, les informations de la fiche, vos notes et ses photos sont envoyées au modèle Claude d’Anthropic exécuté dans Amazon Bedrock pour créer la liste. Amazon Bedrock ne les utilise pas pour entraîner des modèles."
       },
       "noSale": "Nous ne vendons ni ne louons d’informations personnelles, et nous ne les utilisons pas à des fins publicitaires."
     },
@@ -127,7 +129,8 @@
         "locker": "Votre casier est privé (il est aussi visible des co-tuteurs que vous ajoutez au profil d’un enfant).",
         "exchange": "Les participants à un échange voient les détails de l’échange et, après le tirage, uniquement la personne qu’ils ont tirée et sa liste de souhaits, grâce à leur lien privé. Les organisateurs peuvent gérer les participants et consulter les attributions.",
         "connections": "Les personnes avec qui vous reliez votre profil voient les parties que vous partagez, jusqu’à ce que vous modifiiez ce choix ou vous déconnectiez.",
-        "links": "Toute personne disposant d’un lien privé d’échange ou d’invitation peut l’utiliser : ne partagez ces liens qu’avec leurs destinataires."
+        "links": "Toute personne disposant d’un lien privé d’échange ou d’invitation peut l’utiliser : ne partagez ces liens qu’avec leurs destinataires.",
+        "affiliate": "Les liens d’achat peuvent être des liens d’affiliation (par exemple Amazon Associates), qui peuvent nous rapporter une commission sans frais pour vous. Le magasin sait que vous venez de chez nous, pas à qui est destiné le cadeau."
       }
     },
     "providers": {
@@ -731,5 +734,57 @@
       "shareThem": "Les partager",
       "stop": "Arrêter de partager"
     }
+  },
+  "gifts": {
+    "eyebrow": "Idées cadeaux",
+    "title": "Cadeaux pour {name}",
+    "close": "Fermer",
+    "find": "Trouver le cadeau parfait",
+    "open": "Idées cadeaux",
+    "retry": "Réessayer",
+    "errors": {
+      "notFound": "Cette fiche n’est plus dans votre casier.",
+      "limit": "Vous avez utilisé vos {n} listes de cadeaux du jour. À demain !",
+      "declined": "Nous n’avons pas pu trouver d’idées pour cette demande. Essayez de la formuler autrement.",
+      "failed": "Une erreur s’est produite. Réessayez.",
+      "timeout": "C’est plus long que d’habitude. Réessayez dans une minute."
+    },
+    "stores": {
+      "amazon": "Amazon",
+      "etsy": "Etsy",
+      "target": "Target",
+      "walmart": "Walmart"
+    },
+    "shop": "Voir sur {store}",
+    "notThis": "Pas ça : {title}",
+    "notThisShort": "Pas ça",
+    "allHidden": "Vous avez vidé la liste. Demandez autre chose ci-dessous.",
+    "chips": {
+      "under50": "Moins de 50 $",
+      "experience": "Une expérience plutôt qu’un objet",
+      "handmade": "Fait main ou personnalisé",
+      "lastMinute": "Idées de dernière minute",
+      "splurge": "Un vrai coup de folie"
+    },
+    "placeholder": "Demandez ce que vous voulez : « pour le jardin de {name}, moins de 40 $ »",
+    "askLabel": "Que cherchez-vous ?",
+    "send": "Voir des idées",
+    "aiNote": "Les idées sont créées par une IA à partir de cette fiche, y compris vos notes et photos. Vérifiez tailles et détails avant d’acheter.",
+    "disclosure": "Nous pouvons percevoir une commission sur les achats faits via ces liens.",
+    "thinking": {
+      "0": "Lecture des tailles et des goûts de {name}…",
+      "1": "Coup d’œil à vos notes et photos…",
+      "2": "Vérification des dates à venir…",
+      "3": "Choix d’idées qui plairont à {name}…"
+    }
+  },
+  "photos": {
+    "title": "Photos de {name}",
+    "alt": "Photo de {name}",
+    "add": "Ajouter une photo",
+    "remove": "Retirer la photo",
+    "hint": "Jusqu’à {max}. Vous seul les voyez ; elles aident à choisir des cadeaux à son goût.",
+    "uploadFailed": "Impossible d’ajouter cette photo. Essayez un JPEG ou un PNG.",
+    "removeFailed": "Impossible de retirer la photo. Réessayez."
   }
 }
