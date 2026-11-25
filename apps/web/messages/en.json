@@ -314,7 +314,9 @@
     "shareText": "{name} invited you to My Gift Lockers",
     "more": "More options…",
     "inPerson": "In person?",
-    "inPersonBody": "Let them scan this at the dinner table, office party or school pickup."
+    "inPersonBody": "Let them scan this at the dinner table, office party or school pickup.",
+    "another": "Invite someone else",
+    "anotherHint": "Everyone gets their own link, so it greets them by name and their answers stay theirs."
   },
   "locker": {
     "signedOutTitle": "Your locker",

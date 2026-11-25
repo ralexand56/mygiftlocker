@@ -314,7 +314,9 @@
     "shareText": "{name} te invitó a My Gift Lockers",
     "more": "Más opciones…",
     "inPerson": "¿En persona?",
-    "inPersonBody": "Que lo escaneen en la cena, en la fiesta de la oficina o a la salida de la escuela."
+    "inPersonBody": "Que lo escaneen en la cena, en la fiesta de la oficina o a la salida de la escuela.",
+    "another": "Invitar a otra persona",
+    "anotherHint": "Cada persona recibe su propio enlace, que la saluda por su nombre y mantiene sus respuestas separadas."
   },
   "locker": {
     "signedOutTitle": "Tu casillero",

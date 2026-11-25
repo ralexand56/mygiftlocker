@@ -2,9 +2,9 @@
 
 import { DEFAULT_ASK, inviteShareLinks, newId, type InvitePayload, type InviteSection } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Copy, Mail, MessageCircle, MessageSquareText, QrCode, Share2, Send } from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, MessageSquareText, QrCode, Share2, Send, UserPlus } from "lucide-react";
 import QRCode from "qrcode";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Card, Field, Input, Textarea } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { authMode, useUser } from "@/lib/auth";
@@ -25,6 +25,16 @@ export function InviteBuilder() {
   const [note, setNote] = useState("");
   const [ask, setAsk] = useState<InvitePayload["ask"]>(DEFAULT_ASK);
   const [url, setUrl] = useState<string | null>(null);
+  const theirName = useRef<HTMLInputElement>(null);
+  /** Start a new invite for someone else: their own link, greeting and note. */
+  const another = () => {
+    setUrl(null);
+    setTo("");
+    setNote("");
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => theirName.current?.focus({ preventScroll: true }), 350);
+  };
 
   useEffect(() => {
     if (me?.name && !from) setFrom(me.name);
@@ -65,7 +75,7 @@ export function InviteBuilder() {
             <Input value={from} onChange={(e) => setFrom(e.target.value)} placeholder={t("yourNamePlaceholder")} />
           </Field>
           <Field label={t("theirName")}>
-            <Input value={to} onChange={(e) => setTo(e.target.value)} placeholder={t("theirNamePlaceholder")} />
+            <Input ref={theirName} value={to} onChange={(e) => setTo(e.target.value)} placeholder={t("theirNamePlaceholder")} />
           </Field>
         </div>
 
@@ -110,7 +120,7 @@ export function InviteBuilder() {
       <AnimatePresence mode="wait">
         {url ? (
           <motion.div key="share" className="min-w-0" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 120, damping: 18 }}>
-            <SharePanel url={url} from={from} to={to} />
+            <SharePanel url={url} from={from} to={to} onAnother={another} />
           </motion.div>
         ) : (
           <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }}>
@@ -129,7 +139,7 @@ export function InviteBuilder() {
   );
 }
 
-function SharePanel({ url, from, to }: { url: string; from: string; to: string }) {
+function SharePanel({ url, from, to, onAnother }: { url: string; from: string; to: string; onAnother: () => void }) {
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState<string>("");
   const [canShare, setCanShare] = useState(false);
@@ -199,6 +209,13 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
           </p>
           {t("inPersonBody")}
         </div>
+      </div>
+
+      <div className="mt-6 border-t border-white pt-5 text-center">
+        <Button variant="soft" onClick={onAnother}>
+          <UserPlus className="h-4 w-4" /> {t("another")}
+        </Button>
+        <p className="mt-2 text-xs text-ink-soft">{t("anotherHint")}</p>
       </div>
     </Card>
   );
