@@ -1,18 +1,20 @@
 "use client";
 
-import { SHARE_SECTIONS, type ConnectionShares, type ShareSection } from "@mgl/core";
+import { SHARE_SECTIONS, shareSectionText, type ConnectionShares, type ShareSection } from "@mgl/core";
+import { useTr } from "@/lib/i18n";
 
 /** One switch per shareable part of a profile. */
 export function ShareToggles({ value, onChange, disabled }: { value: ConnectionShares; onChange: (v: ConnectionShares) => void; disabled?: boolean }) {
+  const t = useTr();
   return (
     <div className="grid gap-2">
       {SHARE_SECTIONS.map((s) => (
         <label key={s.id} className={`flex items-center gap-3 rounded-2xl bg-white/80 p-3 shadow-soft ${disabled ? "opacity-60" : "cursor-pointer"}`}>
           <span className="min-w-0 flex-1">
-            <b className="block text-[15px]">{s.label}</b>
-            <span className="text-sm text-ink-soft">{s.hint}</span>
+            <b className="block text-[15px]">{shareSectionText(s.id, t).label}</b>
+            <span className="text-sm text-ink-soft">{shareSectionText(s.id, t).hint}</span>
           </span>
-          <Switch on={value[s.id]} disabled={disabled} onToggle={() => onChange({ ...value, [s.id as ShareSection]: !value[s.id] })} label={s.label} />
+          <Switch on={value[s.id]} disabled={disabled} onToggle={() => onChange({ ...value, [s.id as ShareSection]: !value[s.id] })} label={shareSectionText(s.id, t).label} />
         </label>
       ))}
     </div>

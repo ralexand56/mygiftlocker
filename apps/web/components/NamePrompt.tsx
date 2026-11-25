@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Button, inputCls } from "@/components/ui";
 import { authMode, saveDisplayName, useUser } from "@/lib/auth";
+import { useTranslations } from "next-intl";
 
 const DISMISS_KEY = "mgl:name-prompt-dismissed";
 
@@ -17,6 +18,7 @@ export function NamePrompt() {
   const [dismissed, setDismissed] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("namePrompt");
 
   useEffect(() => {
     try {
@@ -44,7 +46,7 @@ export function NamePrompt() {
     try {
       await saveDisplayName(name);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't save your name");
+      setError(err instanceof Error ? err.message : t("error"));
     } finally {
       setSaving(false);
     }
@@ -61,21 +63,21 @@ export function NamePrompt() {
           onSubmit={save}
           className="glass mx-auto mb-6 flex max-w-6xl flex-wrap items-center gap-3 rounded-[24px] px-5 py-4 shadow-soft"
         >
-          <p className="font-bold text-ink">What should we call you?</p>
+          <p className="font-bold text-ink">{t("title")}</p>
           <input
             className={`${inputCls} min-w-0 flex-1 basis-48`}
-            placeholder="Your first name"
+            placeholder={t("placeholder")}
             autoComplete="given-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
-            aria-label="Your name"
+            aria-label={t("label")}
           />
           <Button type="submit" disabled={saving || !name.trim()}>
-            {saving ? "Saving…" : "Save"}
+            {saving ? t("saving") : t("save")}
           </Button>
           <button type="button" onClick={dismiss} className="text-sm font-bold text-ink-soft hover:text-ink">
-            Later
+            {t("later")}
           </button>
           {error && <p className="w-full text-sm font-bold text-rose-deep">{error}</p>}
         </motion.form>

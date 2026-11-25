@@ -1,0 +1,238 @@
+{
+  "core": {
+    "fit": {
+      "mens": "Men's",
+      "womens": "Women's",
+      "kids": "Kids'"
+    },
+    "sizeSystem": {
+      "US": "United States",
+      "UK": "United Kingdom",
+      "EU": "Europe",
+      "JP": "Japan",
+      "BR": "Brazil",
+      "MX": "Mexico",
+      "CO": "Colombia"
+    },
+    "sizeWord": {
+      "Preemie": "Preemie",
+      "NB": "Newborn",
+      "One size": "One size"
+    },
+    "shoeWidth": {
+      "Narrow": "Narrow",
+      "Regular": "Regular",
+      "Wide": "Wide",
+      "Extra wide": "Extra wide"
+    },
+    "summary": {
+      "top": "Top {v}",
+      "pants": "Pants {v}",
+      "dress": "Dress {v}",
+      "shoe": "Shoe {v}",
+      "foot": "Foot {v} cm"
+    },
+    "days": "{days, plural, =0 {today} =1 {tomorrow} other {in # days}}",
+    "events": {
+      "birthday": "Birthday",
+      "anniversary": "Anniversary",
+      "specialDay": "Special day"
+    },
+    "holidays": {
+      "valentines": {
+        "name": "Valentine's Day",
+        "when": "February 14"
+      },
+      "mothers-day": {
+        "name": "Mother's Day",
+        "when": "2nd Sunday in May"
+      },
+      "fathers-day": {
+        "name": "Father's Day",
+        "when": "3rd Sunday in June"
+      },
+      "christmas": {
+        "name": "Christmas",
+        "when": "December 25"
+      }
+    },
+    "steps": {
+      "welcome": {
+        "eyebrow": "Hello",
+        "title": "Let's get your gifts just right"
+      },
+      "fit": {
+        "eyebrow": "Sizing",
+        "title": "Which section do you usually shop?",
+        "subtitle": "We'll tailor the size options to match."
+      },
+      "tops": {
+        "eyebrow": "Tops",
+        "title": "What size shirt do you wear?",
+        "subtitle": "Tees, sweaters, button-ups."
+      },
+      "bottoms": {
+        "eyebrow": "Bottoms",
+        "title": "And your pants size?"
+      },
+      "dresses": {
+        "eyebrow": "Dresses",
+        "title": "Dresses & skirts"
+      },
+      "outerwear": {
+        "eyebrow": "Outerwear",
+        "title": "Jackets & coats"
+      },
+      "shoes": {
+        "eyebrow": "Shoes",
+        "title": "What's your shoe size?"
+      },
+      "accessories": {
+        "eyebrow": "Extras",
+        "title": "Hats, rings & little things",
+        "subtitle": "Totally optional — but great for surprise jewelry."
+      },
+      "address": {
+        "eyebrow": "Shipping",
+        "title": "Where should gifts be sent?",
+        "subtitle": "Only shared with people you connect with."
+      },
+      "dates": {
+        "eyebrow": "Celebrations",
+        "title": "Dates worth celebrating",
+        "subtitle": "The year is optional — we won't tell."
+      },
+      "favorites": {
+        "eyebrow": "Favorites",
+        "title": "A few of your favorite things"
+      },
+      "kids": {
+        "eyebrow": "Little ones",
+        "title": "Shopping for your kids too?",
+        "subtitle": "Add children you manage — you stay in control of their info."
+      },
+      "review": {
+        "eyebrow": "All set",
+        "title": "Look good?"
+      }
+    },
+    "shares": {
+      "sizes": {
+        "label": "Sizes",
+        "hint": "Clothes, shoes, rings…"
+      },
+      "favorites": {
+        "label": "Favorites & wishes",
+        "hint": "Likes, wishes, wish lists and registries"
+      },
+      "dates": {
+        "label": "Birthday & anniversary",
+        "hint": "For their reminders"
+      },
+      "address": {
+        "label": "Shipping address",
+        "hint": "So gifts can be sent to you"
+      },
+      "nothing": "nothing yet"
+    },
+    "links": {
+      "registry": "{store} registry",
+      "wishList": "{store} wish list",
+      "list": "{store} list"
+    },
+    "address": {
+      "aptSuite": "Apt, suite, unit",
+      "colonia": "Colonia (neighborhood)",
+      "complementBairro": "Complement and neighborhood (bairro)",
+      "barrioApt": "Neighborhood (barrio), apt",
+      "flatBuilding": "Flat, building",
+      "aptUnitBuilding": "Apartment, unit, building",
+      "state": "State",
+      "province": "Province",
+      "department": "Department",
+      "countyOptional": "County (optional)",
+      "regionGeneric": "State / province / region",
+      "zip": "ZIP code",
+      "postalCode": "Postal code",
+      "postalCodeOptional": "Postal code (optional)",
+      "codigoPostal": "Código postal",
+      "cep": "CEP",
+      "postcode": "Postcode",
+      "errors": {
+        "country": "Choose a country",
+        "line1": "Street address is required",
+        "city": "City is required",
+        "required": "{field} is required",
+        "choose": "Choose a {fieldLower}",
+        "format": "Use the format {example}",
+        "postal": "Check the postal code"
+      }
+    },
+    "share": {
+      "inviteHi": "Hi {name}!",
+      "inviteHiAnon": "Hi!",
+      "inviteBody": "{hi} {from} wants to get your gifts just right. Add your sizes & favorite things to their Gift Locker (takes 2 min): {url}",
+      "inviteSubject": "{from} invited you to My Gift Lockers 🎁",
+      "exchangeJoin": "You're invited to \"{exchange}\" 🎁 Join and add your top wishes on My Gift Lockers: {url}",
+      "exchangeReveal": "Hi {name}! Names are drawn for \"{exchange}\" 🎁 Tap your private link to see who you're gifting (keep it to yourself!): {url}"
+    },
+    "draw": {
+      "duplicate": "Duplicate participants",
+      "tooFew": "A gift exchange needs at least 3 people",
+      "impossible": "These exclusions make a fair draw impossible",
+      "singleCircle": "These exclusions make a single circle impossible"
+    },
+    "server": {
+      "answerFirst": "Answer the invite first, then connect.",
+      "connectionNotFound": "Connection not found.",
+      "createProfileFirst": "Create your profile first.",
+      "missingInfo": "Missing information.",
+      "alreadyDrawn": "Names have already been drawn. Ask the organizer to add you.",
+      "organizerDelete": "Only the organizer can delete this exchange.",
+      "organizerDraw": "Only the organizer can draw names.",
+      "onlyAnswerer": "Only the person who answered this invite can connect it.",
+      "onlyThey": "Only they can change what they share.",
+      "pickGrownUp": "Pick one of the grown-ups in your locker, or add a new card.",
+      "addName": "Please add your name.",
+      "signIn": "Please sign in.",
+      "cardGone": "That card isn't in their locker anymore.",
+      "privateLinkInvalid": "That link isn't valid. Ask the organizer for your private link.",
+      "linkInvalid": "That link isn't valid.",
+      "ownLink": "That's your own link. Send it to the person you want to connect with.",
+      "connectionEnded": "This connection has ended.",
+      "exchangeFull": "This exchange is full.",
+      "inviteInactive": "This invite link is no longer active.",
+      "linkUsed": "This link has already been used. Ask for a new one.",
+      "connectOnly": "This link is for connecting profiles.",
+      "linkInactive": "This link is no longer active.",
+      "exchangeNotFound": "We couldn't find that gift exchange."
+    },
+    "occasion": "{name}'s {eventLower}"
+  },
+  "email": {
+    "hi": "Hi {name},",
+    "hiAnon": "Hi,",
+    "when": "{days, plural, =1 {tomorrow} =7 {in a week, on {date}} other {in # days, on {date}}}",
+    "whenWeeks": "in {weeks} weeks, on {date}",
+    "birthday": "{name}'s birthday is {when}",
+    "anniversary": "{name}'s anniversary is {when}",
+    "other": "{name}: {label} is {when}",
+    "holiday": "{holiday} is {when}",
+    "turning": "turning {n}",
+    "years": "{n, plural, one {# year} other {# years}}",
+    "shoppingFor": "shopping for {names}",
+    "andMore": "{names} and {count} more",
+    "manyDays": "{count, plural, other {# special days coming up}}: {names}",
+    "sizes": "Sizes: {v}",
+    "wishes": "Wishes: {v}",
+    "loves": "Loves: {v}",
+    "avoid": "Avoid: {v}",
+    "shipsTo": "Ships to: {v}",
+    "yourNote": "Your note: {v}",
+    "openLockerText": "Open your locker: {url}",
+    "openLocker": "Open my locker",
+    "why": "You're getting this because you keep people's dates in My Gift Lockers.",
+    "stopText": "Stop these reminders: {url}",
+    "stop": "Stop these reminders"
+  }
+}

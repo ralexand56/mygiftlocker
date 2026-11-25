@@ -5,6 +5,13 @@
  */
 import type { InvitePayload } from "./invite";
 import type { Fit } from "./sizes";
+import { defaultT, type Tr } from "./i18n";
+
+/** A step's heading text in the translator's language. */
+export function stepText(step: Pick<StepDef, "id" | "subtitle">, t: Tr = defaultT): { eyebrow: string; title: string; subtitle?: string } {
+  const k = `core.steps.${step.id}`;
+  return { eyebrow: t(`${k}.eyebrow`), title: t(`${k}.title`), subtitle: step.subtitle ? t(`${k}.subtitle`) : undefined };
+}
 
 export type Scene = "welcome" | "fit" | "tops" | "bottoms" | "dresses" | "outerwear" | "shoes" | "accessories" | "address" | "dates" | "favorites" | "kids" | "done";
 

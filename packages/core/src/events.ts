@@ -5,6 +5,7 @@
 import { daysInMonth, nextOccurrence, type PartialDate } from "./dates";
 import { holiday, nextHoliday, type HolidayId } from "./holidays";
 import type { Person } from "./people";
+import { defaultT, intlTag, type Tr } from "./i18n";
 
 export type EventKind = "birthday" | "anniversary" | "other" | "holiday";
 
@@ -124,8 +125,21 @@ export function eventsInMonth(people: Person[], year: number, month: number): Mo
 }
 
 /** "today", "tomorrow", or "in N days". */
-export function describeDays(days: number): string {
-  if (days === 0) return "today";
-  if (days === 1) return "tomorrow";
-  return `in ${days} days`;
+export function describeDays(days: number, t: Tr = defaultT): string {
+  return t("core.days", { days });
+}
+
+/** "Maya's birthday" in the translator's language (first name only). Holiday and custom names keep their case. */
+export function occasionName(personName: string, e: Pick<LifeEvent, "kind" | "label" | "holidayId">, t: Tr = defaultT): string {
+  const event = eventLabel(e, t);
+  const common = e.kind === "birthday" || e.kind === "anniversary";
+  return t("core.occasion", { name: personName.split(" ")[0]!, event, eventLower: common ? event.toLocaleLowerCase(intlTag(t)) : event });
+}
+
+/** An event's name in the translator's language: "Birthday", the holiday, or the owner's own label. */
+export function eventLabel(e: Pick<LifeEvent, "kind" | "label" | "holidayId">, t: Tr = defaultT): string {
+  if (e.kind === "birthday") return t("core.events.birthday");
+  if (e.kind === "anniversary") return t("core.events.anniversary");
+  if (e.kind === "holiday" && e.holidayId) return t(`core.holidays.${e.holidayId}.name`);
+  return e.label || t("core.events.specialDay");
 }

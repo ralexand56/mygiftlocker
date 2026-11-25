@@ -1,14 +1,17 @@
 "use client";
 
-import { MONTHS, daysInMonth, eventsInMonth, isGifted, type MonthEvent, type Person, type UpcomingEvent } from "@mgl/core";
+import { daysInMonth, eventLabel, eventsInMonth, isGifted, listJoin, monthNames, occasionName, type MonthEvent, type Person, type Tr, type UpcomingEvent } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/ui";
 import { GiftLock } from "@/components/GiftLock";
 import { EventIcon } from "./EventIcon";
+import { useTranslations } from "next-intl";
+import { useIntlTag, useTr } from "@/lib/i18n";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/** Sunday-first short weekday names in the translator's language. */
+const weekdays = (tag: string) => Array.from({ length: 7 }, (_, i) => new Date(2023, 0, 1 + i).toLocaleDateString(tag, { weekday: "short" }));
 
 /** A row in the month list: one personal date, or one holiday with everyone tagged for it. */
 type Row = { key: string; day: number; event: MonthEvent; people: { id: string; name: string; color: string }[] };
@@ -34,11 +37,7 @@ function toRows(events: MonthEvent[]): Row[] {
   return rows;
 }
 
-const nameList = (names: string[]) =>
-  names.length <= 3 ? (names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`) : `${names.slice(0, 3).join(", ")} +${names.length - 3}`;
-
-const milestoneText = (e: MonthEvent) =>
-  e.milestone ? (e.kind === "birthday" ? ` · turns ${e.milestone}` : ` · ${e.milestone} ${e.milestone === 1 ? "year" : "years"}`) : "";
+const nameList = (names: string[], t: Tr) => (names.length <= 3 ? listJoin(names, t) : `${names.slice(0, 3).join(", ")} +${names.length - 3}`);
 
 /** Month calendar of everyone's birthdays, anniversaries and other dates, with that month's list below. */
 export function LockerCalendar({
@@ -51,6 +50,12 @@ export function LockerCalendar({
   onToggleGift: (p: Person, e: UpcomingEvent) => void;
 }) {
   const byId = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
+  const t = useTranslations("calendar");
+  const td = useTranslations("locker.detail");
+  const tr = useTr();
+  const tag = useIntlTag();
+  const MONTHS = monthNames(tr);
+  const milestoneText = (e: MonthEvent) => (e.milestone ? ` · ${e.kind === "birthday" ? td("turns", { n: e.milestone }) : td("years", { n: e.milestone })}` : "");
   const today = new Date();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() + 1 });
   const [direction, setDirection] = useState(1);
@@ -89,21 +94,21 @@ export function LockerCalendar({
     <section aria-labelledby="locker-calendar" className="glass mt-10 rounded-[32px] p-5 shadow-soft sm:p-7">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h2 id="locker-calendar" className="flex items-center gap-2 font-display text-2xl font-semibold">
-          <CalendarDays className="h-6 w-6 text-rose" /> Upcoming dates
+          <CalendarDays className="h-6 w-6 text-rose" /> {t("title")}
         </h2>
         <div className="flex items-center gap-2">
           {!isCurrentMonth && (
             <button onClick={goToday} className="rounded-full bg-white/80 px-4 py-2 text-sm font-bold shadow-soft hover:bg-white">
-              Today
+              {t("today")}
             </button>
           )}
-          <button onClick={() => go(-1)} className={navBtn} aria-label="Previous month">
+          <button onClick={() => go(-1)} className={navBtn} aria-label={t("prev")}>
             <ChevronLeft className="h-5 w-5" />
           </button>
           <p className="w-40 text-center font-display text-lg font-semibold" aria-live="polite">
             {MONTHS[view.month - 1]} {view.year}
           </p>
-          <button onClick={() => go(1)} className={navBtn} aria-label="Next month">
+          <button onClick={() => go(1)} className={navBtn} aria-label={t("next")}>
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
@@ -119,7 +124,7 @@ export function LockerCalendar({
           transition={{ duration: 0.2 }}
         >
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-extrabold tracking-wide text-ink-soft uppercase">
-            {WEEKDAYS.map((w) => (
+            {weekdays(tag).map((w) => (
               <div key={w} className="py-1">
                 <span className="hidden sm:inline">{w}</span>
                 <span className="sm:hidden">{w[0]}</span>
@@ -130,7 +135,8 @@ export function LockerCalendar({
             {cells.map((day, i) => {
               if (!day) return <div key={`blank-${i}`} />;
               const dayEvents = byDay.get(day) ?? [];
-              const label = `${MONTHS[view.month - 1]} ${day}${dayEvents.length ? `: ${dayEvents.map((e) => `${e.personName} ${e.label.toLowerCase()}`).join(", ")}` : ""}`;
+              const date = new Date(view.year, view.month - 1, day).toLocaleDateString(tag, { month: "long", day: "numeric" });
+              const label = `${date}${dayEvents.length ? `: ${dayEvents.map((e) => occasionName(e.personName, e, tr)).join(", ")}` : ""}`;
               return (
                 <button
                   key={day}
@@ -138,7 +144,7 @@ export function LockerCalendar({
                   disabled={!dayEvents.length}
                   onClick={() => dayEvents[0] && onOpenPerson(dayEvents[0].personId)}
                   aria-label={label}
-                  title={dayEvents.map((e) => `${e.personName}: ${e.label}`).join("\n") || undefined}
+                  title={dayEvents.map((e) => `${e.personName}: ${eventLabel(e, tr)}`).join("\n") || undefined}
                   className={`flex min-h-16 flex-col items-center gap-1 rounded-2xl p-1.5 text-sm transition-colors sm:min-h-20 ${
                     dayEvents.length ? "bg-white shadow-soft hover:bg-blush/60" : "bg-white/40"
                   } ${isToday(day) ? "ring-2 ring-rose" : ""} ${isPast(day) && !isToday(day) ? "opacity-55" : ""}`}
@@ -164,7 +170,7 @@ export function LockerCalendar({
           </div>
 
           <ul className="mt-6 grid gap-2">
-            {events.length === 0 && <li className="rounded-2xl bg-white/60 p-4 text-center text-sm text-ink-soft">No dates in {MONTHS[view.month - 1]}.</li>}
+            {events.length === 0 && <li className="rounded-2xl bg-white/60 p-4 text-center text-sm text-ink-soft">{t("none", { month: MONTHS[view.month - 1]! })}</li>}
             {toRows(events).map((r) => {
               const e = r.event;
               const when = new Date(view.year, view.month - 1, r.day);
@@ -180,7 +186,7 @@ export function LockerCalendar({
                     className={`flex w-full items-center gap-3 rounded-2xl bg-white/80 p-3 text-left shadow-soft hover:bg-white ${isPast(r.day) ? "opacity-60" : ""}`}
                   >
                     <span className="w-14 shrink-0 text-center">
-                      <span className="block text-xs font-extrabold text-ink-soft uppercase">{when.toLocaleDateString(undefined, { weekday: "short" })}</span>
+                      <span className="block text-xs font-extrabold text-ink-soft uppercase">{when.toLocaleDateString(tag, { weekday: "short" })}</span>
                       <span className="block font-display text-2xl leading-none font-semibold">{r.day}</span>
                     </span>
                     <span className="flex shrink-0 -space-x-2">
@@ -191,13 +197,13 @@ export function LockerCalendar({
                       ))}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-bold">{isHoliday ? e.label : e.personName}</span>
+                      <span className="block truncate font-bold">{isHoliday ? eventLabel(e, tr) : e.personName}</span>
                       <span className="flex items-center gap-1.5 text-sm text-ink-soft">
                         <EventIcon kind={e.kind} holidayId={e.holidayId} className="h-3.5 w-3.5 text-rose" />
-                        <span className="truncate">{isHoliday ? nameList(r.people.map((p) => p.name.split(" ")[0]!)) : `${e.label}${milestoneText(e)}`}</span>
+                        <span className="truncate">{isHoliday ? nameList(r.people.map((p) => p.name.split(" ")[0]!), tr) : `${eventLabel(e, tr)}${milestoneText(e)}`}</span>
                       </span>
                     </span>
-                    {isToday(r.day) && <span className="rounded-full bg-rose px-2.5 py-1 text-xs font-bold text-white">Today</span>}
+                    {isToday(r.day) && <span className="rounded-full bg-rose px-2.5 py-1 text-xs font-bold text-white">{t("today")}</span>}
                     {lockable && <span className="w-9 shrink-0" aria-hidden />}
                   </button>
                   {lockable && (
@@ -205,7 +211,7 @@ export function LockerCalendar({
                       <GiftLock
                         locked={isGifted(person, occasion)}
                         onToggle={() => onToggleGift(person, occasion)}
-                        label={`${e.personName.split(" ")[0]}'s ${e.label.toLowerCase()}`}
+                        label={occasionName(e.personName, e, tr)}
                         size={32}
                       />
                     </span>

@@ -4,7 +4,8 @@
  * three weeks and one week before, grouped into one block per holiday.
  * Pure logic, shared with tests; amplify/functions/event-reminders sends them.
  */
-import { upcomingEvents, type EventKind, type UpcomingEvent } from "./events";
+import { eventLabel, upcomingEvents, type EventKind, type UpcomingEvent } from "./events";
+import { defaultT, intlTag, listJoin, type Tr } from "./i18n";
 import { shortPlace } from "./addresses";
 import { linkTitle } from "./links";
 import { isGifted } from "./gifts";
@@ -50,34 +51,33 @@ const PERSONAL_EMOJI = { birthday: "🎂", anniversary: "💞", other: "✨" } a
 const emojiFor = (r: DueReminder) => (r.holidayId ? holiday(r.holidayId).emoji : PERSONAL_EMOJI[r.kind as keyof typeof PERSONAL_EMOJI]);
 const firstName = (name: string) => name.split(" ")[0]!;
 
-function when(days: number, date: Date): string {
-  if (days === 1) return "tomorrow";
-  const on = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
-  if (days === 7) return `in a week, on ${on}`;
-  if (days % 7 === 0) return `in ${days / 7} weeks, on ${on}`;
-  return `in ${days} days, on ${on}`;
+function when(days: number, date: Date, t: Tr): string {
+  const on = date.toLocaleDateString(intlTag(t), { weekday: "long", month: "short", day: "numeric" });
+  if (days !== 7 && days > 1 && days % 7 === 0) return t("email.whenWeeks", { weeks: days / 7, date: on });
+  return t("email.when", { days, date: on });
 }
 
-function personalHeadline(r: DueReminder): string {
-  const first = firstName(r.personName);
-  const extra = r.milestone && r.milestone > 0 ? (r.kind === "birthday" ? ` · turning ${r.milestone}` : r.kind === "anniversary" ? ` · ${r.milestone} years` : "") : "";
-  if (r.kind === "other") return `${first}: ${r.label} is ${when(r.days, r.date)}${extra}`;
-  const what = `${first}'s ${r.label.toLowerCase()}`;
-  return `${what[0]!.toUpperCase()}${what.slice(1)} is ${when(r.days, r.date)}${extra}`;
+function personalHeadline(r: DueReminder, t: Tr): string {
+  const name = firstName(r.personName);
+  const w = when(r.days, r.date, t);
+  const m = r.milestone && r.milestone > 0 ? r.milestone : 0;
+  const extra = m ? (r.kind === "birthday" ? ` · ${t("email.turning", { n: m })}` : r.kind === "anniversary" ? ` · ${t("email.years", { n: m })}` : "") : "";
+  if (r.kind === "other") return `${t("email.other", { name, label: r.label, when: w })}${extra}`;
+  return `${t(r.kind === "anniversary" ? "email.anniversary" : "email.birthday", { name, when: w })}${extra}`;
 }
 
 /** Gift-helpful lines for one person, including the owner's private note. */
-function details(p: Person): string[] {
+function details(p: Person, t: Tr): string[] {
   const lines: string[] = [];
-  const sizes = summarizeSizes(p.sizes);
-  if (sizes) lines.push(`Sizes: ${sizes}`);
+  const sizes = summarizeSizes(p.sizes, t);
+  if (sizes) lines.push(t("email.sizes", { v: sizes }));
   const wishes = p.favorites?.wishes?.filter(Boolean).slice(0, 3) ?? [];
-  if (wishes.length) lines.push(`Wishes: ${wishes.join(", ")}`);
-  if (p.favorites?.likes) lines.push(`Loves: ${p.favorites.likes}`);
-  if (p.favorites?.avoid) lines.push(`Avoid: ${p.favorites.avoid}`);
-  for (const url of p.favorites?.wishlists?.slice(0, 2) ?? []) lines.push(`${linkTitle(url)}: ${url}`);
-  if (p.address?.city) lines.push(`Ships to: ${shortPlace(p.address)}`);
-  if (p.ownerNote?.trim()) lines.push(`Your note: ${p.ownerNote.trim()}`);
+  if (wishes.length) lines.push(t("email.wishes", { v: wishes.join(", ") }));
+  if (p.favorites?.likes) lines.push(t("email.loves", { v: p.favorites.likes }));
+  if (p.favorites?.avoid) lines.push(t("email.avoid", { v: p.favorites.avoid }));
+  for (const url of p.favorites?.wishlists?.slice(0, 2) ?? []) lines.push(`${linkTitle(url, t)}: ${url}`);
+  if (p.address?.city) lines.push(t("email.shipsTo", { v: shortPlace(p.address, "US", t) }));
+  if (p.ownerNote?.trim()) lines.push(t("email.yourNote", { v: p.ownerNote.trim() }));
   return lines;
 }
 
@@ -86,18 +86,18 @@ type Block =
   | { type: "personal"; emoji: string; title: string; reminder: DueReminder }
   | { type: "holiday"; emoji: string; title: string; holidayId: HolidayId; people: Person[] };
 
-function toBlocks(reminders: DueReminder[]): Block[] {
+function toBlocks(reminders: DueReminder[], t: Tr): Block[] {
   const blocks: Block[] = [];
   const holidays = new Map<string, Extract<Block, { type: "holiday" }>>();
   for (const r of reminders) {
     if (!r.holidayId) {
-      blocks.push({ type: "personal", emoji: emojiFor(r), title: personalHeadline(r), reminder: r });
+      blocks.push({ type: "personal", emoji: emojiFor(r), title: personalHeadline(r, t), reminder: r });
       continue;
     }
     const key = `${r.holidayId}:${r.days}`;
     let b = holidays.get(key);
     if (!b) {
-      b = { type: "holiday", emoji: emojiFor(r), title: `${r.label} is ${when(r.days, r.date)}`, holidayId: r.holidayId, people: [] };
+      b = { type: "holiday", emoji: emojiFor(r), title: t("email.holiday", { holiday: eventLabel(r, t), when: when(r.days, r.date, t) }), holidayId: r.holidayId, people: [] };
       holidays.set(key, b);
       blocks.push(b);
     }
@@ -106,19 +106,19 @@ function toBlocks(reminders: DueReminder[]): Block[] {
   return blocks;
 }
 
-const listNames = (people: Person[]) => {
+const listNames = (people: Person[], t: Tr) => {
   const names = people.map((p) => firstName(p.name));
-  if (names.length <= 3) return names.length === 1 ? names[0]! : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-  return `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`;
+  if (names.length <= 3) return listJoin(names, t);
+  return t("email.andMore", { names: names.slice(0, 3).join(", "), count: names.length - 3 });
 };
 
-function subjectFor(blocks: Block[]): string {
+function subjectFor(blocks: Block[], t: Tr): string {
   if (blocks.length === 1) {
     const b = blocks[0]!;
-    return b.type === "personal" ? `${b.emoji} ${b.title}` : `${b.emoji} ${b.title} · shopping for ${listNames(b.people)}`;
+    return b.type === "personal" ? `${b.emoji} ${b.title}` : `${b.emoji} ${b.title} · ${t("email.shoppingFor", { names: listNames(b.people, t) })}`;
   }
-  const names = blocks.map((b) => (b.type === "personal" ? firstName(b.reminder.personName) : holiday(b.holidayId).name));
-  return `🎁 ${blocks.length} special days coming up: ${names.join(", ")}`;
+  const names = blocks.map((b) => (b.type === "personal" ? firstName(b.reminder.personName) : t(`core.holidays.${holiday(b.holidayId).id}.name`)));
+  return `🎁 ${t("email.manyDays", { count: blocks.length, names: names.join(", ") })}`;
 }
 
 export interface ReminderEmail {
@@ -128,28 +128,30 @@ export interface ReminderEmail {
 }
 
 /** One email listing every due reminder for an owner. */
-export function buildReminderEmail(opts: { ownerName?: string; reminders: DueReminder[]; lockerUrl: string; unsubscribeUrl: string }): ReminderEmail {
+export function buildReminderEmail(opts: { ownerName?: string; reminders: DueReminder[]; lockerUrl: string; unsubscribeUrl: string; t?: Tr }): ReminderEmail {
   const { lockerUrl, unsubscribeUrl } = opts;
-  const hi = opts.ownerName ? `Hi ${firstName(opts.ownerName)},` : "Hi,";
-  const blocks = toBlocks(opts.reminders);
+  const t = opts.t ?? defaultT;
+  const details_ = (p: Person) => details(p, t);
+  const hi = opts.ownerName ? t("email.hi", { name: firstName(opts.ownerName) }) : t("email.hiAnon");
+  const blocks = toBlocks(opts.reminders, t);
 
   const textBlock = (b: Block) =>
     b.type === "personal"
-      ? [`${b.emoji} ${b.title}`, ...details(b.reminder.person).map((l) => `   ${l}`), ""]
-      : [`${b.emoji} ${b.title}`, ...b.people.flatMap((p) => [`   ${p.name}`, ...details(p).map((l) => `      ${l}`)]), ""];
+      ? [`${b.emoji} ${b.title}`, ...details_(b.reminder.person).map((l) => `   ${l}`), ""]
+      : [`${b.emoji} ${b.title}`, ...b.people.flatMap((p) => [`   ${p.name}`, ...details_(p).map((l) => `      ${l}`)]), ""];
 
   const text = [
     hi,
     "",
     ...blocks.flatMap(textBlock),
-    `Open your locker: ${lockerUrl}`,
+    t("email.openLockerText", { url: lockerUrl }),
     "",
     "—",
-    "You're getting this because you keep people's dates in My Gift Lockers.",
-    `Stop these reminders: ${unsubscribeUrl}`,
+    t("email.why"),
+    t("email.stopText", { url: unsubscribeUrl }),
   ].join("\n");
 
-  const detailHtml = (p: Person) => details(p).map((l) => `<p style="margin:4px 0 0;font-size:14px;color:#6b5f80">${esc(l)}</p>`).join("");
+  const detailHtml = (p: Person) => details_(p).map((l) => `<p style="margin:4px 0 0;font-size:14px;color:#6b5f80">${esc(l)}</p>`).join("");
   const card = (b: Block) => `
     <tr><td style="padding:16px 20px;background:#ffffff;border-radius:16px">
       <p style="margin:0;font-size:18px;font-weight:700;color:#3b2f52">${b.emoji} ${esc(b.title)}</p>
@@ -160,17 +162,17 @@ export function buildReminderEmail(opts: { ownerName?: string; reminders: DueRem
       }
     </td></tr><tr><td style="height:12px"></td></tr>`;
 
-  const html = `<!doctype html><html><body style="margin:0;background:#fff7f3;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  const html = `<!doctype html><html lang="${t.locale}"><body style="margin:0;background:#fff7f3;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:28px 16px">
     <table role="presentation" width="100%" style="max-width:520px" cellpadding="0" cellspacing="0">
       <tr><td style="padding-bottom:18px;font-size:20px;font-weight:700;color:#3b2f52"><span style="color:#e9779f">My</span> Gift Lockers</td></tr>
       <tr><td style="padding-bottom:14px;font-size:15px;color:#3b2f52">${esc(hi)}</td></tr>
       ${blocks.map(card).join("")}
-      <tr><td style="padding:8px 0 24px"><a href="${esc(lockerUrl)}" style="display:inline-block;background:#4a3b66;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px">Open my locker</a></td></tr>
-      <tr><td style="font-size:12px;color:#8a7f9c">You're getting this because you keep people's dates in My Gift Lockers.
-        <a href="${esc(unsubscribeUrl)}" style="color:#8a7f9c">Stop these reminders</a>.</td></tr>
+      <tr><td style="padding:8px 0 24px"><a href="${esc(lockerUrl)}" style="display:inline-block;background:#4a3b66;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px">${esc(t("email.openLocker"))}</a></td></tr>
+      <tr><td style="font-size:12px;color:#8a7f9c">${esc(t("email.why"))}
+        <a href="${esc(unsubscribeUrl)}" style="color:#8a7f9c">${esc(t("email.stop"))}</a>.</td></tr>
     </table>
   </td></tr></table></body></html>`;
 
-  return { subject: subjectFor(blocks), text, html };
+  return { subject: subjectFor(blocks, t), text, html };
 }

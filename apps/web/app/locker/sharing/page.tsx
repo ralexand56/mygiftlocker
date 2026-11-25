@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Sharing } from "./Sharing";
 
-export const metadata: Metadata = { title: "Who can see my profile" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("titles"))("sharing") };
+}
 
 export default function SharingPage() {
   return (

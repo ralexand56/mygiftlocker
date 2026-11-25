@@ -9,9 +9,14 @@ import { useState } from "react";
 import { Button, Card, ChipGroup, Field, Input, Textarea } from "@/components/ui";
 import { useUser } from "@/lib/auth";
 import { createExchange, listMyExchanges, useAsync } from "@/lib/exchanges";
+import { useTranslations } from "next-intl";
+import { useIntlTag, useTr } from "@/lib/i18n";
 
 export function ExchangeHome() {
   const user = useUser();
+  const t = useTranslations("exchangeHome");
+  const tr = useTr();
+  const tag = useIntlTag();
   const { data: exchanges = [] } = useAsync(async () => (user ? listMyExchanges() : []), [user?.sub]);
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -32,8 +37,8 @@ export function ExchangeHome() {
       message: message.trim() || undefined,
       wishCount: wishCount ?? 3,
     });
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Check the form");
-    if (!you.trim()) return setError("Add your name — organizers usually play too");
+    if (!parsed.success) return setError(parsed.error.issues[0]?.path[0] === "name" ? t("errors.name") : t("errors.check"));
+    if (!you.trim()) return setError(t("errors.you"));
     // Organizers need an account so only they can manage and draw.
     if (!user) return router.push("/sign-in?next=/exchange");
     setBusy(true);
@@ -42,7 +47,7 @@ export function ExchangeHome() {
       const id = await createExchange({ ...parsed.data, singleLoop, organizerName: you.trim() }, user.sub);
       router.push(`/exchange/${id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create the exchange");
+      setError(e instanceof Error ? e.message : t("errors.failed"));
       setBusy(false);
     }
   };
@@ -51,26 +56,26 @@ export function ExchangeHome() {
     <div className="mx-auto max-w-6xl px-5 pb-24">
       <section className="grid items-center gap-8 pt-4 pb-12 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="mb-4 inline-flex rounded-full bg-white/70 px-4 py-1.5 text-sm font-bold text-plum shadow-soft">Secret Santa, sorted</p>
+          <p className="mb-4 inline-flex rounded-full bg-white/70 px-4 py-1.5 text-sm font-bold text-plum shadow-soft">{t("eyebrow")}</p>
           <h1 className="font-display text-5xl leading-[1.02] font-semibold tracking-tight md:text-6xl">
-            Draw names in seconds.
+            {t("title")}
             <br />
-            <span className="text-rose">Gift with confidence.</span>
+            <span className="text-rose">{t("titleAccent")}</span>
           </h1>
           <ul className="mt-7 grid gap-3 text-ink-soft">
             {[
-              [Users, "Invite everyone with one link — family, friends or the office"],
-              [Gift, "Everyone adds their top 3 wishes"],
-              [Shuffle, "Set exclusions (no drawing your partner) and draw when you're ready"],
-              [CalendarDays, "Each person privately reveals who they're gifting"],
-            ].map(([Icon, t], i) => {
+              [Users, t("points.invite")],
+              [Gift, t("points.wishes")],
+              [Shuffle, t("points.exclusions")],
+              [CalendarDays, t("points.reveal")],
+            ].map(([Icon, text], i) => {
               const I = Icon as typeof Gift;
               return (
                 <motion.li key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.08 }} className="flex items-center gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white shadow-soft">
                     <I className="h-4 w-4 text-rose" />
                   </span>
-                  {t as string}
+                  {text as string}
                 </motion.li>
               );
             })}
@@ -78,35 +83,35 @@ export function ExchangeHome() {
         </div>
 
         <Card className="p-7">
-          <h2 className="font-display text-2xl font-semibold">Start an exchange</h2>
+          <h2 className="font-display text-2xl font-semibold">{t("start")}</h2>
           <div className="mt-5 grid gap-4">
-            <Field label="Exchange name">
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Chen Family Christmas 2026" />
+            <Field label={t("name")}>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} />
             </Field>
-            <Field label="Your name">
-              <Input value={you} onChange={(e) => setYou(e.target.value)} placeholder="Alex" />
+            <Field label={t("you")}>
+              <Input value={you} onChange={(e) => setYou(e.target.value)} placeholder={t("youPlaceholder")} />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Exchange date">
+              <Field label={t("date")}>
                 <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </Field>
-              <Field label="Budget (USD)">
+              <Field label={t("budget")}>
                 <Input inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^\d]/g, ""))} placeholder="50" />
               </Field>
             </div>
-            <Field label="Wishes per person">
-              <ChipGroup label="Wishes per person" options={[1, 3, 5]} value={wishCount} onChange={setWishCount} />
+            <Field label={t("wishCount")}>
+              <ChipGroup label={t("wishCount")} options={[1, 3, 5]} value={wishCount} onChange={setWishCount} />
             </Field>
-            <Field label="Message to everyone (optional)">
-              <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Party's at our place — bring cookies!" />
+            <Field label={t("message")}>
+              <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t("messagePlaceholder")} />
             </Field>
             <label className="flex items-center gap-3 text-sm font-bold text-ink-soft">
               <input type="checkbox" checked={singleLoop} onChange={(e) => setSingleLoop(e.target.checked)} className="h-5 w-5 accent-rose" />
-              One big circle (great for opening gifts in turn)
+              {t("circle")}
             </label>
             {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
             <Button onClick={create} disabled={busy}>
-              {busy ? "Creating…" : user === null ? "Sign in & create exchange" : "Create exchange"}
+              {busy ? t("creating") : user === null ? t("signInCreate") : t("create")}
             </Button>
           </div>
         </Card>
@@ -114,16 +119,17 @@ export function ExchangeHome() {
 
       {exchanges.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-2xl font-semibold">Your exchanges</h2>
+          <h2 className="mb-4 font-display text-2xl font-semibold">{t("yours")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {exchanges.map((ex) => (
               <Link key={ex.id} href={`/exchange/${ex.id}`}>
                 <motion.div layoutId={`ex-${ex.id}`} whileHover={{ y: -4 }} className="glass rounded-[28px] p-6 shadow-soft">
-                  <p className="text-xs font-extrabold tracking-wide text-rose uppercase">{ex.status === "drawn" ? "Names drawn" : "Collecting wishes"}</p>
+                  <p className="text-xs font-extrabold tracking-wide text-rose uppercase">{ex.status === "drawn" ? t("drawn") : t("collecting")}</p>
                   <h3 className="mt-1 font-display text-xl font-semibold">{ex.name}</h3>
                   <p className="mt-2 text-sm text-ink-soft">
-                    {ex.participants.length} people{ex.budget ? ` · ${formatBudget(ex.budget)}` : ""}
-                    {ex.date ? ` · ${new Date(ex.date + "T00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+                    {t("people", { count: ex.participants.length })}
+                    {ex.budget ? ` · ${formatBudget(ex.budget, tr)}` : ""}
+                    {ex.date ? ` · ${new Date(ex.date + "T00:00").toLocaleDateString(tag, { month: "short", day: "numeric" })}` : ""}
                   </p>
                 </motion.div>
               </Link>

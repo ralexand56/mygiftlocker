@@ -26,6 +26,9 @@ import {
   type PublicExchange,
   type PublicInvite,
   type WishItem,
+  defaultT,
+  type ServerErrorKey,
+  isLocale,
 } from "@mgl/core";
 import { env } from "$amplify/env/exchange-api";
 import { Amplify } from "aws-amplify";
@@ -48,6 +51,9 @@ interface ResolverEvent {
 }
 
 class UserError extends Error {}
+
+/** A user-facing error, in English; the site maps it back to its key and shows it in the visitor's language. */
+const serverError = (key: ServerErrorKey) => new UserError(defaultT(`core.server.${key}`));
 
 const MAX_PARTICIPANTS = 200;
 
@@ -83,6 +89,8 @@ export const handler = async (event: ResolverEvent) => {
           callerSub,
           args.addBack === true ? { profileId: optStr(args.backProfileId) } : undefined,
         );
+      case "setMyLocale":
+        return await setMyLocale(str(args.locale), callerSub);
       case "syncMyProfile":
         return await syncMyProfile(callerSub);
       case "setConnectionSharing":
@@ -105,7 +113,7 @@ export const handler = async (event: ResolverEvent) => {
 
 async function loadExchange(id: string): Promise<Exchange> {
   const { data } = await client.models.Exchange.get({ id });
-  if (!data) throw new UserError("We couldn't find that gift exchange.");
+  if (!data) throw serverError("exchangeNotFound");
   return data;
 }
 
@@ -141,11 +149,11 @@ async function getPublicExchange(exchangeId: string): Promise<PublicExchange> {
 
 async function joinExchange(exchangeId: string, name: string, email: string | undefined, wishlist: unknown, shared: unknown): Promise<JoinResult> {
   const ex = await loadExchange(exchangeId);
-  if (ex.status === "drawn") throw new UserError("Names have already been drawn. Ask the organizer to add you.");
+  if (ex.status === "drawn") throw serverError("alreadyDrawn");
   const cleanName = name.trim().slice(0, 80);
-  if (!cleanName) throw new UserError("Please add your name.");
+  if (!cleanName) throw serverError("addName");
   const people = await loadParticipants(exchangeId);
-  if (people.length >= MAX_PARTICIPANTS) throw new UserError("This exchange is full.");
+  if (people.length >= MAX_PARTICIPANTS) throw serverError("exchangeFull");
 
   const token = randomBytes(24).toString("base64url");
   const { data, errors } = await client.models.Participant.create({
@@ -169,10 +177,10 @@ function tokensMatch(a: string, b: string): boolean {
 }
 
 async function findByToken(exchangeId: string, token: string) {
-  if (!isPlausibleToken(token)) throw new UserError("That link isn't valid.");
+  if (!isPlausibleToken(token)) throw serverError("linkInvalid");
   const [ex, people] = await Promise.all([loadExchange(exchangeId), loadParticipants(exchangeId)]);
   const me = people.find((p) => tokensMatch(p.token, token));
-  if (!me) throw new UserError("That link isn't valid. Ask the organizer for your private link.");
+  if (!me) throw serverError("privateLinkInvalid");
   return { ex, people, me };
 }
 
@@ -220,7 +228,7 @@ async function saveShared(exchangeId: string, token: string, shared: unknown) {
 
 async function draw(exchangeId: string, callerSub: string | undefined) {
   const ex = await loadExchange(exchangeId);
-  if (!callerSub || ex.adminSub !== callerSub) throw new UserError("Only the organizer can draw names.");
+  if (!callerSub || ex.adminSub !== callerSub) throw serverError("organizerDraw");
   const people = await loadParticipants(exchangeId);
   const ids = people.map((p) => p.id);
   const exclusions = (parseJson(ex.exclusions) ?? []) as [string, string][];
@@ -247,7 +255,7 @@ async function draw(exchangeId: string, callerSub: string | undefined) {
 /** Organizer only. Assignments go first so an interrupted delete never leaves orphaned matches. */
 async function removeExchange(exchangeId: string, callerSub: string | undefined) {
   const ex = await loadExchange(exchangeId);
-  if (!callerSub || ex.adminSub !== callerSub) throw new UserError("Only the organizer can delete this exchange.");
+  if (!callerSub || ex.adminSub !== callerSub) throw serverError("organizerDelete");
   const { data: assignments } = await client.models.Assignment.listAssignmentByExchangeId({ exchangeId }, { limit: 1000 });
   await Promise.all(assignments.map((a) => client.models.Assignment.delete({ id: a.id })));
   const people = await loadParticipants(exchangeId);
@@ -260,10 +268,10 @@ async function removeExchange(exchangeId: string, callerSub: string | undefined)
 
 /** From the unsubscribe link in a reminder email; the random token is the only credential. */
 async function setReminders(token: string, on: boolean) {
-  if (token.length < 20 || token.length > 100) throw new UserError("That link isn't valid.");
+  if (token.length < 20 || token.length > 100) throw serverError("linkInvalid");
   const { data } = await client.models.ReminderSettings.listReminderSettingsByUnsubscribeToken({ unsubscribeToken: token }, { limit: 1 });
   const settings = data[0];
-  if (!settings) throw new UserError("That link isn't valid.");
+  if (!settings) throw serverError("linkInvalid");
   await client.models.ReminderSettings.update({ ownerSub: settings.ownerSub, remindersOff: !on });
   return { ok: true, on };
 }
@@ -272,7 +280,7 @@ async function setReminders(token: string, on: boolean) {
 
 async function getPublicInvite(inviteId: string): Promise<PublicInvite> {
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
-  if (!inv || inv.status === "revoked") throw new UserError("This invite link is no longer active.");
+  if (!inv || inv.status === "revoked") throw serverError("inviteInactive");
   return {
     id: inv.id,
     from: { name: inv.fromName },
@@ -287,11 +295,11 @@ async function getPublicInvite(inviteId: string): Promise<PublicInvite> {
 
 async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
-  if (!inv || inv.status === "revoked") throw new UserError("This invite link is no longer active.");
-  if (inv.purpose === "connect") throw new UserError("This link is for connecting profiles.");
+  if (!inv || inv.status === "revoked") throw serverError("inviteInactive");
+  if (inv.purpose === "connect") throw serverError("connectOnly");
   const p = (profile ?? {}) as Record<string, unknown>;
   const name = typeof p.name === "string" ? p.name.trim().slice(0, 80) : "";
-  if (!name) throw new UserError("Please add your name.");
+  if (!name) throw serverError("addName");
 
   const json = (v: unknown) => (v === undefined || v === null ? undefined : JSON.stringify(v).slice(0, 20_000));
   const { data: created } = await client.models.Profile.create({
@@ -315,7 +323,8 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
         ownerSub: inv.ownerSub,
         name: kidName,
         kind: "child",
-        relationship: `${name.split(" ")[0]}'s child`,
+        // Sent in the invitee's language; English if missing.
+        relationship: (typeof k.relationship === "string" && k.relationship.trim().slice(0, 80)) || `${name.split(" ")[0]}'s child`,
         color: pastelFor(kidName),
         sizes: json(k.sizes),
         birthday: date(k.birthday),
@@ -334,7 +343,7 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
 type Connection = Schema["Connection"]["type"];
 
 const needSignIn = (sub: string | undefined): string => {
-  if (!sub) throw new UserError("Please sign in.");
+  if (!sub) throw serverError("signIn");
   return sub;
 };
 
@@ -397,7 +406,7 @@ async function connectBack(mySub: string, myName: string, theirSub: string, thei
   let profileId: string;
   if (cardId) {
     const { data: card } = await client.models.Profile.get({ id: cardId });
-    if (!card || card.ownerSub !== mySub || card.kind !== "adult") throw new UserError("Pick one of the grown-ups in your locker, or add a new card.");
+    if (!card || card.ownerSub !== mySub || card.kind !== "adult") throw serverError("pickGrownUp");
     profileId = card.id;
   } else {
     const { data: card } = await client.models.Profile.create({ ownerSub: mySub, name: theirs.name || theirName, kind: "adult", color: pastelFor(theirs.name || theirName) });
@@ -430,23 +439,23 @@ async function connectProfile(
 ) {
   const sub = needSignIn(callerSub);
   const { data: inv } = await client.models.Invite.get({ id: inviteId });
-  if (!inv || inv.status === "revoked") throw new UserError("This link is no longer active.");
-  if (inv.ownerSub === sub) throw new UserError("That's your own link. Send it to the person you want to connect with.");
+  if (!inv || inv.status === "revoked") throw serverError("linkInactive");
+  if (inv.ownerSub === sub) throw serverError("ownLink");
   const isConnectLink = inv.purpose === "connect";
   const profileId = isConnectLink ? inv.targetProfileId : inv.acceptedProfileId;
-  if (!profileId) throw new UserError("Answer the invite first, then connect.");
+  if (!profileId) throw serverError("answerFirst");
   const mine = await connectionsOf(sub);
   const alreadyMine = mine.some((c) => c.profileId === profileId && c.ownerSub === inv.ownerSub);
   if (isConnectLink) {
     // Single use: once accepted, only the person who accepted can reconnect.
-    if (inv.status === "accepted" && !alreadyMine) throw new UserError("This link has already been used. Ask for a new one.");
+    if (inv.status === "accepted" && !alreadyMine) throw serverError("linkUsed");
   } else if (!claimToken || !inv.claimToken || !tokensMatch(inv.claimToken, claimToken)) {
-    throw new UserError("Only the person who answered this invite can connect it.");
+    throw serverError("onlyAnswerer");
   }
   const { data: card } = await client.models.Profile.get({ id: profileId });
-  if (!card || card.ownerSub !== inv.ownerSub) throw new UserError("That card isn't in their locker anymore.");
+  if (!card || card.ownerSub !== inv.ownerSub) throw serverError("cardGone");
   const self = await loadSelf(sub);
-  if (!self) throw new UserError("Create your profile first.");
+  if (!self) throw serverError("createProfileFirst");
 
   // One live connection per card: replace any earlier one of mine.
   for (const c of mine.filter((c) => c.status === "active" && c.profileId === profileId))
@@ -486,15 +495,15 @@ async function syncMyProfile(callerSub: string | undefined) {
 
 async function loadConnection(id: string, sub: string): Promise<Connection> {
   const { data } = await client.models.Connection.get({ id });
-  if (!data || (data.memberSub !== sub && data.ownerSub !== sub)) throw new UserError("Connection not found.");
+  if (!data || (data.memberSub !== sub && data.ownerSub !== sub)) throw serverError("connectionNotFound");
   return data;
 }
 
 async function setConnectionSharing(id: string, sharesIn: unknown, callerSub: string | undefined) {
   const sub = needSignIn(callerSub);
   const conn = await loadConnection(id, sub);
-  if (conn.memberSub !== sub) throw new UserError("Only they can change what they share.");
-  if (conn.status !== "active") throw new UserError("This connection has ended.");
+  if (conn.memberSub !== sub) throw serverError("onlyThey");
+  if (conn.status !== "active") throw serverError("connectionEnded");
   const shares = cleanShares(sharesIn, cleanShares(parseJson(conn.shares)));
   const { data: updated } = await client.models.Connection.update({ id, shares: JSON.stringify(shares) });
   const self = await loadSelf(sub);
@@ -516,10 +525,20 @@ async function endConnection(id: string, callerSub: string | undefined, both: bo
   return { ok: true, ended: ending.length };
 }
 
+/** Reminder emails go out in this language. Creates the owner's settings on first use. */
+async function setMyLocale(locale: string, callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  if (!isLocale(locale)) throw serverError("missingInfo");
+  const { data } = await client.models.ReminderSettings.get({ ownerSub: sub });
+  if (data) await client.models.ReminderSettings.update({ ownerSub: sub, locale });
+  else await client.models.ReminderSettings.create({ ownerSub: sub, locale, remindersOff: false, unsubscribeToken: randomBytes(24).toString("base64url") });
+  return { ok: true, locale };
+}
+
 // ---- helpers ---------------------------------------------------------------
 
 function str(v: unknown): string {
-  if (typeof v !== "string" || !v) throw new UserError("Missing information.");
+  if (typeof v !== "string" || !v) throw serverError("missingInfo");
   return v;
 }
 function optStr(v: unknown): string | undefined {

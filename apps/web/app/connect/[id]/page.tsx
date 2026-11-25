@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ConnectFlow } from "./ConnectFlow";
 
-export const metadata: Metadata = { title: "Connect profiles" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("titles"))("connect") };
+}
 
 export default async function ConnectPage({ params }: { params: Promise<{ id: string }> }) {
   return (

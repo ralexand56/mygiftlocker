@@ -1,4 +1,5 @@
 /** Links to wish lists people keep elsewhere (Amazon, Target, Etsy…). */
+import { defaultT, type Tr } from "./i18n";
 
 export const MAX_WISHLIST_LINKS = 5;
 
@@ -59,12 +60,15 @@ export function linkLabel(url: string): string {
 const REGISTRY_ONLY = new Set(["Zola", "The Knot", "MyRegistry", "Babylist"]);
 
 /** "Amazon wish list", "Amazon registry", "Zola registry", "etsy.com list". */
-export function linkTitle(url: string): string {
+export function linkTitle(url: string, t: Tr = defaultT): string {
   const label = linkLabel(url);
   let path = "";
+  let host = "";
   try {
-    path = new URL(url).pathname.toLowerCase();
+    const u = new URL(url);
+    path = u.pathname.toLowerCase();
+    host = u.hostname.replace(/^www\./, "");
   } catch {}
-  if (REGISTRY_ONLY.has(label) || /registr|wedding|baby-?reg|baby-?list/.test(path)) return `${label} registry`;
-  return `${label} ${/wish/.test(path) || label !== new URL(url).hostname.replace(/^www\./, "") ? "wish list" : "list"}`;
+  if (REGISTRY_ONLY.has(label) || /registr|wedding|baby-?reg|baby-?list/.test(path)) return t("core.links.registry", { store: label });
+  return t(/wish/.test(path) || label !== host ? "core.links.wishList" : "core.links.list", { store: label });
 }

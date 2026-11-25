@@ -9,18 +9,15 @@ import { Button, Card, Field, Input, Textarea } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { authMode, useUser } from "@/lib/auth";
 import { createInvite } from "@/lib/invites";
+import { useTranslations } from "next-intl";
+import { useTr } from "@/lib/i18n";
 
-const SECTIONS: { id: InviteSection; label: string; desc: string }[] = [
-  { id: "sizes", label: "Clothing & shoe sizes", desc: "Tops, bottoms, dresses, outerwear, shoes, rings" },
-  { id: "address", label: "Shipping address", desc: "So gifts can go straight to them" },
-  { id: "dates", label: "Birthday & anniversary", desc: "Year optional" },
-  { id: "favorites", label: "Favorite things", desc: "Colors, hobbies, things to avoid" },
-  { id: "kids", label: "Their kids' sizes", desc: "Great for parents of little ones" },
-];
+const SECTIONS: InviteSection[] = ["sizes", "address", "dates", "favorites", "kids"];
 
 export function InviteBuilder() {
   const me = useUser();
   const router = useRouter();
+  const t = useTranslations("inviteBuilder");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState("");
@@ -51,7 +48,7 @@ export function InviteBuilder() {
       const segment = await createInvite(payload, me?.sub);
       setUrl(`${window.location.origin}/join/${segment}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create the invite");
+      setError(e instanceof Error ? e.message : t("failed"));
     } finally {
       setBusy(false);
     }
@@ -60,27 +57,27 @@ export function InviteBuilder() {
   return (
     <div className="mx-auto grid max-w-5xl gap-6 px-5 pb-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <Card className="p-7 md:p-9">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Invite someone</h1>
-        <p className="mt-2 text-ink-soft">They'll fill in a quick, playful form — and their details land in your locker.</p>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="mt-2 text-ink-soft">{t("lede")}</p>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          <Field label="Your name">
-            <Input value={from} onChange={(e) => setFrom(e.target.value)} placeholder="Alex" />
+          <Field label={t("yourName")}>
+            <Input value={from} onChange={(e) => setFrom(e.target.value)} placeholder={t("yourNamePlaceholder")} />
           </Field>
-          <Field label="Their name (optional)">
-            <Input value={to} onChange={(e) => setTo(e.target.value)} placeholder="Jordan" />
+          <Field label={t("theirName")}>
+            <Input value={to} onChange={(e) => setTo(e.target.value)} placeholder={t("theirNamePlaceholder")} />
           </Field>
         </div>
 
-        <p className="mt-8 mb-3 text-sm font-bold text-ink-soft">What should we ask for?</p>
+        <p className="mt-8 mb-3 text-sm font-bold text-ink-soft">{t("askFor")}</p>
         <div className="grid gap-2">
-          {SECTIONS.map((s) => {
-            const on = ask[s.id];
+          {SECTIONS.map((id) => {
+            const on = ask[id];
             return (
               <button
-                key={s.id}
+                key={id}
                 type="button"
-                onClick={() => setAsk((a) => ({ ...a, [s.id]: !a[s.id] }))}
+                onClick={() => setAsk((a) => ({ ...a, [id]: !a[id] }))}
                 className={`flex items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors ${on ? "bg-white shadow-soft" : "bg-white/40 hover:bg-white/70"}`}
                 aria-pressed={on}
               >
@@ -88,8 +85,8 @@ export function InviteBuilder() {
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
                 <span>
-                  <span className="block font-bold">{s.label}</span>
-                  <span className="block text-sm text-ink-soft">{s.desc}</span>
+                  <span className="block font-bold">{t(`sections.${id}.label`)}</span>
+                  <span className="block text-sm text-ink-soft">{t(`sections.${id}.desc`)}</span>
                 </span>
               </button>
             );
@@ -97,15 +94,15 @@ export function InviteBuilder() {
         </div>
 
         <div className="mt-6">
-          <Field label="Personal note (optional)">
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Holiday shopping is coming — help me get it right this year! 💝" />
+          <Field label={t("note")}>
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("notePlaceholder")} />
           </Field>
         </div>
 
         <div className="mt-8">
           {error && <p className="mb-3 text-sm font-bold text-rose-deep">{error}</p>}
           <Button onClick={create} disabled={busy || !from.trim() || !Object.values(ask).some(Boolean)}>
-            <Send className="h-4 w-4" /> {busy ? "Creating…" : authMode === "amplify" && me === null ? "Sign in & create invite" : "Create invite"}
+            <Send className="h-4 w-4" /> {busy ? t("creating") : authMode === "amplify" && me === null ? t("signInCreate") : t("create")}
           </Button>
         </div>
       </Card>
@@ -122,7 +119,7 @@ export function InviteBuilder() {
                 <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-blush">
                   <Share2 className="h-7 w-7 text-rose" />
                 </div>
-                Your invite link and sharing options will appear here.
+                {t("hint")}
               </div>
             </Card>
           </motion.div>
@@ -136,7 +133,8 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState<string>("");
   const [canShare, setCanShare] = useState(false);
-  const links = inviteShareLinks(url, from, to || undefined);
+  const t = useTranslations("inviteBuilder");
+  const links = inviteShareLinks(url, from, to || undefined, useTr());
 
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && "share" in navigator);
@@ -150,19 +148,19 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
   };
 
   const channels = [
-    { label: "Text message", href: links.sms, icon: MessageSquareText, tint: "bg-mint" },
-    { label: "Email", href: links.email, icon: Mail, tint: "bg-blush" },
+    { label: t("textMessage"), href: links.sms, icon: MessageSquareText, tint: "bg-mint" },
+    { label: t("email"), href: links.email, icon: Mail, tint: "bg-blush" },
     { label: "WhatsApp", href: links.whatsapp, icon: MessageCircle, tint: "bg-butter" },
     { label: "Messenger", href: links.messenger, icon: Send, tint: "bg-sky" },
   ];
 
   return (
     <Card className="p-7 md:p-9">
-      <h2 className="font-display text-2xl font-semibold">Send it your way</h2>
+      <h2 className="font-display text-2xl font-semibold">{t("sendTitle")}</h2>
       <div className="mt-5 flex items-center gap-2 rounded-2xl bg-white/80 p-2 pl-4 shadow-soft">
         <span className="truncate text-sm text-ink-soft">{url}</span>
         <button onClick={copy} className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-ink px-3 py-2 text-sm font-bold text-white">
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? "Copied" : "Copy"}
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? t("copied") : t("copy")}
         </button>
       </div>
 
@@ -188,8 +186,8 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
       </div>
 
       {canShare && (
-        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "My Gift Lockers", text: `${from} invited you to My Gift Lockers`, url }).catch(() => {})}>
-          <Share2 className="h-4 w-4" /> More options…
+        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "My Gift Lockers", text: t("shareText", { name: from }), url }).catch(() => {})}>
+          <Share2 className="h-4 w-4" /> {t("more")}
         </Button>
       )}
 
@@ -197,9 +195,9 @@ function SharePanel({ url, from, to }: { url: string; from: string; to: string }
         <div className="h-28 w-28 shrink-0 rounded-xl bg-white p-2" dangerouslySetInnerHTML={{ __html: qr }} />
         <div className="text-sm text-ink-soft">
           <p className="flex items-center gap-1.5 font-bold text-ink">
-            <QrCode className="h-4 w-4" /> In person?
+            <QrCode className="h-4 w-4" /> {t("inPerson")}
           </p>
-          Let them scan this at the dinner table, office party or school pickup.
+          {t("inPersonBody")}
         </div>
       </div>
     </Card>

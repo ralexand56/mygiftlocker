@@ -51,6 +51,6 @@ describe("events", () => {
   });
 
   it("describes day counts", () => {
-    expect([0, 1, 5].map(describeDays)).toEqual(["today", "tomorrow", "in 5 days"]);
+    expect([0, 1, 5].map((d) => describeDays(d))).toEqual(["today", "tomorrow", "in 5 days"]);
   });
 });

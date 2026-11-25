@@ -8,6 +8,7 @@
 import { cleanGifted, cleanHolidays, decodeInvite, encodeInvite, type HolidayId, type InvitePayload, type Person, type PublicInvite } from "@mgl/core";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
 import { patchPerson, readDB, saveInvite, upsertPerson } from "./store";
+import { currentTr } from "./i18n-current";
 
 /** Returns the path segment for /join/<segment>. */
 export async function createInvite(payload: InvitePayload, ownerSub?: string): Promise<string> {
@@ -15,7 +16,7 @@ export async function createInvite(payload: InvitePayload, ownerSub?: string): P
     saveInvite(payload);
     return encodeInvite(payload);
   }
-  if (!ownerSub) throw new Error("Sign in to send invites");
+  if (!ownerSub) throw new Error(currentTr()("errors.signInToInvite"));
   const { data, errors } = await api().models.Invite.create({
     ownerSub,
     fromName: payload.from.name,
@@ -24,7 +25,7 @@ export async function createInvite(payload: InvitePayload, ownerSub?: string): P
     note: payload.note,
     status: "pending",
   });
-  if (!data) throw new Error(errors?.[0]?.message ?? "Couldn't create the invite");
+  if (!data) throw new Error(errors?.[0]?.message ?? currentTr()("errors.createInvite"));
   return data.id;
 }
 
@@ -32,7 +33,7 @@ export async function createInvite(payload: InvitePayload, ownerSub?: string): P
 export async function loadInvite(segment: string): Promise<PublicInvite> {
   const decoded = decodeInvite(segment);
   if (decoded) return decoded;
-  if (!backendEnabled) throw new Error("This invite link looks broken. Ask the sender for a fresh link.");
+  if (!backendEnabled) throw new Error(currentTr()("errors.brokenInvite"));
   return unwrap<PublicInvite>(await api().queries.getPublicInvite({ inviteId: segment }, { authMode: "apiKey" }));
 }
 
@@ -47,7 +48,7 @@ export async function submitInvite(invite: PublicInvite, profile: Person, kids: 
   const strip = ({ name, sizes, address, birthday, anniversary, favorites }: Person) => ({ name, sizes, address, birthday, anniversary, favorites });
   const res = unwrap<{ claimToken?: string }>(
     await api().mutations.submitInvite(
-      { inviteId: invite.id, profile: JSON.stringify(strip(profile)), kids: JSON.stringify(kids.map(strip)) },
+      { inviteId: invite.id, profile: JSON.stringify(strip(profile)), kids: JSON.stringify(kids.map((k) => ({ ...strip(k), relationship: k.relationship }))) },
       { authMode: "apiKey" },
     ),
   );

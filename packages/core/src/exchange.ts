@@ -8,6 +8,7 @@ import type { SharedProfile } from "./shared";
  *  - optional: nobody gets the same person they had in a previous exchange
  *  - optional: a single loop (A→B→C→…→A) so the exchange can be done in a circle
  */
+import { defaultT, intlTag, type Tr } from "./i18n";
 
 export interface WishItem {
   id: string;
@@ -69,6 +70,8 @@ export class DrawError extends Error {
   constructor(
     message: string,
     public readonly code: "TOO_FEW" | "IMPOSSIBLE",
+    /** Message key under core.draw, for translated display. */
+    public readonly key?: "duplicate" | "impossible" | "singleCircle" | "tooFew",
   ) {
     super(message);
     this.name = "DrawError";
@@ -112,8 +115,8 @@ function buildForbidden(ids: string[], opts: DrawOptions): Map<string, Set<strin
  * the group sizes people actually run (up to a few hundred).
  */
 export function drawNames(ids: string[], opts: DrawOptions = {}): Record<string, string> {
-  if (new Set(ids).size !== ids.length) throw new DrawError("Duplicate participants", "IMPOSSIBLE");
-  if (ids.length < 3) throw new DrawError("A gift exchange needs at least 3 people", "TOO_FEW");
+  if (new Set(ids).size !== ids.length) throw new DrawError("Duplicate participants", "IMPOSSIBLE", "duplicate");
+  if (ids.length < 3) throw new DrawError("A gift exchange needs at least 3 people", "TOO_FEW", "tooFew");
   const random = opts.random ?? secureRandom;
   const forbidden = buildForbidden(ids, opts);
   const allowed = (g: string, r: string) => !forbidden.get(g)!.has(r);
@@ -149,7 +152,7 @@ export function drawNames(ids: string[], opts: DrawOptions = {}): Record<string,
     return false;
   };
 
-  if (!solve(0)) throw new DrawError("These exclusions make a fair draw impossible", "IMPOSSIBLE");
+  if (!solve(0)) throw new DrawError("These exclusions make a fair draw impossible", "IMPOSSIBLE", "impossible");
   return result;
 }
 
@@ -178,7 +181,7 @@ function drawLoop(
     return false;
   };
 
-  if (!solve()) throw new DrawError("These exclusions make a single circle impossible", "IMPOSSIBLE");
+  if (!solve()) throw new DrawError("These exclusions make a single circle impossible", "IMPOSSIBLE", "singleCircle");
   const result: Record<string, string> = {};
   path.forEach((g, i) => (result[g] = path[(i + 1) % path.length]!));
   return result;
@@ -196,10 +199,10 @@ export function validateDraw(ids: string[], assignment: Record<string, string>, 
   });
 }
 
-export function formatBudget(b?: Exchange["budget"]): string | undefined {
+export function formatBudget(b?: Exchange["budget"], t: Tr = defaultT): string | undefined {
   if (!b) return undefined;
   try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: b.currency, maximumFractionDigits: 0 }).format(b.amount);
+    return new Intl.NumberFormat(intlTag(t), { style: "currency", currency: b.currency, maximumFractionDigits: 0 }).format(b.amount);
   } catch {
     return `${b.amount} ${b.currency}`;
   }

@@ -21,6 +21,7 @@ import {
 } from "@mgl/core";
 import { useCallback, useEffect, useState } from "react";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
+import { currentTr, localizeError } from "./i18n-current";
 import { deleteExchange as deleteLocal, patchExchange, readDB, saveExchange } from "./store";
 
 const pub = { authMode: "apiKey" } as const;
@@ -71,7 +72,7 @@ export async function createExchange(input: NewExchange, adminSub: string): Prom
     status: "open",
     exclusions: JSON.stringify([]),
   });
-  if (!ex) throw new Error(errors?.[0]?.message ?? "Couldn't create the exchange");
+  if (!ex) throw new Error(errors?.[0]?.message ?? currentTr()("errors.createExchange"));
   // The organizer plays too.
   const organizerParticipantId = await addParticipant(ex.id, input.organizerName, adminSub);
   await c.models.Exchange.update({ id: ex.id, organizerParticipantId });
@@ -143,7 +144,7 @@ export async function addParticipant(exchangeId: string, name: string, adminSub:
     wishlist: JSON.stringify([]),
     joinedAt: new Date().toISOString(),
   });
-  if (!data) throw new Error(errors?.[0]?.message ?? "Couldn't add them");
+  if (!data) throw new Error(errors?.[0]?.message ?? currentTr()("errors.addThem"));
   return data.id;
 }
 
@@ -172,7 +173,7 @@ export async function setExclusions(exchangeId: string, exclusions: [string, str
 export async function draw(exchangeId: string): Promise<void> {
   if (!backendEnabled) {
     const ex = readDB().exchanges.find((x) => x.id === exchangeId);
-    if (!ex) throw new Error("Exchange not found");
+    if (!ex) throw new Error(currentTr()("core.server.exchangeNotFound"));
     try {
       const assignments = drawNames(
         ex.participants.map((p) => p.id),
@@ -180,7 +181,7 @@ export async function draw(exchangeId: string): Promise<void> {
       );
       patchExchange(exchangeId, (x) => ({ ...x, status: "drawn", assignments, drawnAt: new Date().toISOString() }));
     } catch (e) {
-      throw new Error(e instanceof DrawError ? e.message : "Something went wrong");
+      throw new Error(e instanceof DrawError ? localizeError(e.message) : currentTr()("common.somethingWrong"));
     }
     return;
   }
@@ -206,7 +207,7 @@ export async function deleteExchange(exchangeId: string): Promise<void> {
 export async function getPublicExchange(exchangeId: string): Promise<PublicExchange> {
   if (!backendEnabled) {
     const ex = readDB().exchanges.find((x) => x.id === exchangeId);
-    if (!ex) throw new Error("We couldn't find that gift exchange.");
+    if (!ex) throw new Error(currentTr()("core.server.exchangeNotFound"));
     return localPublic(ex);
   }
   return unwrap<PublicExchange>(await api().queries.getPublicExchange({ exchangeId }, pub));
@@ -221,8 +222,8 @@ export async function joinExchange(
 ): Promise<JoinResult> {
   if (!backendEnabled) {
     const ex = readDB().exchanges.find((x) => x.id === exchangeId);
-    if (!ex) throw new Error("We couldn't find that gift exchange.");
-    if (ex.status === "drawn") throw new Error("Names have already been drawn. Ask the organizer to add you.");
+    if (!ex) throw new Error(currentTr()("core.server.exchangeNotFound"));
+    if (ex.status === "drawn") throw new Error(currentTr()("core.server.alreadyDrawn"));
     const p: Participant = {
       id: newId("pt_"),
       name,
@@ -244,7 +245,7 @@ export async function getMyExchange(exchangeId: string, tok: string): Promise<My
   if (!backendEnabled) {
     const ex = readDB().exchanges.find((x) => x.id === exchangeId);
     const me = ex?.participants.find((p) => p.token === tok);
-    if (!ex || !me) throw new Error("That link isn't valid. Ask the organizer for your private link.");
+    if (!ex || !me) throw new Error(currentTr()("core.server.privateLinkInvalid"));
     const receiver = ex.assignments?.[me.id] ? ex.participants.find((p) => p.id === ex.assignments![me.id]) : undefined;
     return {
       exchange: localPublic(ex),

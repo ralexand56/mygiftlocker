@@ -1,3 +1,5 @@
+import { defaultT, intlTag, type Tr } from "./i18n";
+
 /** Month/day dates where the year is optional (people often skip birth years). */
 export interface PartialDate {
   month: number; // 1-12
@@ -20,9 +22,19 @@ export function isValidPartialDate(d: PartialDate): boolean {
   return d.day <= daysInMonth(d.month, d.year ?? 2024);
 }
 
-export function formatPartialDate(d: PartialDate): string {
-  const base = `${MONTHS[d.month - 1]} ${d.day}`;
-  return d.year ? `${base}, ${d.year}` : base;
+/** "November 24, 1990" / "24 de noviembre" / "24 ноября", in the translator's language. */
+export function formatPartialDate(d: PartialDate, t: Tr = defaultT): string {
+  const date = new Date(d.year ?? 2000, d.month - 1, d.day);
+  return date.toLocaleDateString(intlTag(t), { month: "long", day: "numeric", ...(d.year && { year: "numeric" }) });
+}
+
+/** Month names in the translator's language, January first (standalone form, as in a picker). */
+export function monthNames(t: Tr = defaultT): string[] {
+  const f = new Intl.DateTimeFormat(intlTag(t), { month: "long" });
+  return Array.from({ length: 12 }, (_, i) => {
+    const m = f.format(new Date(2000, i, 1));
+    return m.charAt(0).toLocaleUpperCase(intlTag(t)) + m.slice(1);
+  });
 }
 
 /** Next occurrence on or after `from` (Feb 29 falls back to Feb 28 in non-leap years). */

@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { backendEnabled } from "./amplify";
 import { setMe, useDB } from "./store";
+import { currentTr } from "./i18n-current";
 
 export const authMode: "amplify" | "demo" = backendEnabled ? "amplify" : "demo";
 
@@ -66,7 +67,7 @@ export function useUser(): User | null | undefined {
 /** Saves the signed-in user's display name (Cognito `name`) and refreshes every useUser. */
 export async function saveDisplayName(name: string): Promise<void> {
   const clean = name.trim().slice(0, 80);
-  if (!clean) throw new Error("Please enter your name.");
+  if (!clean) throw new Error(currentTr()("errors.enterName"));
   if (!backendEnabled) {
     setMe({ id: "me", name: clean });
     return;
@@ -142,12 +143,12 @@ export async function confirmEmailCode(email: string, code: string): Promise<voi
     } catch {
       // autoSignIn only works in the session that called signUp (not after a resend).
       await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
-      throw new Error("Email verified! We just sent you a new code. Enter it to finish signing in.");
+      throw new Error(currentTr()("errors.emailVerified"));
     }
     return;
   }
   const res = await a.confirmSignIn({ challengeResponse: c });
-  if (!res.isSignedIn) throw new Error("That code didn't work. Try again.");
+  if (!res.isSignedIn) throw new Error(currentTr()("errors.badCode"));
   void email;
 }
 

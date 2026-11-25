@@ -1,9 +1,11 @@
 "use client";
 
-import type { Scene, StepDef } from "@mgl/core";
+import { stepText, type Scene, type StepDef } from "@mgl/core";
+import { useTr } from "@/lib/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check } from "lucide-react";
 import { SCENE_ILLOS, paletteAt } from "./illustrations";
+import { useTranslations } from "next-intl";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -90,8 +92,10 @@ export function StepShowcase({ scene, dir }: { scene: Scene; dir: number }) {
  * that doubles as navigation back to completed steps (desktop only).
  */
 export function StepRail({ steps, index, onJump }: { steps: StepDef[]; index: number; onJump: (i: number) => void }) {
+  const t = useTranslations("stepRail");
+  const tr = useTr();
   return (
-    <nav aria-label="Steps" className="absolute top-1/2 left-[calc(45.9%)] z-10 hidden -translate-x-1/2 -translate-y-1/2 flex-col gap-2 md:flex">
+    <nav aria-label={t("steps")} className="absolute top-1/2 left-[calc(45.9%)] z-10 hidden -translate-x-1/2 -translate-y-1/2 flex-col gap-2 md:flex">
       {steps.map((s, i) => {
         const Illo = SCENE_ILLOS[s.scene][0]!;
         const active = i === index;
@@ -102,7 +106,7 @@ export function StepRail({ steps, index, onJump }: { steps: StepDef[]; index: nu
             type="button"
             onClick={() => onJump(i)}
             disabled={!done}
-            aria-label={`${s.eyebrow}${active ? " (current)" : done ? " (done)" : ""}`}
+            aria-label={active ? t("current", { step: stepText(s, tr).eyebrow }) : done ? t("done", { step: stepText(s, tr).eyebrow }) : stepText(s, tr).eyebrow}
             aria-current={active ? "step" : undefined}
             animate={{ scale: active ? 1.18 : 1 }}
             transition={{ duration: 0.5, ease: EASE }}

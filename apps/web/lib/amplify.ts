@@ -11,6 +11,7 @@ import "aws-amplify/auth/enable-oauth-listener";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../../amplify/data/resource";
 import outputs from "../amplify_outputs.json";
+import { localizeError } from "./i18n-current";
 
 export const backendEnabled = Boolean((outputs as { auth?: unknown }).auth);
 
@@ -35,6 +36,6 @@ export function parseJson<T>(v: unknown): T {
 export function unwrap<T>(res: { data?: unknown; errors?: readonly { message: string }[] | null }): T {
   if (res.errors?.length) throw new Error(res.errors[0]!.message);
   const value = parseJson<T & { error?: string }>(res.data);
-  if (value && typeof value === "object" && "error" in value && value.error) throw new Error(value.error);
+  if (value && typeof value === "object" && "error" in value && value.error) throw new Error(localizeError(value.error));
   return value as T;
 }

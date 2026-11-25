@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button, Card } from "@/components/ui";
 import { setReminders } from "@/lib/reminders";
+import { useTranslations } from "next-intl";
 
 type State = "ask" | "off" | "on" | "error";
 
@@ -15,8 +16,9 @@ type State = "ask" | "off" | "on" | "error";
  */
 export function ReminderSettings() {
   const token = useSearchParams().get("t") ?? "";
+  const t = useTranslations("reminders");
   const [state, setState] = useState<State>(token ? "ask" : "error");
-  const [error, setError] = useState(token ? "" : "This link is missing its code. Use the link from a reminder email.");
+  const [error, setError] = useState(token ? "" : t("missingCode"));
   const [busy, setBusy] = useState(false);
 
   const update = async (on: boolean) => {
@@ -25,7 +27,7 @@ export function ReminderSettings() {
       await setReminders(token, on);
       setState(on ? "on" : "off");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+      setError(e instanceof Error ? e.message : t("failed"));
       setState("error");
     } finally {
       setBusy(false);
@@ -41,34 +43,34 @@ export function ReminderSettings() {
         </span>
         {state === "ask" && (
           <>
-            <h1 className="font-display text-3xl font-semibold">Stop reminder emails?</h1>
-            <p className="mt-2 text-ink-soft">You won't get emails a week before and the day before birthdays and other dates in your locker.</p>
+            <h1 className="font-display text-3xl font-semibold">{t("askTitle")}</h1>
+            <p className="mt-2 text-ink-soft">{t("askBody")}</p>
             <Button className="mt-7 w-full" disabled={busy} onClick={() => update(false)}>
-              {busy ? "Saving…" : "Stop reminder emails"}
+              {busy ? t("saving") : t("stop")}
             </Button>
           </>
         )}
         {state === "off" && (
           <>
-            <h1 className="font-display text-3xl font-semibold">Reminders are off</h1>
-            <p className="mt-2 text-ink-soft">We won't send you any more reminder emails. Changed your mind?</p>
+            <h1 className="font-display text-3xl font-semibold">{t("offTitle")}</h1>
+            <p className="mt-2 text-ink-soft">{t("offBody")}</p>
             <Button variant="soft" className="mt-7 w-full" disabled={busy} onClick={() => update(true)}>
-              {busy ? "Saving…" : "Turn reminders back on"}
+              {busy ? t("saving") : t("turnOn")}
             </Button>
           </>
         )}
         {state === "on" && (
           <>
-            <h1 className="font-display text-3xl font-semibold">Reminders are on</h1>
-            <p className="mt-2 text-ink-soft">We'll email you a week before and the day before each date.</p>
+            <h1 className="font-display text-3xl font-semibold">{t("onTitle")}</h1>
+            <p className="mt-2 text-ink-soft">{t("onBody")}</p>
             <Button className="mt-7 w-full" href="/locker">
-              Open my locker
+              {t("openLocker")}
             </Button>
           </>
         )}
         {state === "error" && (
           <>
-            <h1 className="font-display text-3xl font-semibold">Link not recognized</h1>
+            <h1 className="font-display text-3xl font-semibold">{t("errorTitle")}</h1>
             <p className="mt-2 text-ink-soft">{error}</p>
           </>
         )}

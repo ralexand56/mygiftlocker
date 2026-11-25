@@ -1,8 +1,12 @@
 "use client";
 
 import {
-  FIT_LABELS,
   HOLIDAYS,
+  eventLabel,
+  holidayName,
+  holidayWhen,
+  occasionName,
+  sizeValueLabel,
   convertShoe,
   daysUntil,
   describeDays,
@@ -42,11 +46,15 @@ import { ShareToggles } from "@/components/ShareToggles";
 import { GiftLock } from "@/components/GiftLock";
 import { useDB } from "@/lib/store";
 import { LockerCalendar } from "./LockerCalendar";
+import { useTranslations } from "next-intl";
+import { useIntlTag, useTr } from "@/lib/i18n";
 
 const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 
 export function Locker() {
   const user = useUser();
+  const t = useTranslations("locker");
+  const tr = useTr();
   const localPeople = useDB((db) => db.people);
   const { data: remotePeople, loading: loadingPeople, reload: reloadPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
   const basePeople = authMode === "amplify" ? (remotePeople ?? []) : localPeople;
@@ -86,10 +94,10 @@ export function Locker() {
   if (authMode === "amplify" && user === null)
     return (
       <div className="mx-auto max-w-md px-5 py-16 text-center">
-        <h1 className="font-display text-4xl font-semibold">Your locker</h1>
-        <p className="mt-2 text-ink-soft">Sign in to see everyone you shop for.</p>
+        <h1 className="font-display text-4xl font-semibold">{t("signedOutTitle")}</h1>
+        <p className="mt-2 text-ink-soft">{t("signedOutBody")}</p>
         <div className="mt-6">
-          <Button href="/sign-in?next=/locker">Sign in</Button>
+          <Button href="/sign-in?next=/locker">{t("signIn")}</Button>
         </div>
       </div>
     );
@@ -98,21 +106,21 @@ export function Locker() {
     <div className="mx-auto max-w-6xl px-5 pb-24">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-5xl font-semibold tracking-tight">My locker</h1>
+          <h1 className="font-display text-5xl font-semibold tracking-tight">{t("title")}</h1>
           {upcoming && (
             <p className="mt-2 text-ink-soft">
-              Next up:{" "}
-              <b className="text-ink">
-                {upcoming.personName.split(" ")[0]}'s {upcoming.label.toLowerCase()}
-              </b>{" "}
-              {upcoming.days === 0 ? "is today 🎉" : describeDays(upcoming.days)}
+              {t.rich("nextUp", {
+                b: (c) => <b className="text-ink">{c}</b>,
+                occasion: occasionName(upcoming.personName, upcoming, tr),
+                when: upcoming.days === 0 ? t("isToday") : describeDays(upcoming.days, tr),
+              })}
             </p>
           )}
         </div>
         {/* Empty lockers get the invite button in the welcome card instead. */}
         {people.length > 0 && (
           <Button href="/invite">
-            <Plus className="h-4 w-4" /> Invite someone
+            <Plus className="h-4 w-4" /> {t("invite")}
           </Button>
         )}
       </div>
@@ -126,14 +134,11 @@ export function Locker() {
           <span className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-blush">
             <Gift className="h-8 w-8 text-ink" strokeWidth={2.2} />
           </span>
-          <h2 className="font-display text-3xl font-semibold">Your locker is empty</h2>
-          <p className="mx-auto mt-2 max-w-sm text-ink-soft">
-            Invite the first person you shop for. They add their own sizes, dates and favorites, and they'll show up
-            right here.
-          </p>
+          <h2 className="font-display text-3xl font-semibold">{t("emptyTitle")}</h2>
+          <p className="mx-auto mt-2 max-w-sm text-ink-soft">{t("emptyBody")}</p>
           <div className="mt-7 flex justify-center">
             <Button href="/invite">
-              <Plus className="h-4 w-4" /> Invite someone
+              <Plus className="h-4 w-4" /> {t("invite")}
             </Button>
           </div>
         </motion.div>
@@ -146,20 +151,20 @@ export function Locker() {
             <input
               type="search"
               className={`${inputCls} pl-11`}
-              placeholder="Search by name"
-              aria-label="Search by name"
+              placeholder={t("search")}
+              aria-label={t("search")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-ink-soft">Sort</span>
+            <span className="text-sm font-bold text-ink-soft">{t("sort")}</span>
             <ChipGroup<PeopleSort>
-              label="Sort people"
+              label={t("sortLabel")}
               options={["next", "name"]}
               value={sort}
               onChange={(v) => v && setSort(v)}
-              render={(v) => (v === "next" ? "Next event" : "Name")}
+              render={(v) => (v === "next" ? t("sortNext") : t("sortName"))}
             />
           </div>
           <button
@@ -167,7 +172,7 @@ export function Locker() {
             onClick={() => setHolidaysOpen(true)}
             className="rounded-full bg-white/70 px-4 py-2.5 text-[15px] font-bold text-ink ring-1 ring-lavender/50 hover:bg-white"
           >
-            🎄 Holidays
+            🎄 {t("holidays")}
           </button>
         </div>
       )}
@@ -182,7 +187,7 @@ export function Locker() {
 
       <LayoutGroup>
         {people.length > 0 && shown.length === 0 && (
-          <p className="rounded-3xl bg-white/70 p-8 text-center text-ink-soft">No one matches “{query.trim()}”.</p>
+          <p className="rounded-3xl bg-white/70 p-8 text-center text-ink-soft">{t("noMatch", { query: query.trim() })}</p>
         )}
         <ul className="grid gap-3">
           {shown.map((p, i) => (
@@ -246,6 +251,9 @@ function PersonRow({
   onToggleGift: (e: UpcomingEvent) => void;
 }) {
   const next = nextEvent(p);
+  const t = useTranslations("locker");
+  const tr = useTr();
+  const tag = useIntlTag();
   return (
     <motion.div
       layoutId={`card-${p.id}`}
@@ -257,7 +265,7 @@ function PersonRow({
       style={{ borderRadius: 24 }}
     >
       {/* The whole card opens the person; the lock sits above it as its own button. */}
-      <button type="button" onClick={onOpen} aria-label={`Open ${p.name}`} className="absolute inset-0 z-[1] rounded-[24px]" />
+      <button type="button" onClick={onOpen} aria-label={t("open", { name: p.name })} className="absolute inset-0 z-[1] rounded-[24px]" />
       <motion.div
         layoutId={`bg-${p.id}`}
         className="absolute inset-y-0 left-0 w-40"
@@ -271,37 +279,37 @@ function PersonRow({
           {p.name}
         </motion.h3>
         <p className="truncate text-sm text-ink-soft">
-          {p.relationship ?? (p.kind === "child" ? "Child" : "Connection")}
-          {summarizeSizes(p.sizes) ? ` · ${summarizeSizes(p.sizes)}` : ""}
+          {p.relationship ?? (p.kind === "child" ? t("child") : t("connection"))}
+          {summarizeSizes(p.sizes, tr) ? ` · ${summarizeSizes(p.sizes, tr)}` : ""}
         </p>
         <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs font-bold text-ink-soft sm:hidden">
-          {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
+          {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">{t("outgrown")}</span>}
           {p.linked && !p.linked.ended && <LiveBadge />}
         </div>
       </div>
       <div className="relative hidden shrink-0 gap-1.5 text-xs font-bold text-ink-soft sm:flex">
-        {p.kind === "child" && <span className="rounded-full bg-mint px-2.5 py-1">Managed</span>}
+        {p.kind === "child" && <span className="rounded-full bg-mint px-2.5 py-1">{t("managed")}</span>}
         {p.linked && !p.linked.ended && <LiveBadge />}
-        {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">Sizes may be outgrown</span>}
+        {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">{t("outgrown")}</span>}
       </div>
       <div className="relative shrink-0 text-right">
         {next ? (
           <>
             <p className="flex items-center justify-end gap-1.5 text-sm font-bold text-ink">
               <EventIcon kind={next.kind} holidayId={next.holidayId} className="h-4 w-4 text-rose" />
-              {next.label}
+              {eventLabel(next, tr)}
             </p>
             <p className={`text-sm ${next.days <= 7 ? "font-bold text-rose-deep" : "text-ink-soft"}`}>
-              {next.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {describeDays(next.days)}
+              {next.date.toLocaleDateString(tag, { month: "short", day: "numeric" })} · {describeDays(next.days, tr)}
             </p>
           </>
         ) : (
-          <p className="text-sm text-ink-soft">No dates yet</p>
+          <p className="text-sm text-ink-soft">{t("noDates")}</p>
         )}
       </div>
       {next && (
         <div className="relative z-[2] -my-1 -mr-1 shrink-0">
-          <GiftLock locked={isGifted(p, next)} onToggle={() => onToggleGift(next)} label={`${p.name.split(" ")[0]}'s ${next.label.toLowerCase()}`} size={38} />
+          <GiftLock locked={isGifted(p, next)} onToggle={() => onToggleGift(next)} label={occasionName(p.name, next, tr)} size={38} />
         </div>
       )}
     </motion.div>
@@ -310,7 +318,8 @@ function PersonRow({
 
 /** The user's own profile: what they share in gift exchanges. */
 function SelfCard({ self }: { self: Person | null }) {
-  const sizes = self ? summarizeSizes(self.sizes) : "";
+  const t = useTranslations("locker");
+  const sizes = self ? summarizeSizes(self.sizes, useTr()) : "";
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/60 p-4 ring-1 ring-lavender/40 sm:p-5">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-lavender/60">
@@ -318,19 +327,17 @@ function SelfCard({ self }: { self: Person | null }) {
       </span>
       <div className="min-w-0 flex-1 basis-56">
         <p className="font-bold">
-          {self ? "My profile" : "Add your own sizes and wishes"}
+          {self ? t("self.title") : t("self.addTitle")}
           {self && connectionsEnabled && (
             <a href="/locker/sharing" className="ml-2 text-sm font-bold text-plum underline">
-              Who can see it
+              {t("self.whoCanSee")}
             </a>
           )}
         </p>
-        <p className="truncate text-sm text-ink-soft">
-          {self ? sizes || "No sizes yet" : "Fill it in once, then share it in gift exchanges instead of retyping it."}
-        </p>
+        <p className="truncate text-sm text-ink-soft">{self ? sizes || t("self.noSizes") : t("self.addBody")}</p>
       </div>
       <Button href="/locker/me" variant="soft">
-        <Pencil className="h-4 w-4" /> {self ? "Edit" : "Add mine"}
+        <Pencil className="h-4 w-4" /> {self ? t("self.edit") : t("self.add")}
       </Button>
     </div>
   );
@@ -351,18 +358,23 @@ function PersonDetail({
   onToggleGift: (e: UpcomingEvent) => void;
   onConnectionChanged: () => void;
 }) {
+  const t = useTranslations("locker.detail");
+  const tc = useTranslations("colors");
+  const tr = useTr();
+  const tag = useIntlTag();
   const comingUp = upcomingEventsFor(p).slice(0, 5);
   const shoe = p.sizes.shoe && p.sizes.fit ? convertShoe(p.sizes.shoe, p.sizes.fit) : null;
+  const v = (x: string | undefined) => (x ? sizeValueLabel(x, tr) : undefined);
   const sizes: [string, string | undefined][] = [
-    ["Section", p.sizes.fit ? FIT_LABELS[p.sizes.fit] : undefined],
-    ["Top", p.sizes.top],
-    ["Pants", p.sizes.waist ? `${p.sizes.waist} × ${p.sizes.inseam ?? "?"}` : (p.sizes.womensNumeric ?? p.sizes.bottomAlpha)],
-    ["Dress", p.sizes.dress],
-    ["Outerwear", p.sizes.outerwear],
-    ["Shoe", p.sizes.shoe ? `${p.sizes.shoe}${p.sizes.shoeWidth && p.sizes.shoeWidth !== "Regular" ? ` ${p.sizes.shoeWidth}` : ""}` : undefined],
-    ["Foot length", p.sizes.footLengthCm ? `${p.sizes.footLengthCm} cm` : undefined],
-    ["Ring", p.sizes.ring?.toString()],
-    ["Hat", p.sizes.hat],
+    [t("size.section"), p.sizes.fit ? tr(`core.fit.${p.sizes.fit}`) : undefined],
+    [t("size.top"), v(p.sizes.top)],
+    [t("size.pants"), p.sizes.waist ? `${p.sizes.waist} × ${p.sizes.inseam ?? "?"}` : v(p.sizes.womensNumeric ?? p.sizes.bottomAlpha)],
+    [t("size.dress"), v(p.sizes.dress)],
+    [t("size.outerwear"), v(p.sizes.outerwear)],
+    [t("size.shoe"), p.sizes.shoe ? `${p.sizes.shoe}${p.sizes.shoeWidth && p.sizes.shoeWidth !== "Regular" ? ` ${tr(`core.shoeWidth.${p.sizes.shoeWidth}`)}` : ""}` : undefined],
+    [t("size.foot"), p.sizes.footLengthCm ? `${p.sizes.footLengthCm} cm` : undefined],
+    [t("size.ring"), p.sizes.ring?.toString()],
+    [t("size.hat"), v(p.sizes.hat)],
   ];
 
   // Details column follows the hero ~250ms later, sliding in from the right.
@@ -372,7 +384,7 @@ function PersonDetail({
 
   return (
     <div className="relative grid md:h-[min(720px,92dvh)] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-      <button onClick={onClose} className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/80 shadow-soft" aria-label="Close">
+      <button onClick={onClose} className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/80 shadow-soft" aria-label={t("close")}>
         <X className="h-5 w-5" />
       </button>
 
@@ -394,12 +406,12 @@ function PersonDetail({
         <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-6">
           {isStale(p) && (
             <motion.div variants={item} className="flex items-center gap-3 rounded-2xl bg-butter/70 p-4 text-sm">
-              <Baby className="h-5 w-5 shrink-0" /> Sizes were last updated a while ago — kids grow fast! Ask a guardian to refresh them.
+              <Baby className="h-5 w-5 shrink-0" /> {t("stale")}
             </motion.div>
           )}
 
           <motion.section variants={item}>
-            <SectionTitle icon={Ruler}>Sizes</SectionTitle>
+            <SectionTitle icon={Ruler}>{t("sizes")}</SectionTitle>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {sizes
                 .filter(([, v]) => v)
@@ -412,27 +424,28 @@ function PersonDetail({
             </div>
             {shoe && (
               <p className="mt-2 text-sm text-ink-soft">
-                Shoe ≈ UK {shoe.UK} · EU {shoe.EU} · BR {shoe.BR} · MX {shoe.MX} · CO {shoe.CO} · JP {shoe.JP}
+                {t("shoeApprox")} ≈ UK {shoe.UK} · EU {shoe.EU} · BR {shoe.BR} · MX {shoe.MX} · CO {shoe.CO} · JP {shoe.JP}
               </p>
             )}
           </motion.section>
 
           {(p.birthday || p.anniversary) && (
             <motion.section variants={item}>
-              <SectionTitle icon={CalendarHeart}>Dates</SectionTitle>
+              <SectionTitle icon={CalendarHeart}>{t("dates")}</SectionTitle>
               <div className="grid gap-2 sm:grid-cols-2">
                 {(
                   [
-                    ["Birthday", p.birthday, "turns"],
-                    ["Anniversary", p.anniversary, "celebrates year"],
+                    [tr("core.events.birthday"), p.birthday, "turns"],
+                    [tr("core.events.anniversary"), p.anniversary, "years"],
                   ] as const
                 ).map(([label, d, verb]) =>
                   d ? (
                     <div key={label} className="rounded-2xl bg-white p-4 shadow-soft">
                       <p className="text-xs font-bold text-ink-soft">{label}</p>
-                      <p className="font-display text-xl font-semibold">{formatPartialDate(d)}</p>
+                      <p className="font-display text-xl font-semibold">{formatPartialDate(d, tr)}</p>
                       <p className="text-sm text-ink-soft">
-                        in {daysUntil(d)} days{upcomingMilestone(d) ? ` · ${verb} ${upcomingMilestone(d)}` : ""}
+                        {describeDays(daysUntil(d), tr)}
+                        {upcomingMilestone(d) ? ` · ${t(verb, { n: upcomingMilestone(d)! })}` : ""}
                       </p>
                     </div>
                   ) : null,
@@ -443,7 +456,7 @@ function PersonDetail({
 
           {comingUp.length > 0 && (
             <motion.section variants={item}>
-              <SectionTitle icon={Gift}>Gift checklist</SectionTitle>
+              <SectionTitle icon={Gift}>{t("checklist")}</SectionTitle>
               <ul className="grid gap-2">
                 {comingUp.map((e) => {
                   const done = isGifted(p, e);
@@ -451,17 +464,17 @@ function PersonDetail({
                     <li key={`${e.kind}-${e.label}`} className={`flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft transition-opacity ${done ? "opacity-80" : ""}`}>
                       <EventIcon kind={e.kind} holidayId={e.holidayId} className="h-4 w-4 text-rose" />
                       <span className="min-w-0 flex-1">
-                        <span className={`block font-bold ${done ? "text-ink-soft line-through decoration-rose/60" : ""}`}>{e.label}</span>
+                        <span className={`block font-bold ${done ? "text-ink-soft line-through decoration-rose/60" : ""}`}>{eventLabel(e, tr)}</span>
                         <span className="text-sm text-ink-soft">
-                          {e.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {e.days === 0 ? "today" : describeDays(e.days)}
+                          {e.date.toLocaleDateString(tag, { month: "short", day: "numeric" })} · {describeDays(e.days, tr)}
                         </span>
                       </span>
-                      <GiftLock locked={done} onToggle={() => onToggleGift(e)} label={`${p.name.split(" ")[0]}'s ${e.label.toLowerCase()}`} showText size={28} />
+                      <GiftLock locked={done} onToggle={() => onToggleGift(e)} label={occasionName(p.name, e, tr)} showText size={28} />
                     </li>
                   );
                 })}
               </ul>
-              <p className="mt-1.5 text-xs text-ink-soft">Locked occasions skip their reminder emails.</p>
+              <p className="mt-1.5 text-xs text-ink-soft">{t("lockedSkip")}</p>
             </motion.section>
           )}
 
@@ -471,9 +484,9 @@ function PersonDetail({
 
           {p.address && (
             <motion.section variants={item}>
-              <SectionTitle icon={MapPin}>Ship to</SectionTitle>
+              <SectionTitle icon={MapPin}>{t("shipTo")}</SectionTitle>
               <address className="rounded-2xl bg-white p-4 not-italic shadow-soft">
-                {[p.name, ...formatAddress(p.address)].map((line, i) => (
+                {[p.name, ...formatAddress(p.address, "US", tr)].map((line, i) => (
                   <span key={i} className="block">
                     {line}
                   </span>
@@ -484,11 +497,11 @@ function PersonDetail({
 
           {p.favorites && (
             <motion.section variants={item}>
-              <SectionTitle icon={Gift}>Favorites</SectionTitle>
+              <SectionTitle icon={Gift}>{t("favorites")}</SectionTitle>
               <div className="rounded-2xl bg-white p-4 shadow-soft">
                 {p.favorites.likes && <p>{p.favorites.likes}</p>}
-                {!!p.favorites.colors?.length && <p className="mt-2 text-sm text-ink-soft">Colors: {p.favorites.colors.join(", ")}</p>}
-                {p.favorites.avoid && <p className="mt-2 text-sm text-rose-deep">Avoid: {p.favorites.avoid}</p>}
+                {!!p.favorites.colors?.length && <p className="mt-2 text-sm text-ink-soft">{t("colors", { v: p.favorites.colors.map((c) => tc(c as "blush")).join(", ") })}</p>}
+                {p.favorites.avoid && <p className="mt-2 text-sm text-rose-deep">{t("avoid", { v: p.favorites.avoid })}</p>}
                 {!!p.favorites.wishlists?.length && <WishlistLinkList links={p.favorites.wishlists} />}
                 {!!p.favorites.wishes?.length && (
                   <ol className="mt-3 list-decimal pl-5 text-sm">
@@ -510,6 +523,8 @@ function PersonDetail({
 function OwnerSection({ person: p, onSave }: { person: Person; onSave: (changes: OwnerChanges) => Promise<void> }) {
   const [note, setNote] = useState(p.ownerNote ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const t = useTranslations("locker.owner");
+  const tr = useTr();
   const tags = new Set(p.holidays ?? []);
 
   const run = async (changes: OwnerChanges) => {
@@ -531,10 +546,10 @@ function OwnerSection({ person: p, onSave }: { person: Person; onSave: (changes:
 
   return (
     <>
-      <SectionTitle icon={Lock}>Just for you</SectionTitle>
+      <SectionTitle icon={Lock}>{t("title")}</SectionTitle>
       <div className="rounded-2xl bg-white p-4 shadow-soft">
-        <p className="text-sm font-bold text-ink-soft">Holidays you shop for {p.name.split(" ")[0]}</p>
-        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Holidays">
+        <p className="text-sm font-bold text-ink-soft">{t("holidaysFor", { name: p.name.split(" ")[0]! })}</p>
+        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t("holidays")}>
           {HOLIDAYS.map((h) => {
             const on = tags.has(h.id);
             return (
@@ -542,23 +557,23 @@ function OwnerSection({ person: p, onSave }: { person: Person; onSave: (changes:
                 key={h.id}
                 type="button"
                 aria-pressed={on}
-                aria-label={`${h.name} (${h.when})`}
+                aria-label={`${holidayName(h.id, tr)} (${holidayWhen(h.id, tr)})`}
                 onClick={() => toggle(h.id)}
-                title={h.when}
+                title={holidayWhen(h.id, tr)}
                 className={`rounded-full px-3.5 py-2 text-sm font-bold transition-colors ${
                   on ? "bg-gradient-to-br from-rose to-plum text-white shadow-lift" : "bg-cream text-ink ring-1 ring-lavender/60 hover:bg-white"
                 }`}
               >
-                {h.emoji} {h.name}
+                {h.emoji} {holidayName(h.id, tr)}
               </button>
             );
           })}
         </div>
         <label className="mt-4 block">
-          <span className="text-sm font-bold text-ink-soft">Private note</span>
+          <span className="text-sm font-bold text-ink-soft">{t("note")}</span>
           <textarea
             className={`${inputCls} mt-1.5 min-h-20 resize-y`}
-            placeholder="Gift ideas, things they already have, what they mentioned…"
+            placeholder={t("notePlaceholder")}
             value={note}
             maxLength={2000}
             onChange={(e) => setNote(e.target.value)}
@@ -566,7 +581,7 @@ function OwnerSection({ person: p, onSave }: { person: Person; onSave: (changes:
           />
         </label>
         <p className="mt-1.5 text-xs text-ink-soft" aria-live="polite">
-          {status === "saving" ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Couldn't save. Try again." : `Only you can see this${p.kind === "child" ? " (and co-guardians)" : ""}.`}
+          {status === "saving" ? t("saving") : status === "saved" ? t("saved") : status === "error" ? t("error") : p.kind === "child" ? t("onlyYouKids") : t("onlyYou")}
         </p>
       </div>
     </>
@@ -582,6 +597,7 @@ function SectionTitle({ icon: Icon, children }: { icon: typeof Gift; children: R
 }
 
 export function WishlistLinkList({ links }: { links: string[] }) {
+  const tr = useTr();
   return (
     <div className="mt-3 flex flex-wrap gap-2">
       {links.map((url) => (
@@ -592,7 +608,7 @@ export function WishlistLinkList({ links }: { links: string[] }) {
           rel="noreferrer noopener"
           className="inline-flex items-center gap-1.5 rounded-full bg-blush/60 px-3.5 py-1.5 text-sm font-bold text-ink hover:bg-blush"
         >
-          {linkTitle(url)} <ExternalLink className="h-3.5 w-3.5" />
+          {linkTitle(url, tr)} <ExternalLink className="h-3.5 w-3.5" />
         </a>
       ))}
     </div>
@@ -600,9 +616,10 @@ export function WishlistLinkList({ links }: { links: string[] }) {
 }
 
 function LiveBadge() {
+  const t = useTranslations("locker");
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2.5 py-1" title="Updates automatically from their own profile">
-      <Link2 className="h-3 w-3" /> Live
+    <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2.5 py-1" title={t("liveTitle")}>
+      <Link2 className="h-3 w-3" /> {t("live")}
     </span>
   );
 }
@@ -610,6 +627,8 @@ function LiveBadge() {
 /** Connected (live) status, or a way to ask the person to connect their own profile. */
 function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: () => void }) {
   const user = useUser();
+  const t = useTranslations("locker.connect");
+  const tag = useIntlTag();
   const first = p.name.split(" ")[0]!;
   const [link, setLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -623,7 +642,7 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
   const live = !!p.linked && !p.linked.ended;
   const { data: self, loading: selfLoading } = useAsync(async () => (user && setup ? getSelfProfile(user.sub) : null), [user?.sub, setup]);
   const { data: mutual } = useAsync(async () => (user && live ? sharesBack(p.linked!.connectionId, user.sub) : false), [user?.sub, live, p.linked?.connectionId]);
-  const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
+  const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString(tag, { month: "short", day: "numeric" }) : "");
 
   const ask = async () => {
     if (!user) return;
@@ -635,7 +654,7 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
       setOfferedBack(offer);
       setSetup(false);
     } catch (e) {
-      setNote(e instanceof Error ? e.message : "Couldn't create the link");
+      setNote(e instanceof Error ? e.message : t("linkFailed"));
     } finally {
       setBusy(false);
     }
@@ -647,46 +666,47 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
       await endConnection(p.linked.connectionId, !!mutual && stopBoth);
       onChanged();
     } catch (e) {
-      setNote(e instanceof Error ? e.message : "Couldn't stop syncing");
+      setNote(e instanceof Error ? e.message : t("stopFailed"));
     } finally {
       setBusy(false);
       setConfirming(false);
     }
   };
-  const message = link ? `Hi ${first}! Connect your My Gift Lockers profile so I always have your current sizes and wishes: ${link}` : "";
+  const message = link ? t("message", { name: first, link }) : "";
 
   const pill = "relative mt-4 rounded-2xl bg-white/80 px-4 py-3 text-sm shadow-soft";
   if (p.linked && !p.linked.ended)
     return (
       <div className={pill}>
         <p className="flex items-center justify-center gap-1.5 font-bold">
-          <Link2 className="h-4 w-4 text-plum" /> Connected to {first}'s profile
+          <Link2 className="h-4 w-4 text-plum" /> {t("connected", { name: first })}
         </p>
         <p className="text-ink-soft">
-          Updates automatically{p.linked.syncedAt ? ` · last ${day(p.linked.syncedAt)}` : ""}
-          {mutual && ` · ${first} gets your updates too`}
+          {t("auto")}
+          {p.linked.syncedAt ? ` · ${t("last", { date: day(p.linked.syncedAt) })}` : ""}
+          {mutual && ` · ${t("mutual", { name: first })}`}
         </p>
         {confirming ? (
           <div className="mt-2">
             <p className="flex flex-wrap items-center justify-center gap-2">
-              <span>Stop syncing? You keep what's here.</span>
+              <span>{t("stopConfirm")}</span>
               <button onClick={stop} disabled={busy} className="rounded-full bg-ink px-3 py-1 font-bold text-white">
-                Stop
+                {t("stop")}
               </button>
               <button onClick={() => setConfirming(false)} className="rounded-full px-3 py-1 font-bold text-ink-soft">
-                Cancel
+                {t("cancel")}
               </button>
             </p>
             {mutual && (
               <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-ink-soft">
                 <input type="checkbox" checked={stopBoth} onChange={(e) => setStopBoth(e.target.checked)} className="h-4 w-4 accent-plum" />
-                Also stop sending {first} my updates
+                {t("stopBoth", { name: first })}
               </label>
             )}
           </div>
         ) : (
           <button onClick={() => setConfirming(true)} className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-ink-soft hover:text-ink">
-            <Unlink className="h-3 w-3" /> Stop syncing
+            <Unlink className="h-3 w-3" /> {t("stopSyncing")}
           </button>
         )}
         {note && <p className="mt-1 text-xs font-bold text-rose-deep">{note}</p>}
@@ -695,62 +715,65 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
 
   return (
     <div className={pill}>
-      {p.linked?.ended && <p className="mb-1 text-ink-soft">No longer updating{p.linked.syncedAt ? ` · last update ${day(p.linked.syncedAt)}` : ""}</p>}
+      {p.linked?.ended && <p className="mb-1 text-ink-soft">{t("ended")}{p.linked.syncedAt ? ` · ${t("lastUpdate", { date: day(p.linked.syncedAt) })}` : ""}</p>}
       {link ? (
         <>
-          <p className="font-bold">Send {first} this link</p>
+          <p className="font-bold">{t("sendLink", { name: first })}</p>
           <p className="text-xs text-ink-soft">
-            When they connect, their changes show up here automatically{offeredBack ? `, and they can add you to their locker too` : ""}.
+            {offeredBack ? t("whenConnectBack") : t("whenConnect")}
           </p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             <button
-              onClick={() => navigator.clipboard?.writeText(link).then(() => setNote("Link copied"))}
+              onClick={() => navigator.clipboard?.writeText(link).then(() => setNote(t("copied")))}
               className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60"
             >
-              <Copy className="h-3.5 w-3.5" /> Copy
+              <Copy className="h-3.5 w-3.5" /> {t("copy")}
             </button>
             <a href={smsHref(message)} className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60">
-              <MessageCircle className="h-3.5 w-3.5" /> Text
+              <MessageCircle className="h-3.5 w-3.5" /> {t("text")}
             </a>
             {typeof navigator !== "undefined" && "share" in navigator && (
               <button
                 onClick={() => navigator.share({ text: message }).catch(() => {})}
                 className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1.5 font-bold ring-1 ring-lavender/60"
               >
-                <Share2 className="h-3.5 w-3.5" /> Share
+                <Share2 className="h-3.5 w-3.5" /> {t("share")}
               </button>
             )}
           </div>
         </>
       ) : setup ? (
         <div className="text-left">
-          <p className="text-center font-bold">Ask {first} to connect</p>
-          <p className="text-center text-xs text-ink-soft">Their sizes and wishes stay up to date here. They choose what to share.</p>
+          <p className="text-center font-bold">{t("ask", { name: first })}</p>
+          <p className="text-center text-xs text-ink-soft">{t("askBody")}</p>
           {selfLoading ? (
-            <p className="mt-3 text-center text-ink-soft">Loading…</p>
+            <p className="mt-3 text-center text-ink-soft">{t("loading")}</p>
           ) : self ? (
             <>
               <label className="mt-3 flex cursor-pointer items-start gap-2.5 rounded-2xl bg-cream/70 p-3">
                 <input type="checkbox" checked={shareBack} onChange={(e) => setShareBack(e.target.checked)} className="mt-0.5 h-4 w-4 accent-plum" />
                 <span>
-                  <b className="block">Share my profile back with {first}</b>
-                  <span className="text-xs text-ink-soft">They can add you to their locker, and it stays up to date when you change yours.</span>
+                  <b className="block">{t("shareBack", { name: first })}</b>
+                  <span className="text-xs text-ink-soft">{t("shareBackBody")}</span>
                 </span>
               </label>
               {shareBack && (
                 <div className="mt-2">
-                  <p className="mb-1.5 text-xs font-bold text-ink-soft">What {first} can see of mine</p>
+                  <p className="mb-1.5 text-xs font-bold text-ink-soft">{t("whatTheySee", { name: first })}</p>
                   <ShareToggles value={backShares} onChange={setBackShares} />
                 </div>
               )}
             </>
           ) : (
             <p className="mt-3 rounded-2xl bg-cream/70 p-3 text-xs text-ink-soft">
-              Want {first} to have your sizes too?{" "}
-              <a href="/locker/me?next=/locker" className="font-bold text-plum underline">
-                Add your profile
-              </a>{" "}
-              first, and you can share it back.
+              {t.rich("noProfile", {
+                name: first,
+                link: (c) => (
+                  <a href="/locker/me?next=/locker" className="font-bold text-plum underline">
+                    {c}
+                  </a>
+                ),
+              })}
             </p>
           )}
           <div className="mt-3 flex justify-center gap-2">
@@ -759,16 +782,16 @@ function ConnectionPanel({ person: p, onChanged }: { person: Person; onChanged: 
               disabled={busy || selfLoading || (!!self && shareBack && !Object.values(backShares).some(Boolean))}
               className="rounded-full bg-ink px-4 py-1.5 font-bold text-white disabled:opacity-50"
             >
-              {busy ? "Creating link…" : "Create link"}
+              {busy ? t("creating") : t("create")}
             </button>
             <button onClick={() => setSetup(false)} className="rounded-full px-3 py-1.5 font-bold text-ink-soft">
-              Cancel
+              {t("cancel")}
             </button>
           </div>
         </div>
       ) : (
         <button onClick={() => setSetup(true)} className="inline-flex items-center gap-1.5 font-bold text-plum hover:underline">
-          <Link2 className="h-4 w-4" /> Ask {first} to connect
+          <Link2 className="h-4 w-4" /> {t("ask", { name: first })}
         </button>
       )}
       {note && <p className="mt-1 text-xs font-bold text-ink-soft">{note}</p>}

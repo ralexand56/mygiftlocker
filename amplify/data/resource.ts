@@ -227,6 +227,8 @@ const schema = a
         ownerSub: a.string().required(),
         remindersOff: a.boolean(),
         unsubscribeToken: a.string().required(),
+        /** Language for reminder emails (Locale from @mgl/core); set from the website. */
+        locale: a.string(),
       })
       .identifier(["ownerSub"])
       .secondaryIndexes((index) => [index("unsubscribeToken")])
@@ -247,6 +249,14 @@ const schema = a
       .arguments({ token: a.string().required(), enabled: a.boolean().required() })
       .returns(a.json())
       .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
+    /** Signed in: the language to send this owner's reminder emails in. */
+    setMyLocale: a
+      .mutation()
+      .arguments({ locale: a.string().required() })
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
     // ---- Connections (signed in) -------------------------------------------

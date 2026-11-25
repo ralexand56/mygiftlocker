@@ -5,6 +5,7 @@
  * works without a backend. With the Amplify backend the link carries an opaque
  * invite id instead and the payload lives server-side.
  */
+import { defaultT, type Tr } from "./i18n";
 
 export type InviteSection = "sizes" | "address" | "dates" | "favorites" | "kids";
 
@@ -80,20 +81,20 @@ export function smsHref(body: string): string {
 }
 
 /** Message inviting someone to join a gift exchange. */
-export function exchangeJoinMessage(exchangeName: string, url: string): string {
-  return `You're invited to "${exchangeName}" 🎁 Join and add your top wishes on My Gift Lockers: ${url}`;
+export function exchangeJoinMessage(exchangeName: string, url: string, t: Tr = defaultT): string {
+  return t("core.share.exchangeJoin", { exchange: exchangeName, url });
 }
 
 /** Message carrying a participant's private reveal link (only they should open it). */
-export function exchangeRevealMessage(name: string, exchangeName: string, url: string): string {
-  return `Hi ${name}! Names are drawn for "${exchangeName}" 🎁 Tap your private link to see who you're gifting (keep it to yourself!): ${url}`;
+export function exchangeRevealMessage(name: string, exchangeName: string, url: string, t: Tr = defaultT): string {
+  return t("core.share.exchangeReveal", { name, exchange: exchangeName, url });
 }
 
 /** Prefilled deep links for each channel. */
-export function inviteShareLinks(url: string, fromName: string, toName?: string): ShareLinks {
-  const hi = toName ? `Hi ${toName}! ` : "Hi! ";
-  const body = `${hi}${fromName} wants to get your gifts just right. Add your sizes & favorite things to their Gift Locker (takes 2 min): ${url}`;
-  const subject = `${fromName} invited you to My Gift Lockers 🎁`;
+export function inviteShareLinks(url: string, fromName: string, toName?: string, t: Tr = defaultT): ShareLinks {
+  const hi = toName ? t("core.share.inviteHi", { name: toName }) : t("core.share.inviteHiAnon");
+  const body = t("core.share.inviteBody", { hi, from: fromName, url });
+  const subject = t("core.share.inviteSubject", { from: fromName });
   const enc = encodeURIComponent;
   return {
     email: `mailto:?subject=${enc(subject)}&body=${enc(body)}`,

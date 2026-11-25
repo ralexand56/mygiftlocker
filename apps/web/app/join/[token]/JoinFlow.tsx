@@ -8,7 +8,7 @@ import {
   MENS_CHEST_IN,
   MENS_INSEAM,
   MENS_WAIST,
-  MONTHS,
+  monthNames,
   RING_SIZES,
   SHIRT_NECK,
   SHIRT_SLEEVE,
@@ -16,6 +16,8 @@ import {
   SIZE_SYSTEMS,
   PRIORITY_COUNTRIES,
   addressFormat,
+  addressLabels,
+  sizeValueLabel,
   MAX_WISHLIST_LINKS,
   cleanWishlistLinks,
   linkTitle,
@@ -39,6 +41,7 @@ import {
   shoeSizes,
   sharesFromAsk,
   stepsFor,
+  stepText,
   summarizeSizes,
   type Address,
   type AlphaSize,
@@ -63,6 +66,9 @@ import { submitInvite } from "@/lib/invites";
 import { useUser } from "@/lib/auth";
 import { rememberPendingSelf, saveSelfProfile, setPendingConnect } from "@/lib/self";
 import { connectProfile, connectionsEnabled } from "@/lib/connections";
+import { useTranslations } from "next-intl";
+import { useTr } from "@/lib/i18n";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 type PD = Partial<PartialDate>;
 interface Kid {
@@ -148,6 +154,8 @@ export function JoinFlow({
   self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string };
 }) {
   const router = useRouter();
+  const t = useTranslations("join");
+  const tr = useTr();
   const [form, setForm] = useState<FormState>(() => (self?.initial ? formFrom(self.initial) : { ...initial, name: invite.to?.name ?? "" }));
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
@@ -172,6 +180,7 @@ export function JoinFlow({
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
   const step = steps[Math.min(index, steps.length - 1)]!;
+  const text = stepText(step, tr);
   const progress = (index + 1) / steps.length;
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -233,7 +242,7 @@ export function JoinFlow({
         id: newId("p_"),
         name: k.name.trim(),
         kind: "child",
-        relationship: `${form.name.split(" ")[0]}'s child`,
+        relationship: t("childOf", { name: form.name.split(" ")[0]! }),
         color: pastelFor(k.name),
         sizes: { fit: "kids", top: k.top, bottomAlpha: k.bottom, shoe: k.shoe },
         birthday: complete(k.birthday),
@@ -271,7 +280,7 @@ export function JoinFlow({
       setSubmitted(person);
       setDone(true);
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "Couldn't send. Try again.");
+      setSubmitError(e instanceof Error ? e.message : t("sendFailed"));
     } finally {
       setSending(false);
     }
@@ -286,6 +295,7 @@ export function JoinFlow({
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-5xl flex-col px-4 py-6">
         <header className="mb-6 flex items-center gap-3">
           <LogoMark size={34} />
+          <div className="hidden flex-1 md:block" />
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/70 md:hidden">
             <motion.div
               className="h-full w-full origin-left bg-gradient-to-r from-apricot via-rose to-dusk"
@@ -294,6 +304,7 @@ export function JoinFlow({
               transition={{ duration: 0.8, ease: EASE }}
             />
           </div>
+          <LanguagePicker className="text-sm" />
         </header>
 
         <div className="relative flex flex-1 items-center">
@@ -322,14 +333,14 @@ export function JoinFlow({
                       {isSizeStep(step.id) && <SystemToggle value={sys} onChange={setSys} />}
                     </motion.div>
                     <motion.p custom={dir} variants={line} className="text-sm font-extrabold tracking-wide text-rose uppercase">
-                      {step.eyebrow}
+                      {text.eyebrow}
                     </motion.p>
                     <motion.h1 custom={dir} variants={line} className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-[2.6rem]">
-                      {step.id === "welcome" ? (self ? "Your own profile" : `${invite.from.name} wants your gifts to be just right`) : step.title}
+                      {step.id === "welcome" ? (self ? t("ownProfile") : t("wantsGifts", { name: invite.from.name })) : text.title}
                     </motion.h1>
-                    {step.subtitle && (
+                    {text.subtitle && (
                       <motion.p custom={dir} variants={line} className="mt-2 text-ink-soft">
-                        {step.subtitle}
+                        {text.subtitle}
                       </motion.p>
                     )}
 
@@ -342,8 +353,8 @@ export function JoinFlow({
                         <label className="flex cursor-pointer items-start gap-3">
                           <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#d45c86]" checked={saveMine} onChange={(e) => setSaveMine(e.target.checked)} />
                           <span>
-                            <b>Save as my profile</b>
-                            <span className="block text-ink-soft">Replaces the profile in your account with these answers.</span>
+                            <b>{t("saveMine")}</b>
+                            <span className="block text-ink-soft">{t("saveMineBody")}</span>
                           </span>
                         </label>
                         <label className={`flex items-start gap-3 ${saveMine ? "cursor-pointer" : "opacity-50"}`}>
@@ -355,8 +366,8 @@ export function JoinFlow({
                             onChange={(e) => setKeepUpdated(e.target.checked)}
                           />
                           <span>
-                            <b>Keep {invite.from.name} updated</b>
-                            <span className="block text-ink-soft">When you change your profile, their locker updates too. You can stop anytime.</span>
+                            <b>{t("keepUpdated", { name: invite.from.name })}</b>
+                            <span className="block text-ink-soft">{t("keepUpdatedBody")}</span>
                           </span>
                         </label>
                       </motion.div>
@@ -364,23 +375,23 @@ export function JoinFlow({
                     {submitError && step.id === "review" && <p className="mt-6 text-sm font-bold text-rose-deep">{submitError}</p>}
                     <motion.footer custom={dir} variants={line} className="mt-auto flex items-center gap-2 pt-9">
                       {index > 0 && (
-                        <Button variant="ghost" onClick={() => go(-1)} aria-label="Back" className="px-4!">
+                        <Button variant="ghost" onClick={() => go(-1)} aria-label={t("back")} className="px-4!">
                           <ArrowLeft className="h-4 w-4" />
                         </Button>
                       )}
                       <div className="ml-auto flex items-center gap-2">
                         {step.optional && (
                           <Button variant="ghost" onClick={() => go(1)}>
-                            Skip
+                            {t("skip")}
                           </Button>
                         )}
                         {step.id === "review" ? (
                           <Button onClick={submit} disabled={sending}>
-                            <Sparkles className="h-4 w-4" /> {sending ? (self ? "Saving…" : "Sending…") : self ? "Save my profile" : `Share with ${invite.from.name}`}
+                            <Sparkles className="h-4 w-4" /> {sending ? (self ? t("saving") : t("sending")) : self ? t("saveProfile") : t("shareWith", { name: invite.from.name })}
                           </Button>
                         ) : (
                           <Button onClick={() => go(1)} disabled={!canContinue}>
-                            Continue <ArrowRight className="h-4 w-4" />
+                            {t("continue")} <ArrowRight className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -408,16 +419,18 @@ function systemForLocale(locale: string | undefined): SizeSystem | null {
 }
 
 function SystemToggle({ value, onChange }: { value: SizeSystem; onChange: (s: SizeSystem) => void }) {
+  const t = useTranslations("join");
+  const tr = useTr();
   return (
-    <div className="flex max-w-full overflow-x-auto rounded-full bg-white/70 p-1 text-xs font-extrabold" role="radiogroup" aria-label="Size system">
+    <div className="flex max-w-full overflow-x-auto rounded-full bg-white/70 p-1 text-xs font-extrabold" role="radiogroup" aria-label={t("sizeSystem")}>
       {SIZE_SYSTEMS.map((s) => (
         <button
           key={s}
           type="button"
           role="radio"
           aria-checked={s === value}
-          aria-label={SIZE_SYSTEM_LABELS[s]}
-          title={SIZE_SYSTEM_LABELS[s]}
+          aria-label={tr(`core.sizeSystem.${s}`)}
+          title={tr(`core.sizeSystem.${s}`)}
           onClick={() => onChange(s)}
           className={`relative shrink-0 rounded-full px-2.5 py-1 ${s === value ? "text-white" : "text-ink-soft"}`}
         >
@@ -432,19 +445,23 @@ function SystemToggle({ value, onChange }: { value: SizeSystem; onChange: (s: Si
 /** Country-aware shipping address: labels, region pick-lists and postal rules follow the country. */
 function AddressStep({ value: a, onChange }: { value: Partial<Address>; onChange: (a: Partial<Address>) => void }) {
   const [touched, setTouched] = useState<Partial<Record<keyof Address, boolean>>>({});
+  const t = useTranslations("join.address");
+  const tr = useTr();
   const f = addressFormat(a.country);
-  const errors = validateAddress(a);
-  const countries = useMemo(() => countryOptions(), []);
+  const L = addressLabels(a.country, tr);
+  const errors = validateAddress(a, tr);
+  const countries = useMemo(() => countryOptions(tr), [tr]);
   const up = (k: keyof Address, v: string) => onChange({ ...a, [k]: v });
   const blur = (k: keyof Address) => () => setTouched((t) => ({ ...t, [k]: true }));
   const err = (k: keyof Address) => (touched[k] ? errors[k] : undefined);
   const errHint = (k: keyof Address) => (err(k) ? <span className="font-bold text-rose-deep">{err(k)}</span> : undefined);
   const numericPostal = ["US", "MX", "BR", "CO"].includes((a.country ?? "US").toUpperCase());
-  const opt = (label: string, required?: boolean) => (required ? label : label.includes("optional") ? label : `${label} (optional)`);
+  // Labels whose key ends in "Optional" already say so.
+  const opt = (label: string, key: string, required?: boolean) => (required || key.endsWith("Optional") ? label : t("optional", { label }));
 
   return (
     <div className="grid gap-4">
-      <Field label="Country">
+      <Field label={t("country")}>
         <select
           className={inputCls}
           value={a.country ?? "US"}
@@ -467,20 +484,20 @@ function AddressStep({ value: a, onChange }: { value: Partial<Address>; onChange
           ])}
         </select>
       </Field>
-      <Field label="Street and number" hint={errHint("line1")}>
+      <Field label={t("street")} hint={errHint("line1")}>
         <Input value={a.line1 ?? ""} onChange={(e) => up("line1", e.target.value)} onBlur={blur("line1")} autoComplete="address-line1" aria-invalid={!!err("line1")} />
       </Field>
-      <Field label={opt(f.line2Label, f.line2Required)} hint={errHint("line2")}>
+      <Field label={opt(L.line2, f.line2Label, f.line2Required)} hint={errHint("line2")}>
         <Input value={a.line2 ?? ""} onChange={(e) => up("line2", e.target.value)} onBlur={blur("line2")} autoComplete="address-line2" aria-invalid={!!err("line2")} />
       </Field>
       <div className="grid gap-3 sm:grid-cols-[1.3fr_1fr_1fr]">
-        <Field label="City" hint={errHint("city")}>
+        <Field label={t("city")} hint={errHint("city")}>
           <Input value={a.city ?? ""} onChange={(e) => up("city", e.target.value)} onBlur={blur("city")} autoComplete="address-level2" aria-invalid={!!err("city")} />
         </Field>
-        <Field label={f.regionRequired ? f.regionLabel : opt(f.regionLabel)} hint={errHint("region")}>
+        <Field label={opt(L.region, f.regionLabel, f.regionRequired)} hint={errHint("region")}>
           {f.regions ? (
             <select className={inputCls} value={a.region ?? ""} onChange={(e) => up("region", e.target.value)} onBlur={blur("region")} autoComplete="address-level1" aria-invalid={!!err("region")}>
-              <option value="">Choose…</option>
+              <option value="">{t("choose")}</option>
               {f.regions.map((r) => (
                 <option key={r.code} value={r.code}>
                   {r.name}
@@ -491,7 +508,7 @@ function AddressStep({ value: a, onChange }: { value: Partial<Address>; onChange
             <Input value={a.region ?? ""} onChange={(e) => up("region", e.target.value)} onBlur={blur("region")} autoComplete="address-level1" />
           )}
         </Field>
-        <Field label={f.postalRequired ? f.postalLabel : opt(f.postalLabel)} hint={errHint("postalCode")}>
+        <Field label={opt(L.postal, f.postalLabel, f.postalRequired)} hint={errHint("postalCode")}>
           <Input
             value={a.postalCode ?? ""}
             onChange={(e) => up("postalCode", f.postalFormat ? f.postalFormat(e.target.value) : e.target.value)}
@@ -510,13 +527,14 @@ function AddressStep({ value: a, onChange }: { value: Partial<Address>; onChange
 /** Keeps the typed text (so "25." can become "25.5") and stores a rounded cm value when valid. */
 function FootLengthInput({ value, onChange }: { value?: number; onChange: (cm: number | undefined) => void }) {
   const [text, setText] = useState(value?.toString() ?? "");
+  const tj = useTranslations("join");
   return (
     <Input
       type="text"
       inputMode="decimal"
-      placeholder="e.g. 25.5"
+      placeholder={tj("footPlaceholder")}
       value={text}
-      aria-label="Foot length in centimeters"
+      aria-label={tj("footLabel")}
       onChange={(e) => {
         const t = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
         setText(t);
@@ -557,12 +575,15 @@ function StepBody({
   sys: SizeSystem;
   jump: (id: StepId) => void;
 }) {
+  const t = useTranslations("join.body");
+  const tr = useTr();
   const s = form.sizes;
   const fit: Fit = s.fit ?? "womens";
   const alpha = (v: AlphaSize) => convertAlpha(v)[sys];
+  const kid = (v: string) => sizeValueLabel(v, tr);
   const kidsOrAlpha = (key: "top" | "outerwear" | "bottomAlpha", label: string) =>
     fit === "kids" ? (
-      <ChipGroup label={label} options={KIDS_SIZES} value={s[key] as (typeof KIDS_SIZES)[number]} onChange={(v) => setSize(key, v)} />
+      <ChipGroup label={label} options={KIDS_SIZES} value={s[key] as (typeof KIDS_SIZES)[number]} onChange={(v) => setSize(key, v)} render={kid} />
     ) : (
       <ChipGroup label={label} options={ALPHA_SIZES} value={s[key] as AlphaSize} onChange={(v) => setSize(key, v)} render={alpha} />
     );
@@ -573,14 +594,10 @@ function StepBody({
         <>
           {invite.note && <blockquote className="mb-6 rounded-2xl bg-white/70 p-4 text-ink-soft italic">“{invite.note}”</blockquote>}
           <Field
-            label="What's your name?"
-            hint={
-              invite.id === "self"
-                ? "Only you see this. You choose when to share it, like with your Secret Santa in a gift exchange."
-                : `Only ${invite.from.name} (and people you choose) will see what you share.`
-            }
+            label={t("name")}
+            hint={invite.id === "self" ? t("nameHintSelf") : t("nameHint", { name: invite.from.name })}
           >
-            <Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Your name" autoComplete="name" />
+            <Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("namePlaceholder")} autoComplete="name" />
           </Field>
         </>
       );
@@ -589,7 +606,7 @@ function StepBody({
       return (
         <>
           <div className="grid grid-cols-3 gap-3">
-            {(Object.keys(FIT_LABELS) as Fit[]).map((f) => {
+            {(["mens", "womens", "kids"] as Fit[]).map((f) => {
               const on = s.fit === f;
               return (
                 <motion.button
@@ -601,13 +618,13 @@ function StepBody({
                   className={`relative rounded-3xl px-2 py-4 text-center font-display text-lg font-semibold transition-colors md:p-5 md:text-xl ${on ? "text-white" : "bg-white/70"}`}
                 >
                   {on && <motion.span layoutId="fit" className="absolute inset-0 rounded-3xl bg-gradient-to-br from-rose to-plum shadow-lift" />}
-                  <span className="relative">{FIT_LABELS[f]}</span>
+                  <span className="relative">{tr(`core.fit.${f}`)}</span>
                 </motion.button>
               );
             })}
           </div>
-          <Group label="Preferred cut">
-            <ChipGroup label="Preferred cut" options={["slim", "regular", "relaxed"] as const} value={s.cut} onChange={(v) => setSize("cut", v)} render={(v) => v[0]!.toUpperCase() + v.slice(1)} />
+          <Group label={t("cut")}>
+            <ChipGroup label={t("cut")} options={["slim", "regular", "relaxed"] as const} value={s.cut} onChange={(v) => setSize("cut", v)} render={(v) => t(`cuts.${v}`)} />
           </Group>
         </>
       );
@@ -615,15 +632,15 @@ function StepBody({
     case "tops":
       return (
         <>
-          {kidsOrAlpha("top", "Shirt size")}
-          {fit === "mens" && s.top && MENS_CHEST_IN[s.top as AlphaSize] && <Hint>Usually fits a {MENS_CHEST_IN[s.top as AlphaSize]} chest.</Hint>}
+          {kidsOrAlpha("top", t("shirtSize"))}
+          {fit === "mens" && s.top && MENS_CHEST_IN[s.top as AlphaSize] && <Hint>{t("chest", { v: MENS_CHEST_IN[s.top as AlphaSize]! })}</Hint>}
           {fit === "mens" && (
             <>
-              <Group label="Dress shirt — neck (in)">
-                <ChipGroup label="Neck" options={SHIRT_NECK} value={s.dressShirt?.neck} onChange={(v) => setSize("dressShirt", { ...s.dressShirt, neck: v })} render={(v) => (sys === "US" || sys === "UK" ? String(v) : `${Math.round(v * 2.54)}`)} />
+              <Group label={t("neck")}>
+                <ChipGroup label={t("neckShort")} options={SHIRT_NECK} value={s.dressShirt?.neck} onChange={(v) => setSize("dressShirt", { ...s.dressShirt, neck: v })} render={(v) => (sys === "US" || sys === "UK" ? String(v) : `${Math.round(v * 2.54)}`)} />
               </Group>
-              <Group label="Dress shirt — sleeve (in)">
-                <ChipGroup label="Sleeve" options={SHIRT_SLEEVE} value={s.dressShirt?.sleeve as (typeof SHIRT_SLEEVE)[number]} onChange={(v) => setSize("dressShirt", { ...s.dressShirt, sleeve: v })} />
+              <Group label={t("sleeve")}>
+                <ChipGroup label={t("sleeveShort")} options={SHIRT_SLEEVE} value={s.dressShirt?.sleeve as (typeof SHIRT_SLEEVE)[number]} onChange={(v) => setSize("dressShirt", { ...s.dressShirt, sleeve: v })} />
               </Group>
             </>
           )}
@@ -634,57 +651,57 @@ function StepBody({
       if (fit === "mens")
         return (
           <>
-            <Group label={`Waist ${sys === "JP" ? "(cm)" : sys === "EU" ? "(EU)" : sys === "BR" ? "(BR)" : "(in)"}`}>
-              <ChipGroup label="Waist" options={MENS_WAIST} value={s.waist} onChange={(v) => setSize("waist", v)} render={(v) => convertWaist(v)[sys]} />
+            <Group label={`${t("waist")} ${sys === "JP" ? "(cm)" : sys === "EU" ? "(EU)" : sys === "BR" ? "(BR)" : "(in)"}`}>
+              <ChipGroup label={t("waist")} options={MENS_WAIST} value={s.waist} onChange={(v) => setSize("waist", v)} render={(v) => convertWaist(v)[sys]} />
             </Group>
-            <Group label="Inseam (in)">
-              <ChipGroup label="Inseam" options={MENS_INSEAM} value={s.inseam} onChange={(v) => setSize("inseam", v)} />
+            <Group label={t("inseam")}>
+              <ChipGroup label={t("inseamShort")} options={MENS_INSEAM} value={s.inseam} onChange={(v) => setSize("inseam", v)} />
             </Group>
           </>
         );
       if (fit === "womens")
         return (
           <>
-            <Group label="Numeric size">
-              <ChipGroup label="Pants size" options={WOMENS_NUMERIC} value={s.womensNumeric as (typeof WOMENS_NUMERIC)[number]} onChange={(v) => setSize("womensNumeric", v)} render={(v) => convertWomensNumeric(v)?.[sys] ?? v} />
+            <Group label={t("numeric")}>
+              <ChipGroup label={t("pantsSize")} options={WOMENS_NUMERIC} value={s.womensNumeric as (typeof WOMENS_NUMERIC)[number]} onChange={(v) => setSize("womensNumeric", v)} render={(v) => convertWomensNumeric(v)?.[sys] ?? v} />
             </Group>
-            <Group label="Or letter size (leggings, joggers)">{kidsOrAlpha("bottomAlpha", "Letter size")}</Group>
+            <Group label={t("letter")}>{kidsOrAlpha("bottomAlpha", t("letterShort"))}</Group>
           </>
         );
-      return kidsOrAlpha("bottomAlpha", "Pants size");
+      return kidsOrAlpha("bottomAlpha", t("pantsSize"));
 
     case "dresses":
       return fit === "kids" ? (
-        <ChipGroup label="Dress size" options={KIDS_SIZES} value={s.dress as (typeof KIDS_SIZES)[number]} onChange={(v) => setSize("dress", v)} />
+        <ChipGroup label={t("dressSize")} options={KIDS_SIZES} value={s.dress as (typeof KIDS_SIZES)[number]} onChange={(v) => setSize("dress", v)} render={kid} />
       ) : (
         <>
-          <ChipGroup label="Dress size" options={WOMENS_NUMERIC} value={s.dress as (typeof WOMENS_NUMERIC)[number]} onChange={(v) => setSize("dress", v)} render={(v) => convertWomensNumeric(v)?.[sys] ?? v} />
-          {s.dress && sys !== "US" && <Hint>Saved as US {s.dress}.</Hint>}
+          <ChipGroup label={t("dressSize")} options={WOMENS_NUMERIC} value={s.dress as (typeof WOMENS_NUMERIC)[number]} onChange={(v) => setSize("dress", v)} render={(v) => convertWomensNumeric(v)?.[sys] ?? v} />
+          {s.dress && sys !== "US" && <Hint>{t("savedAsUs", { v: s.dress })}</Hint>}
         </>
       );
 
     case "outerwear":
-      return kidsOrAlpha("outerwear", "Jacket size");
+      return kidsOrAlpha("outerwear", t("jacketSize"));
 
     case "shoes": {
       const conv = s.shoe ? convertShoe(s.shoe, fit) : null;
       return (
         <>
-          <ChipGroup label="Shoe size" options={shoeSizes(fit)} value={s.shoe} onChange={(v) => setSize("shoe", v)} render={(v) => convertShoe(v, fit)?.[sys] ?? String(v)} />
+          <ChipGroup label={t("shoeSize")} options={shoeSizes(fit)} value={s.shoe} onChange={(v) => setSize("shoe", v)} render={(v) => convertShoe(v, fit)?.[sys] ?? String(v)} />
           {conv && (
             <Hint>
               {SIZE_SYSTEMS.filter((k) => k !== sys)
                 .map((k) => `${k} ${conv[k]}`)
                 .join(" · ")}
-              {sys !== "US" && ` · saved as US ${conv.US}`}
+              {sys !== "US" && ` · ${t("savedAsUsShort", { v: conv.US })}`}
             </Hint>
           )}
-          <Group label="Foot length in cm (optional)">
+          <Group label={t("foot")}>
             <FootLengthInput value={s.footLengthCm} onChange={(v) => setSize("footLengthCm", v)} />
-            <Hint>Heel to longest toe, standing. It's the one shoe measure that converts reliably between countries.</Hint>
+            <Hint>{t("footHint")}</Hint>
           </Group>
-          <Group label="Width">
-            <ChipGroup label="Width" options={SHOE_WIDTHS} value={s.shoeWidth} onChange={(v) => setSize("shoeWidth", v)} />
+          <Group label={t("width")}>
+            <ChipGroup label={t("width")} options={SHOE_WIDTHS} value={s.shoeWidth} onChange={(v) => setSize("shoeWidth", v)} render={(v) => tr(`core.shoeWidth.${v}`)} />
           </Group>
         </>
       );
@@ -693,14 +710,14 @@ function StepBody({
     case "accessories":
       return (
         <>
-          <Group label="Hat">
-            <ChipGroup label="Hat size" options={HAT_SIZES} value={s.hat as (typeof HAT_SIZES)[number]} onChange={(v) => setSize("hat", v)} />
+          <Group label={t("hat")}>
+            <ChipGroup label={t("hatSize")} options={HAT_SIZES} value={s.hat as (typeof HAT_SIZES)[number]} onChange={(v) => setSize("hat", v)} render={kid} />
           </Group>
-          <Group label={`Ring size (${sys})`}>
-            <ChipGroup label="Ring size" options={RING_SIZES} value={s.ring} onChange={(v) => setSize("ring", v)} render={(v) => convertRing(v)[sys]} />
+          <Group label={`${t("ringSize")} (${sys})`}>
+            <ChipGroup label={t("ringSize")} options={RING_SIZES} value={s.ring} onChange={(v) => setSize("ring", v)} render={(v) => convertRing(v)[sys]} />
           </Group>
-          <Group label="Anything else? (gloves, bra, belt…)">
-            <Textarea value={s.notes ?? ""} onChange={(e) => setSize("notes", e.target.value)} placeholder="Belt 34, gloves M" />
+          <Group label={t("else")}>
+            <Textarea value={s.notes ?? ""} onChange={(e) => setSize("notes", e.target.value)} placeholder={t("elsePlaceholder")} />
           </Group>
         </>
       );
@@ -711,31 +728,31 @@ function StepBody({
     case "dates":
       return (
         <div className="grid gap-6">
-          <DateField label="Birthday 🎂" value={form.birthday} onChange={(v) => set("birthday", v)} />
-          <DateField label="Anniversary 💍" value={form.anniversary} onChange={(v) => set("anniversary", v)} />
+          <DateField label={`${tr("core.events.birthday")} 🎂`} value={form.birthday} onChange={(v) => set("birthday", v)} />
+          <DateField label={`${tr("core.events.anniversary")} 💍`} value={form.anniversary} onChange={(v) => set("anniversary", v)} />
         </div>
       );
 
     case "favorites":
       return (
         <>
-          <Group label="Favorite colors">
+          <Group label={t("colors")}>
             <ColorPicker value={form.colors} onChange={(v) => set("colors", v)} />
           </Group>
-          <Group label="Things you love">
-            <Textarea value={form.likes} onChange={(e) => set("likes", e.target.value)} placeholder="Hiking, mystery novels, dark chocolate…" />
+          <Group label={t("loves")}>
+            <Textarea value={form.likes} onChange={(e) => set("likes", e.target.value)} placeholder={t("lovesPlaceholder")} />
           </Group>
-          <Group label="Please avoid">
-            <Input value={form.avoid} onChange={(e) => set("avoid", e.target.value)} placeholder="Allergies, dislikes, 'no more mugs!'" />
+          <Group label={t("avoid")}>
+            <Input value={form.avoid} onChange={(e) => set("avoid", e.target.value)} placeholder={t("avoidPlaceholder")} />
           </Group>
-          <Group label="Top 3 wishes">
+          <Group label={t("wishes")}>
             <div className="grid gap-2">
               {form.wishes.map((w, i) => (
-                <Input key={i} value={w} onChange={(e) => set("wishes", form.wishes.map((x, j) => (j === i ? e.target.value : x)))} placeholder={`Wish #${i + 1}`} />
+                <Input key={i} value={w} onChange={(e) => set("wishes", form.wishes.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("wish", { n: i + 1 })} />
               ))}
             </div>
           </Group>
-          <Group label="Wish lists & registries (optional)">
+          <Group label={t("lists")}>
             <WishlistLinks value={form.wishlists} onChange={(v) => set("wishlists", v)} />
           </Group>
         </>
@@ -752,6 +769,8 @@ function StepBody({
 /** Links to lists kept elsewhere: Amazon, Target, Etsy… */
 function WishlistLinks({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const [touched, setTouched] = useState<Record<number, boolean>>({});
+  const t = useTranslations("join.links");
+  const tr = useTr();
   return (
     <div className="grid gap-2">
       {value.map((l, i) => {
@@ -766,26 +785,26 @@ function WishlistLinks({ value, onChange }: { value: string[]; onChange: (v: str
                 value={l}
                 onChange={(e) => onChange(value.map((x, j) => (j === i ? e.target.value : x)))}
                 onBlur={() => setTouched((t) => ({ ...t, [i]: true }))}
-                placeholder="Paste an Amazon wish list or registry link"
+                placeholder={t("placeholder")}
                 aria-invalid={bad && touched[i]}
               />
               {value.length > 1 && (
-                <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="rounded-2xl px-3 text-ink-soft hover:bg-white" aria-label="Remove link">
+                <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="rounded-2xl px-3 text-ink-soft hover:bg-white" aria-label={t("remove")}>
                   <Trash2 className="h-4 w-4" />
                 </button>
               )}
             </div>
             {bad && touched[i] ? (
-              <p className="mt-1 text-xs font-bold text-rose-deep">That doesn't look like a web link.</p>
+              <p className="mt-1 text-xs font-bold text-rose-deep">{t("bad")}</p>
             ) : ok ? (
-              <p className="mt-1 text-xs text-ink-soft">{linkTitle(ok)} ✓</p>
+              <p className="mt-1 text-xs text-ink-soft">{linkTitle(ok, tr)} ✓</p>
             ) : null}
           </div>
         );
       })}
       {value.length < MAX_WISHLIST_LINKS && value[value.length - 1]?.trim() && (
         <button type="button" onClick={() => onChange([...value, ""])} className="flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold text-plum hover:bg-white/70">
-          <Plus className="h-4 w-4" /> Add another link
+          <Plus className="h-4 w-4" /> {t("add")}
         </button>
       )}
     </div>
@@ -794,20 +813,22 @@ function WishlistLinks({ value, onChange }: { value: string[]; onChange: (v: str
 
 function DateField({ label, value, onChange }: { label: string; value: PD; onChange: (v: PD) => void }) {
   const days = value.month ? daysInMonth(value.month, value.year) : 31;
+  const t = useTranslations("join.date");
+  const months = monthNames(useTr());
   return (
     <div>
       <p className="mb-2 text-sm font-bold text-ink-soft">{label}</p>
       <div className="grid grid-cols-[1.6fr_1fr_1.1fr] gap-2">
-        <select aria-label={`${label} month`} className={inputCls} value={value.month ?? ""} onChange={(e) => onChange({ ...value, month: e.target.value ? Number(e.target.value) : undefined })}>
-          <option value="">Month</option>
-          {MONTHS.map((m, i) => (
+        <select aria-label={t("monthOf", { label })} className={inputCls} value={value.month ?? ""} onChange={(e) => onChange({ ...value, month: e.target.value ? Number(e.target.value) : undefined })}>
+          <option value="">{t("month")}</option>
+          {months.map((m, i) => (
             <option key={m} value={i + 1}>
               {m}
             </option>
           ))}
         </select>
-        <select aria-label={`${label} day`} className={inputCls} value={value.day ?? ""} onChange={(e) => onChange({ ...value, day: e.target.value ? Number(e.target.value) : undefined })}>
-          <option value="">Day</option>
+        <select aria-label={t("dayOf", { label })} className={inputCls} value={value.day ?? ""} onChange={(e) => onChange({ ...value, day: e.target.value ? Number(e.target.value) : undefined })}>
+          <option value="">{t("day")}</option>
           {Array.from({ length: days }, (_, i) => (
             <option key={i} value={i + 1}>
               {i + 1}
@@ -815,10 +836,10 @@ function DateField({ label, value, onChange }: { label: string; value: PD; onCha
           ))}
         </select>
         <input
-          aria-label={`${label} year (optional)`}
+          aria-label={t("yearOf", { label })}
           className={inputCls}
           inputMode="numeric"
-          placeholder="Year (opt.)"
+          placeholder={t("year")}
           maxLength={4}
           value={value.year ?? ""}
           onChange={(e) => {
@@ -838,6 +859,7 @@ const COLORS: [string, string][] = [
 ];
 
 function ColorPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const t = useTranslations("colors");
   return (
     <div className="flex flex-wrap gap-2.5">
       {COLORS.map(([name, hex]) => {
@@ -846,8 +868,8 @@ function ColorPicker({ value, onChange }: { value: string[]; onChange: (v: strin
           <motion.button
             key={name}
             type="button"
-            title={name}
-            aria-label={name}
+            title={t(name as "blush")}
+            aria-label={t(name as "blush")}
             aria-pressed={on}
             whileTap={{ scale: 0.85 }}
             animate={{ scale: on ? 1.12 : 1 }}
@@ -863,6 +885,8 @@ function ColorPicker({ value, onChange }: { value: string[]; onChange: (v: strin
 
 function KidsEditor({ kids, onChange }: { kids: Kid[]; onChange: (k: Kid[]) => void }) {
   const up = (id: string, patch: Partial<Kid>) => onChange(kids.map((k) => (k.id === id ? { ...k, ...patch } : k)));
+  const t = useTranslations("join.kids");
+  const tr = useTr();
   return (
     <div className="grid gap-4">
       <AnimatePresence initial={false}>
@@ -870,46 +894,49 @@ function KidsEditor({ kids, onChange }: { kids: Kid[]; onChange: (k: Kid[]) => v
           <motion.div key={k.id} layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
             <div className="rounded-3xl bg-white/70 p-4">
               <div className="flex gap-2">
-                <Input value={k.name} onChange={(e) => up(k.id, { name: e.target.value })} placeholder="Child's first name" />
-                <button type="button" onClick={() => onChange(kids.filter((x) => x.id !== k.id))} className="rounded-2xl px-3 text-ink-soft hover:bg-white" aria-label="Remove child">
+                <Input value={k.name} onChange={(e) => up(k.id, { name: e.target.value })} placeholder={t("name")} />
+                <button type="button" onClick={() => onChange(kids.filter((x) => x.id !== k.id))} className="rounded-2xl px-3 text-ink-soft hover:bg-white" aria-label={t("remove")}>
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
               <div className="mt-3">
-                <DateField label="Birthday" value={k.birthday} onChange={(v) => up(k.id, { birthday: v })} />
+                <DateField label={tr("core.events.birthday")} value={k.birthday} onChange={(v) => up(k.id, { birthday: v })} />
               </div>
-              <Group label="Clothing size">
-                <ChipGroup label="Clothing size" options={KIDS_SIZES} value={k.top as (typeof KIDS_SIZES)[number]} onChange={(v) => up(k.id, { top: v, bottom: v })} />
+              <Group label={t("clothing")}>
+                <ChipGroup label={t("clothing")} options={KIDS_SIZES} value={k.top as (typeof KIDS_SIZES)[number]} onChange={(v) => up(k.id, { top: v, bottom: v })} render={(v) => sizeValueLabel(v, tr)} />
               </Group>
-              <Group label="Shoe size (US kids)">
-                <ChipGroup label="Kids shoe" options={shoeSizes("kids")} value={k.shoe} onChange={(v) => up(k.id, { shoe: v })} />
+              <Group label={t("shoe")}>
+                <ChipGroup label={t("shoeShort")} options={shoeSizes("kids")} value={k.shoe} onChange={(v) => up(k.id, { shoe: v })} />
               </Group>
             </div>
           </motion.div>
         ))}
       </AnimatePresence>
       <Button variant="soft" onClick={() => onChange([...kids, { id: newId(), name: "", birthday: {} }])}>
-        <Plus className="h-4 w-4" /> Add a child
+        <Plus className="h-4 w-4" /> {t("add")}
       </Button>
-      <p className="text-xs text-ink-soft">Kids don't get their own login. You manage their profile and can update sizes as they grow — we'll nudge you every few months.</p>
+      <p className="text-xs text-ink-soft">{t("note")}</p>
     </div>
   );
 }
 
 function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite; jump: (id: StepId) => void }) {
+  const t = useTranslations("join.review");
+  const tc = useTranslations("colors");
+  const tr = useTr();
   const complete = (d: PD) =>
-    d.month && d.day ? formatPartialDate({ month: d.month, day: d.day, year: d.year && d.year >= 1900 ? d.year : undefined }) : undefined;
+    d.month && d.day ? formatPartialDate({ month: d.month, day: d.day, year: d.year && d.year >= 1900 ? d.year : undefined }, tr) : undefined;
   const a = form.address;
   const section: Partial<Record<StepId, keyof PublicInvite["ask"]>> = { tops: "sizes", address: "address", dates: "dates", favorites: "favorites", kids: "kids" };
   const rows: [string, string | undefined, StepId][] = [
-    ["Name", form.name, "welcome"],
-    ["Sizes", summarizeSizes(form.sizes) || undefined, "tops"],
-    ["Address", isCompleteAddress(a) ? formatAddress(a).join(", ") : undefined, "address"],
-    ["Birthday", complete(form.birthday), "dates"],
-    ["Anniversary", complete(form.anniversary), "dates"],
-    ["Loves", form.likes || form.colors.join(", ") || undefined, "favorites"],
-    ["Lists & registries", cleanWishlistLinks(form.wishlists).map(linkTitle).join(", ") || undefined, "favorites"],
-    ["Kids", form.kids.map((k) => k.name).filter(Boolean).join(", ") || undefined, "kids"],
+    [t("name"), form.name, "welcome"],
+    [t("sizes"), summarizeSizes(form.sizes, tr) || undefined, "tops"],
+    [t("address"), isCompleteAddress(a) ? formatAddress(a, "US", tr).join(", ") : undefined, "address"],
+    [tr("core.events.birthday"), complete(form.birthday), "dates"],
+    [tr("core.events.anniversary"), complete(form.anniversary), "dates"],
+    [t("loves"), form.likes || form.colors.map((c) => tc(c as "blush")).join(", ") || undefined, "favorites"],
+    [t("lists"), cleanWishlistLinks(form.wishlists).map((u) => linkTitle(u, tr)).join(", ") || undefined, "favorites"],
+    [t("kids"), form.kids.map((k) => k.name).filter(Boolean).join(", ") || undefined, "kids"],
   ];
   return (
     <div className="divide-y divide-white">
@@ -921,8 +948,8 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
         .map(([label, val, id]) => (
           <div key={label} className="flex items-center gap-3 py-3">
             <span className="w-28 shrink-0 text-sm font-bold text-ink-soft">{label}</span>
-            <span className={`flex-1 ${val ? "" : "text-ink-soft/60 italic"}`}>{val ?? "Skipped"}</span>
-            <button type="button" onClick={() => jump(id)} className="rounded-full p-2 text-ink-soft hover:bg-white" aria-label={`Edit ${label}`}>
+            <span className={`flex-1 ${val ? "" : "text-ink-soft/60 italic"}`}>{val ?? t("skipped")}</span>
+            <button type="button" onClick={() => jump(id)} className="rounded-full p-2 text-ink-soft hover:bg-white" aria-label={t("edit", { label })}>
               <Pencil className="h-4 w-4" />
             </button>
           </div>
@@ -932,11 +959,11 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
 }
 
 const PERKS = [
-  { icon: Ruler, text: "Everyone's sizes in one place" },
-  { icon: BellRing, text: "Reminder emails before birthdays and holidays" },
-  { icon: Gift, text: "Lock in each gift once it's bought" },
-  { icon: Users, text: "Reuse these answers in gift exchanges" },
-];
+  { icon: Ruler, id: "sizes" },
+  { icon: BellRing, id: "reminders" },
+  { icon: Gift, id: "locks" },
+  { icon: Users, id: "exchanges" },
+] as const;
 
 function Success({
   name,
@@ -952,6 +979,7 @@ function Success({
   canConnect: boolean;
 }) {
   const user = useUser();
+  const t = useTranslations("join.success");
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">(outcome.saved ? "saved" : "idle");
   const [connect, setConnect] = useState(true);
   const bits = Array.from({ length: 28 });
@@ -988,14 +1016,12 @@ function Success({
       <motion.div initial={{ y: 20, rotate: -10 }} animate={{ y: 0, rotate: 0 }} transition={{ type: "spring", delay: 0.1 }} className="mx-auto mb-5 w-fit">
         <LogoMark size={80} />
       </motion.div>
-      <h1 className="font-display text-4xl font-semibold">Thank you, {name.split(" ")[0]}!</h1>
-      <p className="mx-auto mt-3 max-w-md text-ink-soft">
-        {from} can now shop for you with confidence. Now do the same for the people <em>you</em> love.
-      </p>
+      <h1 className="font-display text-4xl font-semibold">{t("title", { name: name.split(" ")[0]! })}</h1>
+      <p className="mx-auto mt-3 max-w-md text-ink-soft">{t.rich("body", { name: from, em: (c) => <em>{c}</em> })}</p>
 
       {user && outcome.connected && (
         <p className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full bg-mint/70 px-4 py-2 text-sm font-bold">
-          <Check className="h-4 w-4" /> Saved as your profile · {from} will get your updates
+          <Check className="h-4 w-4" /> {t("connected", { name: from })}
         </p>
       )}
       {user ? (
@@ -1004,19 +1030,19 @@ function Success({
             <Button onClick={saveMine} disabled={saved === "saving" || saved === "saved"} variant={saved === "saved" ? "soft" : undefined}>
               {saved === "saved" ? (
                 <>
-                  <Check className="h-4 w-4" /> Saved as my profile
+                  <Check className="h-4 w-4" /> {t("saved")}
                 </>
               ) : saved === "saving" ? (
-                "Saving…"
+                t("saving")
               ) : (
-                "Save these answers as my profile"
+                t("save")
               )}
             </Button>
           )}
           <Button href="/locker" variant="soft">
-            Open my locker
+            {t("openLocker")}
           </Button>
-          {saved === "error" && <p className="w-full text-sm font-bold text-rose-deep">Couldn't save. Try again.</p>}
+          {saved === "error" && <p className="w-full text-sm font-bold text-rose-deep">{t("error")}</p>}
         </div>
       ) : (
         <motion.div
@@ -1025,18 +1051,18 @@ function Success({
           transition={{ delay: 0.5, duration: 0.5 }}
           className="mx-auto mt-7 max-w-md rounded-3xl bg-white/75 p-6 text-left shadow-soft"
         >
-          <p className="font-display text-2xl font-semibold">Start your own locker, free</p>
+          <p className="font-display text-2xl font-semibold">{t("pitch")}</p>
           <ul className="mt-3 grid gap-2.5">
-            {PERKS.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-ink">
+            {PERKS.map(({ icon: Icon, id }) => (
+              <li key={id} className="flex items-center gap-3 text-ink">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blush">
                   <Icon className="h-4 w-4" />
                 </span>
-                {text}
+                {t(`perks.${id}`)}
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-sm text-ink-soft">What you just filled in becomes your own profile, so you won't type it again.</p>
+          <p className="mt-3 text-sm text-ink-soft">{t("becomesProfile")}</p>
           {canConnect && (
             <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl bg-cream/80 p-3 text-sm">
               <input
@@ -1049,13 +1075,13 @@ function Success({
                 }}
               />
               <span>
-                <b>Keep {from} updated</b>
-                <span className="block text-ink-soft">When you change your sizes or wishes later, their locker updates too.</span>
+                <b>{t("keepUpdated", { name: from })}</b>
+                <span className="block text-ink-soft">{t("keepUpdatedBody")}</span>
               </span>
             </label>
           )}
           <Button href="/sign-in?next=/locker" className="mt-5 w-full">
-            Create my free locker
+            {t("create")}
           </Button>
         </motion.div>
       )}

@@ -9,6 +9,7 @@ import { cleanWishlistLinks } from "./links";
 import type { PartialDate } from "./dates";
 import type { Address, Favorites, Person } from "./people";
 import type { SizeProfile } from "./sizes";
+import { defaultT, listJoin, type Tr } from "./i18n";
 
 export type ShareSection = "sizes" | "favorites" | "dates" | "address";
 export type ConnectionShares = Record<ShareSection, boolean>;
@@ -58,10 +59,15 @@ export function syncedFields(self: Pick<Person, "sizes" | "favorites" | "birthda
   return out;
 }
 
-export function describeShares(s: ConnectionShares): string {
-  const on = SHARE_SECTIONS.filter((x) => s[x.id]).map((x) => x.label.toLowerCase());
-  if (!on.length) return "nothing yet";
-  return on.length === 1 ? on[0]! : `${on.slice(0, -1).join(", ")} and ${on.at(-1)}`;
+/** A share section's label and hint in the translator's language. */
+export function shareSectionText(id: ShareSection, t: Tr = defaultT): { label: string; hint: string } {
+  return { label: t(`core.shares.${id}.label`), hint: t(`core.shares.${id}.hint`) };
+}
+
+export function describeShares(s: ConnectionShares, t: Tr = defaultT): string {
+  const on = SHARE_SECTIONS.filter((x) => s[x.id]).map((x) => shareSectionText(x.id, t).label.toLocaleLowerCase());
+  if (!on.length) return t("core.shares.nothing");
+  return listJoin(on, t);
 }
 
 /**

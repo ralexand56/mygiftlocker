@@ -1,10 +1,12 @@
 "use client";
 
-import { HOLIDAYS, holiday, nextHoliday, type HolidayId, type Person } from "@mgl/core";
+import { HOLIDAYS, holidayName, nextHoliday, type HolidayId, type Person } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui";
+import { useTranslations } from "next-intl";
+import { useIntlTag, useTr } from "@/lib/i18n";
 
 type Save = (id: string, changes: { holidays: HolidayId[] }) => Promise<void>;
 
@@ -18,6 +20,9 @@ const withTag = (p: Person, id: HolidayId, on: boolean): HolidayId[] => {
 /** Everyone × holidays checklist, with "all" per holiday (e.g. tag everyone for Christmas). */
 export function HolidayLists({ open, people, onClose, onSave }: { open: boolean; people: Person[]; onClose: () => void; onSave: Save }) {
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("holidayLists");
+  const tr = useTr();
+  const tag = useIntlTag();
   const sorted = [...people].sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
@@ -30,7 +35,7 @@ export function HolidayLists({ open, people, onClose, onSave }: { open: boolean;
   const save = async (updates: [Person, HolidayId[]][]) => {
     setError(null);
     const results = await Promise.allSettled(updates.map(([p, holidays]) => onSave(p.id, { holidays })));
-    if (results.some((r) => r.status === "rejected")) setError("Some changes couldn't be saved. Please try again.");
+    if (results.some((r) => r.status === "rejected")) setError(t("error"));
   };
   const toggle = (p: Person, id: HolidayId) => save([[p, withTag(p, id, !(p.holidays ?? []).includes(id))]]);
   const toggleAll = (id: HolidayId, on: boolean) =>
@@ -45,24 +50,24 @@ export function HolidayLists({ open, people, onClose, onSave }: { open: boolean;
             <motion.div
               role="dialog"
               aria-modal
-              aria-label="Holiday lists"
+              aria-label={t("title")}
               initial={{ opacity: 0, y: 24, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.98 }}
               className="pointer-events-auto relative max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-[32px] bg-cream p-6 shadow-lift sm:p-8"
             >
-              <button onClick={onClose} className="absolute top-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-white/80 shadow-soft" aria-label="Close">
+              <button onClick={onClose} className="absolute top-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-white/80 shadow-soft" aria-label={t("close")}>
                 <X className="h-5 w-5" />
               </button>
-              <h2 className="font-display text-3xl font-semibold">Holiday lists</h2>
-              <p className="mt-1 text-ink-soft">Tick who you shop for on each holiday. You'll get reminders 3 weeks and 1 week before.</p>
+              <h2 className="font-display text-3xl font-semibold">{t("title")}</h2>
+              <p className="mt-1 text-ink-soft">{t("lede")}</p>
               {error && <p className="mt-3 text-sm font-bold text-rose-deep">{error}</p>}
 
               <div className="mt-6 overflow-x-auto">
                 <table className="w-full border-separate border-spacing-y-1.5 text-sm">
                   <thead>
                     <tr>
-                      <th className="text-left font-bold text-ink-soft">Person</th>
+                      <th className="text-left font-bold text-ink-soft">{t("person")}</th>
                       {HOLIDAYS.map((h) => {
                         const all = sorted.length > 0 && sorted.every((p) => (p.holidays ?? []).includes(h.id));
                         return (
@@ -70,17 +75,17 @@ export function HolidayLists({ open, people, onClose, onSave }: { open: boolean;
                             <div className="text-lg" aria-hidden>
                               {h.emoji}
                             </div>
-                            <div className="text-xs leading-tight">{h.name}</div>
+                            <div className="text-xs leading-tight">{holidayName(h.id, tr)}</div>
                             <div className="text-[11px] font-semibold text-ink-soft">
-                              {nextHoliday(h.id).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                              {nextHoliday(h.id).toLocaleDateString(tag, { month: "short", day: "numeric" })}
                             </div>
                             <button
                               type="button"
                               onClick={() => toggleAll(h.id, !all)}
                               className="mt-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-plum shadow-soft hover:bg-blush/60"
-                              aria-label={`${all ? "Untag" : "Tag"} everyone for ${h.name}`}
+                              aria-label={all ? t("untagAll", { holiday: holidayName(h.id, tr) }) : t("tagAll", { holiday: holidayName(h.id, tr) })}
                             >
-                              {all ? "None" : "All"}
+                              {all ? t("none") : t("all")}
                             </button>
                           </th>
                         );
@@ -104,7 +109,7 @@ export function HolidayLists({ open, people, onClose, onSave }: { open: boolean;
                                 type="button"
                                 role="checkbox"
                                 aria-checked={on}
-                                aria-label={`${holiday(h.id).name} for ${p.name}`}
+                                aria-label={t("for", { holiday: holidayName(h.id, tr), name: p.name })}
                                 onClick={() => toggle(p, h.id)}
                                 className={`grid h-8 w-8 place-items-center rounded-xl transition-colors ${
                                   on ? "bg-gradient-to-br from-rose to-plum text-white shadow-lift" : "bg-cream ring-1 ring-lavender/60 hover:bg-blush/40"

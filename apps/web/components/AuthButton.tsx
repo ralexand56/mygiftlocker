@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { signOut, useUser } from "@/lib/auth";
 
 const pill = "rounded-full bg-white/80 px-4 py-2 text-ink shadow-soft hover:bg-white";
@@ -12,18 +13,19 @@ export function AuthButton() {
   const user = useUser();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const t = useTranslations("common");
 
   if (!user)
     return (
       <Link href="/sign-in" className={pill}>
-        Sign in
+        {t("signIn")}
       </Link>
     );
 
   return (
     <span className="flex items-center gap-1">
       <span className="hidden max-w-[12rem] truncate px-2 text-ink md:block" title={user.email}>
-        {user.hasName ? user.name.split(" ")[0] : "Account"}
+        {user.hasName ? user.name.split(" ")[0] : t("account")}
       </span>
       <button
         type="button"
@@ -40,7 +42,7 @@ export function AuthButton() {
           }
         }}
       >
-        Sign out
+        {t("signOut")}
       </button>
     </span>
   );

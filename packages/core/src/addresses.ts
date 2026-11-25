@@ -4,11 +4,15 @@
  * Countries without a specific format get generic optional region/postal fields.
  */
 import type { Address } from "./people";
+import { defaultT, intlTag, type Tr } from "./i18n";
 
 type Region = { code: string; name: string };
 
+/**
+ * Field labels are message keys under core.address (see addressLabels for the text).
+ */
 export interface AddressFormat {
-  /** Label for line2 (Mexico's colonia and Brazil's bairro matter for delivery). */
+  /** Label key for line2 (Mexico's colonia and Brazil's bairro matter for delivery). */
   line2Label: string;
   line2Required?: boolean;
   regionLabel: string;
@@ -52,22 +56,22 @@ const join = (...parts: (string | undefined)[]) => parts.filter((p) => p && p.tr
 
 const FORMATS: Record<string, AddressFormat> = {
   US: {
-    line2Label: "Apt, suite, unit",
-    regionLabel: "State",
+    line2Label: "aptSuite",
+    regionLabel: "state",
     regionRequired: true,
     regions: US_STATES,
-    postalLabel: "ZIP code",
+    postalLabel: "zip",
     postalRequired: true,
     postalPattern: /^\d{5}(-\d{4})?$/,
     postalExample: "94110",
     localityLines: (a) => [`${a.city}, ${join(a.region, a.postalCode)}`],
   },
   CA: {
-    line2Label: "Apt, suite, unit",
-    regionLabel: "Province",
+    line2Label: "aptSuite",
+    regionLabel: "province",
     regionRequired: true,
     regions: CA_PROVINCES,
-    postalLabel: "Postal code",
+    postalLabel: "postalCode",
     postalRequired: true,
     postalPattern: /^[A-Z]\d[A-Z] \d[A-Z]\d$/,
     postalExample: "K1A 0B1",
@@ -78,24 +82,24 @@ const FORMATS: Record<string, AddressFormat> = {
     localityLines: (a) => [`${a.city} ${join(a.region, a.postalCode)}`],
   },
   MX: {
-    line2Label: "Colonia (neighborhood)",
+    line2Label: "colonia",
     line2Required: true,
-    regionLabel: "State",
+    regionLabel: "state",
     regionRequired: true,
     regions: MX_STATES,
-    postalLabel: "Código postal",
+    postalLabel: "codigoPostal",
     postalRequired: true,
     postalPattern: /^\d{5}$/,
     postalExample: "06700",
     localityLines: (a, region) => [`C.P. ${a.postalCode} ${a.city}, ${region}`],
   },
   BR: {
-    line2Label: "Complement and neighborhood (bairro)",
+    line2Label: "complementBairro",
     line2Required: true,
-    regionLabel: "State",
+    regionLabel: "state",
     regionRequired: true,
     regions: BR_STATES,
-    postalLabel: "CEP",
+    postalLabel: "cep",
     postalRequired: true,
     postalPattern: /^\d{5}-\d{3}$/,
     postalExample: "01310-100",
@@ -106,21 +110,21 @@ const FORMATS: Record<string, AddressFormat> = {
     localityLines: (a) => [`${a.city} - ${a.region}`, `CEP ${a.postalCode}`],
   },
   CO: {
-    line2Label: "Neighborhood (barrio), apt",
-    regionLabel: "Department",
+    line2Label: "barrioApt",
+    regionLabel: "department",
     regionRequired: true,
     regions: CO_DEPARTMENTS,
-    postalLabel: "Postal code (optional)",
+    postalLabel: "postalCodeOptional",
     postalRequired: false,
     postalPattern: /^\d{6}$/,
     postalExample: "110111",
     localityLines: (a, region) => [`${a.city}, ${region}${a.postalCode ? ` ${a.postalCode}` : ""}`],
   },
   GB: {
-    line2Label: "Flat, building",
-    regionLabel: "County (optional)",
+    line2Label: "flatBuilding",
+    regionLabel: "countyOptional",
     regionRequired: false,
-    postalLabel: "Postcode",
+    postalLabel: "postcode",
     postalRequired: true,
     postalPattern: /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/,
     postalExample: "SW1A 1AA",
@@ -133,10 +137,10 @@ const FORMATS: Record<string, AddressFormat> = {
 };
 
 const GENERIC: AddressFormat = {
-  line2Label: "Apartment, unit, building",
-  regionLabel: "State / province / region",
+  line2Label: "aptUnitBuilding",
+  regionLabel: "regionGeneric",
   regionRequired: false,
-  postalLabel: "Postal code",
+  postalLabel: "postalCode",
   postalRequired: false,
   localityLines: (a) => [join(a.postalCode, a.city), ...(a.region ? [a.region] : [])].filter(Boolean),
 };
@@ -145,31 +149,38 @@ export function addressFormat(country: string | undefined): AddressFormat {
   return FORMATS[(country ?? "US").toUpperCase()] ?? GENERIC;
 }
 
+/** The country's field labels in the translator's language. */
+export function addressLabels(country: string | undefined, t: Tr = defaultT): { line2: string; region: string; postal: string } {
+  const f = addressFormat(country);
+  return { line2: t(`core.address.${f.line2Label}`), region: t(`core.address.${f.regionLabel}`), postal: t(`core.address.${f.postalLabel}`) };
+}
+
 /** ISO 3166-1 alpha-2 codes, most likely destinations first, then everyone else. */
 export const PRIORITY_COUNTRIES = ["US", "CA", "MX", "BR", "CO", "GB"] as const;
 const ALL_CODES =
   "AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FO FR GA GB GD GE GF GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MO MQ MR MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS XK YE ZA ZM ZW".split(" ");
 
-let displayNames: Intl.DisplayNames | null | undefined;
-/** Country name in English ("BR" → "Brazil"); falls back to the code where Intl.DisplayNames is missing. */
-export function countryName(code: string): string {
-  if (displayNames === undefined) {
+const displayNames = new Map<string, Intl.DisplayNames | null>();
+/** Country name in the translator's language ("BR" → "Brazil"/"Brasil"); the code where Intl.DisplayNames is missing. */
+export function countryName(code: string, t: Tr = defaultT): string {
+  const tag = intlTag(t);
+  if (!displayNames.has(tag)) {
     try {
-      displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+      displayNames.set(tag, new Intl.DisplayNames([tag], { type: "region" }));
     } catch {
-      displayNames = null;
+      displayNames.set(tag, null);
     }
   }
-  return displayNames?.of(code.toUpperCase()) ?? code.toUpperCase();
+  return displayNames.get(tag)?.of(code.toUpperCase()) ?? code.toUpperCase();
 }
 
 /** Countries for a picker: priority ones first, then the rest alphabetically by name. */
-export function countryOptions(): { code: string; name: string }[] {
+export function countryOptions(t: Tr = defaultT): { code: string; name: string }[] {
   const prio = new Set<string>(PRIORITY_COUNTRIES);
   const rest = ALL_CODES.filter((c) => !prio.has(c))
-    .map((code) => ({ code, name: countryName(code) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  return [...PRIORITY_COUNTRIES.map((code) => ({ code, name: countryName(code) })), ...rest];
+    .map((code) => ({ code, name: countryName(code, t) }))
+    .sort((a, b) => a.name.localeCompare(b.name, intlTag(t)));
+  return [...PRIORITY_COUNTRIES.map((code) => ({ code, name: countryName(code, t) })), ...rest];
 }
 
 export function isCountryCode(v: unknown): v is string {
@@ -187,37 +198,40 @@ function regionName(a: Address): string {
 }
 
 /** Address lines in the country's usual order; adds the country unless it matches `home`. */
-export function formatAddress(a: Address, home = "US"): string[] {
+export function formatAddress(a: Address, home = "US", t: Tr = defaultT): string[] {
   const f = addressFormat(a.country);
   const lines = [a.name, a.line1, a.line2, ...f.localityLines(a, regionName(a))].filter((l): l is string => !!l && !!l.trim());
-  if (a.country && a.country.toUpperCase() !== home.toUpperCase()) lines.push(countryName(a.country));
+  if (a.country && a.country.toUpperCase() !== home.toUpperCase()) lines.push(countryName(a.country, t));
   return lines;
 }
 
 /** "City, Region, Country" for short mentions (e.g. reminder emails). */
-export function shortPlace(a: Address, home = "US"): string {
+export function shortPlace(a: Address, home = "US", t: Tr = defaultT): string {
   // US, Canada and Brazil conventionally write the short code ("Portland, OR"; "São Paulo, SP").
   const useCode = ["US", "CA", "BR"].includes((a.country ?? "US").toUpperCase());
   const parts = [a.city, useCode ? a.region : regionName(a)];
-  if (a.country && a.country.toUpperCase() !== home.toUpperCase()) parts.push(countryName(a.country));
+  if (a.country && a.country.toUpperCase() !== home.toUpperCase()) parts.push(countryName(a.country, t));
   return parts.filter(Boolean).join(", ");
 }
 
 export type AddressErrors = Partial<Record<keyof Address, string>>;
 
 /** Field errors for a filled-in address (empty optional fields are fine). */
-export function validateAddress(a: Partial<Address>): AddressErrors {
+export function validateAddress(a: Partial<Address>, t: Tr = defaultT): AddressErrors {
   const f = addressFormat(a.country);
+  const L = addressLabels(a.country, t);
+  const err = (k: string, v?: Record<string, string>) => t(`core.address.errors.${k}`, v);
+  const lower = (s: string) => s.toLocaleLowerCase(intlTag(t));
   const e: AddressErrors = {};
-  if (!a.country || !isCountryCode(a.country)) e.country = "Choose a country";
-  if (!a.line1?.trim()) e.line1 = "Street address is required";
-  if (f.line2Required && !a.line2?.trim()) e.line2 = `${f.line2Label} is required`;
-  if (!a.city?.trim()) e.city = "City is required";
-  if (f.regionRequired && !a.region?.trim()) e.region = `${f.regionLabel} is required`;
-  else if (f.regions && a.region && !f.regions.some((x) => x.code === a.region)) e.region = `Choose a ${f.regionLabel.toLowerCase()}`;
+  if (!a.country || !isCountryCode(a.country)) e.country = err("country");
+  if (!a.line1?.trim()) e.line1 = err("line1");
+  if (f.line2Required && !a.line2?.trim()) e.line2 = err("required", { field: L.line2 });
+  if (!a.city?.trim()) e.city = err("city");
+  if (f.regionRequired && !a.region?.trim()) e.region = err("required", { field: L.region });
+  else if (f.regions && a.region && !f.regions.some((x) => x.code === a.region)) e.region = err("choose", { field: L.region, fieldLower: lower(L.region) });
   const postal = a.postalCode?.trim() ?? "";
-  if (f.postalRequired && !postal) e.postalCode = `${f.postalLabel} is required`;
-  else if (postal && f.postalPattern && !f.postalPattern.test(postal)) e.postalCode = f.postalExample ? `Use the format ${f.postalExample}` : "Check the postal code";
+  if (f.postalRequired && !postal) e.postalCode = err("required", { field: L.postal });
+  else if (postal && f.postalPattern && !f.postalPattern.test(postal)) e.postalCode = f.postalExample ? err("format", { example: f.postalExample }) : err("postal");
   return e;
 }
 

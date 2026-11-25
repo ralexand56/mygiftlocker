@@ -15,6 +15,12 @@ export interface Holiday {
   dateIn: (year: number) => Date;
 }
 
+import { defaultT, type Tr } from "./i18n";
+
+export const holidayName = (id: HolidayId, t: Tr = defaultT) => t(`core.holidays.${id}.name`);
+/** When it falls, e.g. "2nd Sunday in May". */
+export const holidayWhen = (id: HolidayId, t: Tr = defaultT) => t(`core.holidays.${id}.when`);
+
 /** The nth (1-based) given weekday (0 = Sunday) of a month (1-12). */
 export function nthWeekdayOfMonth(year: number, month: number, weekday: number, n: number): Date {
   const first = new Date(year, month - 1, 1).getDay();

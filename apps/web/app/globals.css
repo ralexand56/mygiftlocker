@@ -18,7 +18,7 @@
   --color-mint: #cdefe3;
   --color-butter: #ffe7b8;
   --color-sky: #d4e9ff;
-  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-display: var(--font-fraunces), var(--font-lora), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
   --radius-card: 28px;
   /* clay soft-UI: very wide, warm, low-opacity */

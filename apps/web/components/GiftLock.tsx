@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 /**
  * The locker's padlock as a "gifted" toggle: open until you've bought the gift,
@@ -21,14 +22,15 @@ export function GiftLock({
   showText?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const t = useTranslations("giftLock");
   const spring = reduce ? { duration: 0 } : { type: "spring" as const, stiffness: 520, damping: 22 };
   return (
     <button
       type="button"
       role="switch"
       aria-checked={locked}
-      aria-label={locked ? `Gift bought for ${label}. Tap to reopen.` : `Mark gift bought for ${label}`}
-      title={locked ? "Gift bought" : "Bought a gift? Lock it in"}
+      aria-label={locked ? t("boughtFor", { label }) : t("markFor", { label })}
+      title={locked ? t("bought") : t("lockIt")}
       onClick={(e) => {
         e.stopPropagation();
         onToggle();
@@ -85,7 +87,7 @@ export function GiftLock({
           <circle cx={20} cy={27} r={2.6} className="fill-ink-soft" />
         )}
       </motion.svg>
-      {showText && <span>{locked ? "Gift bought" : "Mark bought"}</span>}
+      {showText && <span>{locked ? t("bought") : t("mark")}</span>}
     </button>
   );
 }

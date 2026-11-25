@@ -3,7 +3,7 @@
  * birthdays, anniversaries and other dates a week ahead and the day before.
  *
  * Invoke manually with {"preview": {"to": "you@example.com"}} to send one sample
- * email built from the demo people (subject starts with "[Preview]").
+ * email built from the demo people (subject starts with "[Preview]"); add "locale": "es" for another language.
  */
 import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
 import { CognitoIdentityProviderClient, ListUsersCommand } from "@aws-sdk/client-cognito-identity-provider";
@@ -16,9 +16,12 @@ import {
   dueReminders,
   nextOccurrence,
   todayInTimeZone,
+  createTr,
+  isLocale,
   type Person,
   type ReminderEmail,
 } from "@mgl/core";
+import { CORE_CATALOGS } from "@mgl/core/catalogs";
 import { env } from "$amplify/env/event-reminders";
 import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
@@ -35,14 +38,15 @@ type Profile = Schema["Profile"]["type"];
 type OwnedPerson = Person & { ownerSub: string };
 
 interface ReminderEvent {
-  preview?: { to?: string };
+  /** locale: preview the email in another language ("es", "fr", "pt", "ru"). */
+  preview?: { to?: string; locale?: string };
 }
 
 const lockerUrl = () => `${env.SITE_URL}/locker`;
 const unsubscribeUrl = (token: string) => `${env.SITE_URL}/reminders?t=${encodeURIComponent(token)}`;
 
 export const handler = async (event: ReminderEvent = {}) => {
-  if (event.preview?.to) return sendPreview(event.preview.to);
+  if (event.preview?.to) return sendPreview(event.preview.to, event.preview.locale);
 
   const today = todayInTimeZone(env.REMINDER_TIME_ZONE);
   const day = dateKey(today);
@@ -67,8 +71,11 @@ export const handler = async (event: ReminderEvent = {}) => {
 };
 
 async function remindOwner(ownerSub: string, due: ReturnType<typeof dueReminders>, day: string): Promise<"sent" | "optedOut" | "alreadySent" | "noEmail"> {
-  const token = await settingsToken(ownerSub);
-  if (!token) return "optedOut";
+  const settings = await settingsFor(ownerSub);
+  if (!settings) return "optedOut";
+  const token = settings.token;
+  const locale = isLocale(settings.locale) ? settings.locale : "en";
+  const t = createTr(locale, CORE_CATALOGS[locale]);
 
   const user = await findUser(ownerSub);
   if (!user?.email) return "noEmail";
@@ -78,7 +85,7 @@ async function remindOwner(ownerSub: string, due: ReturnType<typeof dueReminders
   const { errors } = await client.models.ReminderLog.create({ id: logId, ownerSub, count: due.length });
   if (errors?.length) return "alreadySent";
 
-  const email = buildReminderEmail({ ownerName: user.name, reminders: due, lockerUrl: lockerUrl(), unsubscribeUrl: unsubscribeUrl(token) });
+  const email = buildReminderEmail({ ownerName: user.name, reminders: due, lockerUrl: lockerUrl(), unsubscribeUrl: unsubscribeUrl(token), t });
   try {
     await send(user.email, email, unsubscribeUrl(token));
   } catch (e) {
@@ -88,14 +95,14 @@ async function remindOwner(ownerSub: string, due: ReturnType<typeof dueReminders
   return "sent";
 }
 
-/** The owner's unsubscribe token, creating settings on first use; null when reminders are off. */
-async function settingsToken(ownerSub: string): Promise<string | null> {
+/** The owner's unsubscribe token and language, creating settings on first use; null when reminders are off. */
+async function settingsFor(ownerSub: string): Promise<{ token: string; locale?: string | null } | null> {
   const { data } = await client.models.ReminderSettings.get({ ownerSub });
   if (data?.remindersOff) return null;
-  if (data?.unsubscribeToken) return data.unsubscribeToken;
+  if (data?.unsubscribeToken) return { token: data.unsubscribeToken, locale: data.locale };
   const unsubscribeToken = randomBytes(24).toString("base64url");
   await client.models.ReminderSettings.create({ ownerSub, unsubscribeToken, remindersOff: false });
-  return unsubscribeToken;
+  return { token: unsubscribeToken };
 }
 
 /** Works for email-code and Google users alike (their usernames differ; `sub` doesn't). */
@@ -122,13 +129,14 @@ async function send(to: string, email: ReminderEmail, unsubscribe: string) {
   );
 }
 
-async function sendPreview(to: string) {
+async function sendPreview(to: string, lang?: string) {
+  const locale = isLocale(lang) ? lang : "en";
   // Pretend "today" is a week before the first demo birthday so there's something to show.
   const first = DEMO_PEOPLE.find((p) => p.birthday)!;
   const bday = nextOccurrence(first.birthday!);
   const fakeToday = new Date(bday.getFullYear(), bday.getMonth(), bday.getDate() - 7);
   const due = dueReminders(DEMO_PEOPLE, fakeToday);
-  const email = buildReminderEmail({ ownerName: "there", reminders: due, lockerUrl: lockerUrl(), unsubscribeUrl: unsubscribeUrl("preview") });
+  const email = buildReminderEmail({ reminders: due, lockerUrl: lockerUrl(), unsubscribeUrl: unsubscribeUrl("preview"), t: createTr(locale, CORE_CATALOGS[locale]) });
   await send(to, { ...email, subject: `[Preview] ${email.subject}` }, unsubscribeUrl("preview"));
   return { preview: true, to, reminders: due.length };
 }

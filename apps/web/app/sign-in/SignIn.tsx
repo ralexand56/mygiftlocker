@@ -8,6 +8,8 @@ import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Input } from "@/components/ui";
 import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn } from "@/lib/auth";
+import { useTranslations } from "next-intl";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 export function SignIn() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export function SignIn() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("signIn");
 
   /** Return to where the user came from (?next=/exchange), else the locker. */
   const done = () => {
@@ -28,7 +31,7 @@ export function SignIn() {
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("somethingWrong"));
     } finally {
       setBusy(false);
     }
@@ -37,6 +40,7 @@ export function SignIn() {
   return (
     <main className="pastel-wash relative grid min-h-dvh place-items-center overflow-x-clip py-10 px-4">
       <FlyingBackdrop scene="welcome" />
+      <LanguagePicker className="absolute top-4 right-4 z-20 text-[15px]" />
       <motion.section
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -44,8 +48,8 @@ export function SignIn() {
         className="glass relative z-10 w-full max-w-sm rounded-[32px] p-8 text-center shadow-lift"
       >
         <LogoMark size={64} className="mx-auto" />
-        <h1 className="mt-4 font-display text-3xl font-semibold">Welcome back</h1>
-        <p className="mt-1 text-ink-soft">No password needed — sign in with Google or an email code.</p>
+        <h1 className="mt-4 font-display text-3xl font-semibold">{t("title")}</h1>
+        <p className="mt-1 text-ink-soft">{t("subtitle")}</p>
 
         <div className="mt-7 grid gap-3">
           <button
@@ -65,10 +69,10 @@ export function SignIn() {
               <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
               <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.3-.4-3.5z" />
             </svg>
-            Continue with Google
+            {t("google")}
           </button>
           <div className="my-2 flex items-center gap-3 text-xs font-bold text-ink-soft">
-            <span className="h-px flex-1 bg-ink/10" /> or <span className="h-px flex-1 bg-ink/10" />
+            <span className="h-px flex-1 bg-ink/10" /> {t("or")} <span className="h-px flex-1 bg-ink/10" />
           </div>
 
           {sent ? (
@@ -82,13 +86,13 @@ export function SignIn() {
                 });
               }}
             >
-              <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">We emailed a sign-in code to {email} ✨</p>
-              <Input inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="Enter code" className="text-center tracking-[0.4em]" autoFocus />
+              <p className="rounded-2xl bg-mint/70 p-4 text-sm font-bold">{t("sent", { email })}</p>
+              <Input inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder={t("codePlaceholder")} className="text-center tracking-[0.4em]" autoFocus />
               <Button type="submit" disabled={busy || code.length < 6}>
-                {busy ? "Checking…" : "Sign in"}
+                {busy ? t("checking") : t("signIn")}
               </Button>
               <button type="button" className="text-xs font-bold text-ink-soft hover:text-ink" onClick={() => (setSent(false), setCode(""))}>
-                Use a different email
+                {t("differentEmail")}
               </button>
             </form>
           ) : (
@@ -105,13 +109,13 @@ export function SignIn() {
             >
               <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
               <Button type="submit" disabled={busy}>
-                <Mail className="h-4 w-4" /> {busy ? "Sending…" : "Continue with email"}
+                <Mail className="h-4 w-4" /> {busy ? t("sending") : t("email")}
               </Button>
             </form>
           )}
           {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
         </div>
-        {authMode === "demo" && <p className="mt-5 text-xs text-ink-soft">Demo mode — no account is created until the Amplify backend is connected.</p>}
+        {authMode === "demo" && <p className="mt-5 text-xs text-ink-soft">{t("demo")}</p>}
       </motion.section>
     </main>
   );

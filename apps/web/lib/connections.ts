@@ -6,6 +6,7 @@
  */
 import { cleanShares, type ConnectionShares, type Person } from "@mgl/core";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
+import { currentTr } from "./i18n-current";
 
 export const connectionsEnabled = backendEnabled;
 
@@ -53,7 +54,7 @@ export async function listSharingWith(mySub: string): Promise<MyConnection[]> {
     .filter((c) => c.status === "active")
     .map((c) => ({
       id: c.id,
-      ownerName: c.ownerName ?? "Someone",
+      ownerName: c.ownerName ?? currentTr()("common.someone"),
       shares: cleanShares(parseJson(c.shares ?? "{}")),
       since: c.createdAt,
       syncedAt: c.syncedAt ?? undefined,
@@ -94,6 +95,6 @@ export async function askToConnect(person: Person, ownerSub: string, fromName: s
     targetProfileId: person.id,
     shareBack: shareBack ? JSON.stringify(shareBack) : undefined,
   });
-  if (!data) throw new Error(errors?.[0]?.message ?? "Couldn't create the link");
+  if (!data) throw new Error(errors?.[0]?.message ?? currentTr()("errors.createLink"));
   return `${window.location.origin}/connect/${data.id}`;
 }

@@ -11,16 +11,20 @@ import { Button, Field, Input } from "@/components/ui";
 import { getPublicExchange, joinExchange, useAsync } from "@/lib/exchanges";
 import { useUser } from "@/lib/auth";
 import { getSelfProfile } from "@/lib/self";
+import { useTranslations } from "next-intl";
+import { useIntlTag, useTr } from "@/lib/i18n";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 export function JoinExchange({ id }: { id: string }) {
   const { data: ex, error, loading } = useAsync(() => getPublicExchange(id), [id]);
-  if (loading) return <p className="py-24 text-center text-ink-soft">Loading…</p>;
+  const t = useTranslations("joinExchange");
+  if (loading) return <p className="py-24 text-center text-ink-soft">{t("loading")}</p>;
   if (!ex)
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div>
-          <h1 className="font-display text-3xl font-semibold">We couldn't find that exchange</h1>
-          <p className="mt-2 text-ink-soft">{error ?? "Check the link with whoever sent it."}</p>
+          <h1 className="font-display text-3xl font-semibold">{t("notFound")}</h1>
+          <p className="mt-2 text-ink-soft">{error ?? t("checkLink")}</p>
         </div>
       </div>
     );
@@ -29,6 +33,9 @@ export function JoinExchange({ id }: { id: string }) {
 
 function Form({ ex }: { ex: PublicExchange }) {
   const router = useRouter();
+  const t = useTranslations("joinExchange");
+  const tr = useTr();
+  const tag = useIntlTag();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [wishes, setWishes] = useState<{ title: string; url: string }[]>(() => Array.from({ length: ex.wishCount }, () => ({ title: "", url: "" })));
@@ -68,7 +75,7 @@ function Form({ ex }: { ex: PublicExchange }) {
       } catch {}
       router.push(`/exchange/${ex.id}/me/${token}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't join");
+      setError(e instanceof Error ? e.message : t("failed"));
       setBusy(false);
     }
   };
@@ -76,18 +83,19 @@ function Form({ ex }: { ex: PublicExchange }) {
   return (
     <div className="pastel-wash relative min-h-dvh overflow-x-clip">
       <FlyingBackdrop scene="favorites" />
+      <LanguagePicker className="absolute top-4 right-4 z-20 text-[15px]" />
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-lg items-center px-4 py-10">
         <motion.section initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 140, damping: 18 }} className="glass w-full rounded-[32px] p-7 shadow-lift md:p-9">
           <LogoMark size={44} />
-          <p className="mt-4 text-sm font-extrabold tracking-wide text-rose uppercase">You're invited</p>
+          <p className="mt-4 text-sm font-extrabold tracking-wide text-rose uppercase">{t("invited")}</p>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{ex.name}</h1>
           <p className="mt-2 text-ink-soft">
-            {[ex.budget && `${formatBudget(ex.budget)} budget`, ex.date && new Date(ex.date + "T00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" })].filter(Boolean).join(" · ")}
+            {[ex.budget && t("budget", { v: formatBudget(ex.budget, tr)! }), ex.date && new Date(ex.date + "T00:00").toLocaleDateString(tag, { month: "long", day: "numeric" })].filter(Boolean).join(" · ")}
           </p>
           {ex.message && <p className="mt-3 rounded-2xl bg-white/70 p-4 text-ink-soft italic">“{ex.message}”</p>}
 
           {closed ? (
-            <p className="mt-6 font-bold">Names have already been drawn — ask the organizer to add you.</p>
+            <p className="mt-6 font-bold">{t("closed")}</p>
           ) : (
             <div className="mt-7 grid gap-4">
               {self ? (
@@ -97,12 +105,12 @@ function Form({ ex }: { ex: PublicExchange }) {
                       <UserRound className="h-5 w-5" />
                     </span>
                     <p className="min-w-0 flex-1 text-sm">
-                      <b className="block">{filled ? "Filled in from your profile" : "Use your My Gift Lockers profile"}</b>
-                      <span className="text-ink-soft">{filled ? "Change anything below." : "Your name and wishes, no retyping."}</span>
+                      <b className="block">{filled ? t("filled") : t("useProfile")}</b>
+                      <span className="text-ink-soft">{filled ? t("filledBody") : t("useProfileBody")}</span>
                     </p>
                     {!filled && (
                       <Button variant="soft" onClick={() => fillFromProfile(self)} className="px-4! py-2! text-sm!">
-                        Fill in
+                        {t("fill")}
                       </Button>
                     )}
                   </div>
@@ -110,11 +118,13 @@ function Form({ ex }: { ex: PublicExchange }) {
                     <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl bg-cream/80 p-3 text-sm">
                       <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#d45c86]" checked={share} onChange={(e) => setShare(e.target.checked)} />
                       <span>
-                        <b>Show my sizes and favorites to whoever draws me</b>
+                        <b>{t("share")}</b>
                         <span className="block text-ink-soft">
-                          {[shareable.sizes && summarizeSizes(shareable.sizes), shareable.favorites?.likes && `Loves ${shareable.favorites.likes}`].filter(Boolean).join(" · ") ||
-                            "From your profile"}
-                          . Never your address or birthday.
+                          {t("shareBody", {
+                            what:
+                              [shareable.sizes && summarizeSizes(shareable.sizes, tr), shareable.favorites?.likes && t("loves", { v: shareable.favorites.likes })].filter(Boolean).join(" · ") ||
+                              t("fromProfile"),
+                          })}
                         </span>
                       </span>
                     </label>
@@ -122,28 +132,30 @@ function Form({ ex }: { ex: PublicExchange }) {
                 </div>
               ) : user === null ? (
                 <p className="rounded-2xl bg-white/60 p-3 text-sm text-ink-soft">
-                  Have a My Gift Lockers account?{" "}
-                  <a href={`/sign-in?next=${encodeURIComponent(`/exchange/${ex.id}/join`)}`} className="font-bold text-plum underline">
-                    Sign in
-                  </a>{" "}
-                  to fill this in from your profile.
+                  {t.rich("haveAccount", {
+                    link: (c) => (
+                      <a href={`/sign-in?next=${encodeURIComponent(`/exchange/${ex.id}/join`)}`} className="font-bold text-plum underline">
+                        {c}
+                      </a>
+                    ),
+                  })}
                 </p>
               ) : null}
-              <Field label="Your name">
+              <Field label={t("name")}>
                 <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
               </Field>
-              <Field label="Email (to get your match)">
+              <Field label={t("email")}>
                 <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
               </Field>
               <div>
-                <p className="mb-2 text-sm font-bold text-ink-soft">Your top {ex.wishCount} wishes</p>
+                <p className="mb-2 text-sm font-bold text-ink-soft">{t("topWishes", { n: ex.wishCount })}</p>
                 <div className="grid gap-3">
                   {wishes.map((w, i) => (
                     <motion.div key={i} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.07 }} className="flex gap-2">
                       <span className="grid h-12 w-9 shrink-0 place-items-center font-display text-xl font-semibold text-rose">{i + 1}</span>
                       <div className="grid flex-1 gap-1.5">
-                        <Input value={w.title} placeholder="Cozy wool socks" onChange={(e) => setWishes((ws) => ws.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
-                        {w.title && <Input value={w.url} placeholder="Link (optional)" className="py-2! text-sm!" onChange={(e) => setWishes((ws) => ws.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />}
+                        <Input value={w.title} placeholder={t("wishPlaceholder")} onChange={(e) => setWishes((ws) => ws.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
+                        {w.title && <Input value={w.url} placeholder={t("linkPlaceholder")} className="py-2! text-sm!" onChange={(e) => setWishes((ws) => ws.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} />}
                       </div>
                     </motion.div>
                   ))}
@@ -151,10 +163,10 @@ function Form({ ex }: { ex: PublicExchange }) {
               </div>
               {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
               {ex.participantNames.length > 0 && (
-                <p className="text-sm text-ink-soft">Already in: {ex.participantNames.join(", ")}</p>
+                <p className="text-sm text-ink-soft">{t("alreadyIn", { names: ex.participantNames.join(", ") })}</p>
               )}
               <Button className="mt-2" onClick={join} disabled={!name.trim() || busy}>
-                {busy ? "Joining…" : "Join the exchange"}
+                {busy ? t("joining") : t("join")}
               </Button>
             </div>
           )}

@@ -14,6 +14,8 @@
  *    other charts differ by 1–2. Clothing: US letters; women's numeric ≈ US + 2.
  */
 
+import { defaultT, type Tr } from "./i18n";
+
 export type SizeSystem = "US" | "UK" | "EU" | "JP" | "BR" | "MX" | "CO";
 export const SIZE_SYSTEMS: SizeSystem[] = ["US", "UK", "EU", "JP", "BR", "MX", "CO"];
 
@@ -237,14 +239,20 @@ export interface SizeProfile {
 }
 
 /** A friendly one-liner for cards, e.g. "Top M · Pants 32×30 · Shoe 10". */
-export function summarizeSizes(s: SizeProfile): string {
+export function summarizeSizes(s: SizeProfile, t: Tr = defaultT): string {
   const parts: string[] = [];
-  if (s.top) parts.push(`Top ${s.top}`);
-  if (s.waist) parts.push(`Pants ${s.waist}${s.inseam ? `×${s.inseam}` : ""}`);
-  else if (s.womensNumeric) parts.push(`Pants ${s.womensNumeric}`);
-  else if (s.bottomAlpha) parts.push(`Pants ${s.bottomAlpha}`);
-  if (s.dress) parts.push(`Dress ${s.dress}`);
-  if (s.shoe) parts.push(`Shoe ${s.shoe}`);
-  if (s.footLengthCm) parts.push(`Foot ${fmt(s.footLengthCm)} cm`);
+  const add = (k: string, v: string | number) => parts.push(t(`core.summary.${k}`, { v: String(v) }));
+  if (s.top) add("top", s.top);
+  if (s.waist) add("pants", `${s.waist}${s.inseam ? `×${s.inseam}` : ""}`);
+  else if (s.womensNumeric) add("pants", s.womensNumeric);
+  else if (s.bottomAlpha) add("pants", s.bottomAlpha);
+  if (s.dress) add("dress", s.dress);
+  if (s.shoe) add("shoe", s.shoe);
+  if (s.footLengthCm) add("foot", fmt(s.footLengthCm));
   return parts.join(" · ");
+}
+
+/** A size value as shown: words like "Preemie" or "One size" translated, codes left as they are. */
+export function sizeValueLabel(v: string, t: Tr = defaultT): string {
+  return ["Preemie", "NB", "One size"].includes(v) ? t(`core.sizeWord.${v}`) : v;
 }
