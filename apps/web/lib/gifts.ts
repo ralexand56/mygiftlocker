@@ -76,16 +76,26 @@ export async function photoUrl(path: string, minutes = 15): Promise<string> {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Asks for gift ideas for one person, optionally steered by a request in plain words. */
-export async function findGifts(person: Person, ownerSub: string, request: string, locale: Locale): Promise<GiftIdea[]> {
+export async function findGifts(person: Person, request: string, locale: Locale): Promise<GiftIdea[]> {
   const ask = request.trim().slice(0, MAX_GIFT_REQUEST);
   if (!backendEnabled) {
     await sleep(1600);
     return demoIdeas(person, ask);
   }
+  // Ask Amplify who's signed in rather than trusting UI state, which may still be loading.
+  const { getCurrentUser } = await import("aws-amplify/auth");
+  const ownerSub = (await getCurrentUser()).userId;
   const { data: job, errors } = await api().models.GiftJob.create({ ownerSub, profileId: person.id, request: ask || undefined, locale, status: "pending" });
-  if (!job) throw new Error(errors?.[0]?.message ?? "failed");
+  if (!job) {
+    console.error("GiftJob.create", errors);
+    throw new GiftRunError("failed");
+  }
   const photoUrls = person.kind === "adult" ? await Promise.all((person.photos ?? []).slice(0, MAX_PERSON_PHOTOS).map((p) => photoUrl(p, 10).catch(() => ""))) : [];
-  await api().mutations.findGifts({ jobId: job.id, photoUrls: photoUrls.filter(Boolean) });
+  const started_ = await api().mutations.findGifts({ jobId: job.id, photoUrls: photoUrls.filter(Boolean) });
+  if (started_.errors?.length) {
+    console.error("findGifts", started_.errors);
+    throw new GiftRunError("failed");
+  }
 
   // The function usually answers in 20-60 seconds.
   const started = Date.now();

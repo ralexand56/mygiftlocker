@@ -6,7 +6,6 @@ import { ArrowUp, ExternalLink, RotateCcw, Sparkles, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/ui";
-import { useUser } from "@/lib/auth";
 import { GiftRunError, findGifts, giftAffiliate, type GiftError } from "@/lib/gifts";
 
 const EMOJI: Record<GiftCategory, string> = {
@@ -42,7 +41,6 @@ const STEPS = 4;
 export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; onClose: () => void; onSaved: (saved: NonNullable<Person["giftIdeas"]>) => void }) {
   const t = useTranslations("gifts");
   const locale = useLocale();
-  const user = useUser();
   const first = p.name.split(" ")[0]!;
   const [ideas, setIdeas] = useState<GiftIdea[]>(p.giftIdeas?.ideas ?? []);
   const [shown, setShown] = useState(p.giftIdeas?.request ?? "");
@@ -62,7 +60,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
     setError(null);
     setStep(0);
     try {
-      const next = await findGifts(p, user?.sub ?? "", ask, locale);
+      const next = await findGifts(p, ask, locale);
       setIdeas(next);
       setShown(ask);
       setRound((r) => r + 1);
