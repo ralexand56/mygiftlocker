@@ -566,7 +566,8 @@
     "lavender": "Lavanda",
     "plum": "Ciruela",
     "cream": "Crema",
-    "black": "Negro"
+    "black": "Negro",
+    "label": "Colores favoritos"
   },
   "calendar": {
     "title": "Próximas fechas",

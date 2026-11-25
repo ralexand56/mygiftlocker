@@ -69,6 +69,7 @@ import { connectProfile, connectionsEnabled } from "@/lib/connections";
 import { useTranslations } from "next-intl";
 import { useTr } from "@/lib/i18n";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { FAVORITE_COLORS } from "@/components/ColorChips";
 
 type PD = Partial<PartialDate>;
 interface Kid {
@@ -859,17 +860,12 @@ function DateField({ label, value, onChange }: { label: string; value: PD; onCha
   );
 }
 
-const COLORS: [string, string][] = [
-  ["blush", "#F7C6D9"], ["coral", "#FF9F8A"], ["peach", "#FFC9A8"], ["butter", "#FFE7B8"],
-  ["sage", "#C6DDB8"], ["mint", "#CDEFE3"], ["sky", "#BFDDFB"], ["navy", "#2F3E6B"],
-  ["lavender", "#D9C8FF"], ["plum", "#7A5AA6"], ["cream", "#F6EEDC"], ["black", "#26222E"],
-];
 
 function ColorPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const t = useTranslations("colors");
   return (
     <div className="flex flex-wrap gap-2.5">
-      {COLORS.map(([name, hex]) => {
+      {FAVORITE_COLORS.map(([name, hex]) => {
         const on = value.includes(name);
         return (
           <motion.button

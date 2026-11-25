@@ -12,6 +12,7 @@ import { getSelfProfile } from "@/lib/self";
 import { WishlistLinkList } from "@/app/locker/Locker";
 import { useTranslations } from "next-intl";
 import { useIntlTag, useTr } from "@/lib/i18n";
+import { ColorChips } from "@/components/ColorChips";
 
 export function MyExchange({ id, token }: { id: string; token: string }) {
   const { data: view, error, loading, reload } = useAsync(() => getMyExchange(id, token), [id, token]);
@@ -167,7 +168,6 @@ function WishlistEditor({ exchangeId, wishCount, wishlist, token, onSaved }: { e
 function SharedDetails({ name, shared }: { name: string; shared: SharedProfile }) {
   const t = useTranslations("myExchange");
   const ts = useTranslations("locker.detail.size");
-  const tc = useTranslations("colors");
   const tr = useTr();
   const s = shared.sizes ?? {};
   const f = shared.favorites ?? {};
@@ -204,7 +204,7 @@ function SharedDetails({ name, shared }: { name: string; shared: SharedProfile }
         <div className="mt-2 rounded-2xl bg-white p-4 shadow-soft">
           {f.likes && <p>{t("lovesColon", { v: f.likes })}</p>}
           {f.teams && <p className="mt-1 text-sm">🏟️ {t("teams", { v: f.teams })}</p>}
-          {!!f.colors?.length && <p className="mt-1 text-sm text-ink-soft">{t("colors", { v: f.colors.map((c) => tc(c as "blush")).join(", ") })}</p>}
+          {!!f.colors?.length && <ColorChips colors={f.colors} className="mt-2" />}
           {f.avoid && <p className="mt-1 text-sm text-rose-deep">{t("avoid", { v: f.avoid })}</p>}
         </div>
       )}

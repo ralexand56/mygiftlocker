@@ -51,6 +51,7 @@ import { useIntlTag, useTr } from "@/lib/i18n";
 import { GiftFinder } from "./GiftFinder";
 import { PersonPhotos } from "./PersonPhotos";
 import { photosEnabled } from "@/lib/gifts";
+import { ColorChips } from "@/components/ColorChips";
 
 const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 
@@ -369,7 +370,6 @@ function PersonDetail({
 }) {
   const t = useTranslations("locker.detail");
   const tg = useTranslations("gifts");
-  const tc = useTranslations("colors");
   const [finding, setFinding] = useState(false);
   const tr = useTr();
   const tag = useIntlTag();
@@ -526,7 +526,7 @@ function PersonDetail({
               <div className="rounded-2xl bg-white p-4 shadow-soft">
                 {p.favorites.likes && <p>{p.favorites.likes}</p>}
                 {p.favorites.teams && <p className="mt-2 text-sm">🏟️ {t("teams", { v: p.favorites.teams })}</p>}
-                {!!p.favorites.colors?.length && <p className="mt-2 text-sm text-ink-soft">{t("colors", { v: p.favorites.colors.map((c) => tc(c as "blush")).join(", ") })}</p>}
+                {!!p.favorites.colors?.length && <ColorChips colors={p.favorites.colors} className="mt-2" />}
                 {p.favorites.avoid && <p className="mt-2 text-sm text-rose-deep">{t("avoid", { v: p.favorites.avoid })}</p>}
                 {!!p.favorites.wishlists?.length && <WishlistLinkList links={p.favorites.wishlists} />}
                 {!!p.favorites.wishes?.length && (
