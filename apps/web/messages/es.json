@@ -109,7 +109,8 @@
         "exchanges": "<strong>Intercambios de regalos.</strong> El nombre, la fecha, el presupuesto y el mensaje del intercambio; el nombre de cada participante, su correo opcional y su lista de deseos; las exclusiones; y a quién le tocó quién.",
         "invites": "<strong>Invitaciones.</strong> Cuando alguien completa una invitación que enviaste, los datos que decide compartir contigo.",
         "technical": "<strong>Datos técnicos.</strong> Nuestro proveedor de hosting guarda registros estándar del servidor (como la dirección IP, el tipo de navegador y la hora de la solicitud) para operar y proteger el servicio. Recordamos tu idioma en una cookie. No usamos rastreadores de publicidad ni de analítica.",
-        "photos": "<strong>Fotos e ideas de regalo.</strong> Las fotos que agregas a una tarjeta (hasta 5, solo adultos) y los datos de la tarjeta, incluidas tus notas privadas, se usan para sugerir regalos. Se guardan de forma privada en tu cuenta."
+        "photos": "<strong>Fotos e ideas de regalo.</strong> Las fotos que agregas a una tarjeta (hasta 5, solo adultos) y los datos de la tarjeta, incluidas tus notas privadas, se usan para sugerir regalos. Se guardan de forma privada en tu cuenta.",
+        "payments": "<strong>Usuarios de apps de pago.</strong> Si alguien agrega dónde recibe regalos en dinero (por ejemplo, su usuario de Venmo o el correo de Zelle), se guarda en su tarjeta. Solo lo ven las personas con quienes decide compartirlo; nunca se muestra en intercambios de regalos ni se usa para ideas de regalo."
       }
     },
     "use": {
@@ -298,6 +299,10 @@
       "kids": {
         "label": "Tallas de sus hijos",
         "desc": "Ideal para papás y mamás de peques"
+      },
+      "payments": {
+        "label": "Apps para regalos en dinero",
+        "desc": "PayPal, Venmo, Cash App, Zelle, PIX…"
       }
     },
     "note": "Nota personal (opcional)",
@@ -377,7 +382,11 @@
       "favorites": "Favoritos",
       "colors": "Colores: {v}",
       "avoid": "Evitar: {v}",
-      "teams": "Equipos: {v}"
+      "teams": "Equipos: {v}",
+      "money": "Regalos en dinero",
+      "send": "Enviar dinero",
+      "copy": "Copiar",
+      "copied": "Copiado"
     },
     "owner": {
       "title": "Solo para ti",
@@ -530,7 +539,8 @@
       "kids": "Hijos",
       "skipped": "Omitido",
       "edit": "Editar: {label}",
-      "teams": "Equipos"
+      "teams": "Equipos",
+      "payments": "Regalos en dinero"
     },
     "success": {
       "title": "¡Gracias, {name}!",
@@ -552,6 +562,23 @@
       "keepUpdated": "Mantener al día a {name}",
       "keepUpdatedBody": "Cuando cambies tus tallas o deseos más adelante, su casillero también se actualizará.",
       "create": "Crear mi casillero gratis"
+    },
+    "payments": {
+      "usernames": "Apps con nombre de usuario",
+      "contacts": "Apps que usan teléfono, correo o clave",
+      "contactsHint": "Solo lo ven las personas con quienes compartes los regalos en dinero, para copiarlo en su app.",
+      "bad": "Eso no parece un usuario válido para esta app.",
+      "placeholders": {
+        "paypal": "nombre de paypal.me",
+        "venmo": "@usuario",
+        "cashapp": "$cashtag",
+        "wise": "@wisetag",
+        "revolut": "@revtag",
+        "zelle": "Correo o teléfono",
+        "applecash": "Teléfono o correo",
+        "pix": "Clave PIX",
+        "mercadopago": "Alias o enlace"
+      }
     }
   },
   "colors": {

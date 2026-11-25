@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const UPDATED = new Date(2026, 10, 25);
 const CONTACT = "privacy@mygiftlockers.com";
 
-const COLLECT = ["account", "locker", "photos", "profile", "exchanges", "invites", "technical"] as const;
+const COLLECT = ["account", "locker", "photos", "payments", "profile", "exchanges", "invites", "technical"] as const;
 const USE = ["service", "ai", "signIn", "reminders", "contact"] as const;
 const SEE = ["locker", "exchange", "connections", "links", "affiliate"] as const;
 

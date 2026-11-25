@@ -17,3 +17,4 @@ export * from "./links";
 export * from "./connections";
 export * from "./i18n";
 export * from "./giftIdeas";
+export * from "./payments";

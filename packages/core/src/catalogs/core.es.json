@@ -114,6 +114,11 @@
       "review": {
         "eyebrow": "Todo listo",
         "title": "¿Todo bien?"
+      },
+      "payments": {
+        "eyebrow": "Regalos en dinero",
+        "title": "¿Prefieres dinero? ¿Dónde te pueden pagar?",
+        "subtitle": "Solo las apps que usas. Solo se comparten con quien tú elijas."
       }
     },
     "shares": {
@@ -133,7 +138,11 @@
         "label": "Dirección de envío",
         "hint": "Para que te puedan enviar regalos"
       },
-      "nothing": "nada todavía"
+      "nothing": "nada todavía",
+      "payments": {
+        "label": "Regalos en dinero",
+        "hint": "PayPal, Venmo, Zelle y otras apps de pago"
+      }
     },
     "links": {
       "registry": "Mesa de regalos de {store}",

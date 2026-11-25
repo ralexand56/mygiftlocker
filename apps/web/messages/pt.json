@@ -109,7 +109,8 @@
         "exchanges": "<strong>Amigo secreto.</strong> O nome, a data, o orçamento e a mensagem do amigo secreto; o nome de cada participante, o e-mail opcional e a lista de desejos; as exclusões; e quem tirou quem.",
         "invites": "<strong>Convites.</strong> Quando alguém preenche um convite que você enviou, os dados que essa pessoa escolhe compartilhar com você.",
         "technical": "<strong>Dados técnicos.</strong> Nosso provedor de hospedagem mantém registros padrão do servidor (como endereço IP, tipo de navegador e horário da requisição) para operar e proteger o serviço. Guardamos sua escolha de idioma em um cookie. Não usamos rastreadores de publicidade nem de análise.",
-        "photos": "<strong>Fotos e ideias de presente.</strong> As fotos que você adiciona a um cartão (até 5, só adultos) e os dados do cartão, incluindo suas anotações privadas, são usados para sugerir presentes. Elas ficam guardadas de forma privada na sua conta."
+        "photos": "<strong>Fotos e ideias de presente.</strong> As fotos que você adiciona a um cartão (até 5, só adultos) e os dados do cartão, incluindo suas anotações privadas, são usados para sugerir presentes. Elas ficam guardadas de forma privada na sua conta.",
+        "payments": "<strong>Contas de apps de pagamento.</strong> Se alguém informar onde recebe presentes em dinheiro (por exemplo, o usuário do Venmo ou a chave PIX), isso fica guardado no cartão dela. Só vê quem ela escolher; nunca aparece no amigo secreto nem é usado nas ideias de presente."
       }
     },
     "use": {
@@ -298,6 +299,10 @@
       "kids": {
         "label": "Tamanhos dos filhos",
         "desc": "Ótimo para pais de pequenos"
+      },
+      "payments": {
+        "label": "Apps para presentes em dinheiro",
+        "desc": "PIX, PayPal, Mercado Pago, Venmo…"
       }
     },
     "note": "Recado pessoal (opcional)",
@@ -377,7 +382,11 @@
       "favorites": "Favoritos",
       "colors": "Cores: {v}",
       "avoid": "Evitar: {v}",
-      "teams": "Times: {v}"
+      "teams": "Times: {v}",
+      "money": "Presentes em dinheiro",
+      "send": "Enviar dinheiro",
+      "copy": "Copiar",
+      "copied": "Copiado"
     },
     "owner": {
       "title": "Só para você",
@@ -530,7 +539,8 @@
       "kids": "Filhos",
       "skipped": "Pulado",
       "edit": "Editar: {label}",
-      "teams": "Times"
+      "teams": "Times",
+      "payments": "Presentes em dinheiro"
     },
     "success": {
       "title": "Obrigado, {name}!",
@@ -552,6 +562,23 @@
       "keepUpdated": "Manter {name} atualizado",
       "keepUpdatedBody": "Quando você mudar seus tamanhos ou desejos depois, o armário dessa pessoa também se atualiza.",
       "create": "Criar meu armário grátis"
+    },
+    "payments": {
+      "usernames": "Apps com nome de usuário",
+      "contacts": "Apps que usam telefone, e-mail ou chave",
+      "contactsHint": "Só aparece para quem você escolher compartilhar os presentes em dinheiro, para copiar no app.",
+      "bad": "Isso não parece um usuário válido para este app.",
+      "placeholders": {
+        "paypal": "nome no paypal.me",
+        "venmo": "@usuário",
+        "cashapp": "$cashtag",
+        "wise": "@wisetag",
+        "revolut": "@revtag",
+        "zelle": "E-mail ou telefone",
+        "applecash": "Telefone ou e-mail",
+        "pix": "Chave PIX",
+        "mercadopago": "Alias ou link"
+      }
     }
   },
   "colors": {

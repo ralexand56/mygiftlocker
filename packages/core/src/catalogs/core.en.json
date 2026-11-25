@@ -114,6 +114,11 @@
       "review": {
         "eyebrow": "All set",
         "title": "Look good?"
+      },
+      "payments": {
+        "eyebrow": "Money gifts",
+        "title": "Prefer cash? Where can you get paid?",
+        "subtitle": "Only the apps you use. They're only shared with people you choose."
       }
     },
     "shares": {
@@ -133,7 +138,11 @@
         "label": "Shipping address",
         "hint": "So gifts can be sent to you"
       },
-      "nothing": "nothing yet"
+      "nothing": "nothing yet",
+      "payments": {
+        "label": "Money gifts",
+        "hint": "PayPal, Venmo, Zelle and other payment apps"
+      }
     },
     "links": {
       "registry": "{store} registry",

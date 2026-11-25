@@ -17,6 +17,12 @@ import {
   PRIORITY_COUNTRIES,
   addressFormat,
   addressLabels,
+  PAYMENT_APPS,
+  PAYMENT_APP_NAMES,
+  cleanPayments,
+  normalizePaymentHandle,
+  type PaymentApp,
+  type PaymentHandles,
   sizeValueLabel,
   MAX_WISHLIST_LINKS,
   cleanWishlistLinks,
@@ -92,6 +98,7 @@ interface FormState {
   avoid: string;
   wishes: string[];
   wishlists: string[];
+  payments: PaymentHandles;
   kids: Kid[];
 }
 
@@ -107,6 +114,7 @@ const initial: FormState = {
   avoid: "",
   wishes: ["", "", ""],
   wishlists: [""],
+  payments: {},
   kids: [],
 };
 
@@ -144,11 +152,12 @@ function formFrom(p: Person): FormState {
     avoid: p.favorites?.avoid ?? "",
     wishes,
     wishlists: p.favorites?.wishlists?.length ? [...p.favorites.wishlists] : [""],
+    payments: { ...p.payments },
   };
 }
 
 /** The same questions, for the signed-in user's own profile. */
-export const SELF_INVITE: PublicInvite = { id: "self", from: { name: "you" }, ask: { sizes: true, address: true, dates: true, favorites: true, kids: false } };
+export const SELF_INVITE: PublicInvite = { id: "self", from: { name: "you" }, ask: { sizes: true, address: true, dates: true, favorites: true, payments: true, kids: false } };
 
 export function JoinFlow({
   invite,
@@ -200,7 +209,9 @@ export function JoinFlow({
           ? !addressStarted || isCompleteAddress(form.address) // optional, but complete if started
           : step.id === "favorites"
             ? form.wishlists.every((l) => !l.trim() || normalizeLink(l))
-            : true;
+            : step.id === "payments"
+              ? PAYMENT_APPS.every((app) => normalizePaymentHandle(app, form.payments[app]) !== null)
+              : true;
 
   const go = (delta: number) => {
     setDir(delta);
@@ -239,6 +250,7 @@ export function JoinFlow({
         wishes: form.wishes.filter(Boolean),
         wishlists: cleanWishlistLinks(form.wishlists),
       },
+      payments: invite.ask.payments ? cleanPayments(form.payments) : undefined,
       updatedAt: now,
     };
     const kids: Person[] = [];
@@ -766,12 +778,54 @@ function StepBody({
         </>
       );
 
+    case "payments":
+      return <PaymentsStep value={form.payments} onChange={(v) => set("payments", v)} />;
+
     case "kids":
       return <KidsEditor kids={form.kids} onChange={(k) => set("kids", k)} />;
 
     case "review":
       return <Review form={form} invite={invite} jump={jump} />;
   }
+}
+
+/** Payment apps for money gifts: usernames for link apps, phone/email/key for the rest. */
+function PaymentsStep({ value, onChange }: { value: PaymentHandles; onChange: (v: PaymentHandles) => void }) {
+  const t = useTranslations("join.payments");
+  const [touched, setTouched] = useState<Partial<Record<PaymentApp, boolean>>>({});
+  const field = (app: PaymentApp) => {
+    const bad = normalizePaymentHandle(app, value[app]) === null;
+    return (
+      <label key={app} className="grid grid-cols-[7.5rem_1fr] items-center gap-3">
+        <span className="text-sm font-bold">{PAYMENT_APP_NAMES[app]}</span>
+        <span>
+          <Input
+            value={value[app] ?? ""}
+            onChange={(e) => onChange({ ...value, [app]: e.target.value })}
+            onBlur={() => setTouched((x) => ({ ...x, [app]: true }))}
+            placeholder={t(`placeholders.${app}`)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            maxLength={100}
+            aria-invalid={bad && touched[app]}
+          />
+          {bad && touched[app] && <span className="mt-1 block text-xs font-bold text-rose-deep">{t("bad")}</span>}
+        </span>
+      </label>
+    );
+  };
+  return (
+    <div className="grid gap-5">
+      <Group label={t("usernames")}>
+        <div className="grid gap-2.5">{(["paypal", "venmo", "cashapp", "wise", "revolut"] as const).map(field)}</div>
+      </Group>
+      <Group label={t("contacts")}>
+        <div className="grid gap-2.5">{(["zelle", "applecash", "pix", "mercadopago"] as const).map(field)}</div>
+        <Hint>{t("contactsHint")}</Hint>
+      </Group>
+    </div>
+  );
 }
 
 /** Links to lists kept elsewhere: Amazon, Target, Etsy… */
@@ -930,7 +984,7 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
   const complete = (d: PD) =>
     d.month && d.day ? formatPartialDate({ month: d.month, day: d.day, year: d.year && d.year >= 1900 ? d.year : undefined }, tr) : undefined;
   const a = form.address;
-  const section: Partial<Record<StepId, keyof PublicInvite["ask"]>> = { tops: "sizes", address: "address", dates: "dates", favorites: "favorites", kids: "kids" };
+  const section: Partial<Record<StepId, keyof PublicInvite["ask"]>> = { tops: "sizes", address: "address", dates: "dates", favorites: "favorites", payments: "payments", kids: "kids" };
   const rows: [string, string | undefined, StepId][] = [
     [t("name"), form.name, "welcome"],
     [t("sizes"), summarizeSizes(form.sizes, tr) || undefined, "tops"],
@@ -940,6 +994,7 @@ function Review({ form, invite, jump }: { form: FormState; invite: PublicInvite;
     [t("loves"), form.likes || form.colors.map((c) => tc(c as "blush")).join(", ") || undefined, "favorites"],
     [t("teams"), form.teams.trim() || undefined, "favorites"],
     [t("lists"), cleanWishlistLinks(form.wishlists).map((u) => linkTitle(u, tr)).join(", ") || undefined, "favorites"],
+    [t("payments"), PAYMENT_APPS.filter((app) => normalizePaymentHandle(app, form.payments[app])).map((app) => PAYMENT_APP_NAMES[app]).join(", ") || undefined, "payments"],
     [t("kids"), form.kids.map((k) => k.name).filter(Boolean).join(", ") || undefined, "kids"],
   ];
   return (

@@ -2,6 +2,11 @@
 
 import {
   HOLIDAYS,
+  PAYMENT_APPS,
+  PAYMENT_APP_NAMES,
+  paymentHandleLabel,
+  paymentLink,
+  type PaymentHandles,
   eventLabel,
   holidayName,
   holidayWhen,
@@ -32,7 +37,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Sparkles, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -520,6 +525,13 @@ function PersonDetail({
             </motion.section>
           )}
 
+          {p.payments && Object.keys(p.payments).length > 0 && (
+            <motion.section variants={item}>
+              <SectionTitle icon={Wallet}>{t("money")}</SectionTitle>
+              <MoneyGifts handles={p.payments} />
+            </motion.section>
+          )}
+
           {p.favorites && (
             <motion.section variants={item}>
               <SectionTitle icon={Gift}>{t("favorites")}</SectionTitle>
@@ -641,6 +653,39 @@ export function WishlistLinkList({ links }: { links: string[] }) {
         </a>
       ))}
     </div>
+  );
+}
+
+/** Payment apps they take money gifts on: "Send" opens the app's page, the rest copy. */
+function MoneyGifts({ handles }: { handles: PaymentHandles }) {
+  const t = useTranslations("locker.detail");
+  const [copied, setCopied] = useState<string | null>(null);
+  return (
+    <ul className="grid gap-2">
+      {PAYMENT_APPS.filter((app) => handles[app]).map((app) => {
+        const handle = handles[app]!;
+        const link = paymentLink(app, handle);
+        return (
+          <li key={app} className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
+            <span className="w-24 shrink-0 text-sm font-bold">{PAYMENT_APP_NAMES[app]}</span>
+            <span className="min-w-0 flex-1 truncate text-sm text-ink-soft select-all">{paymentHandleLabel(app, handle)}</span>
+            {link ? (
+              <a href={link} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-xs font-bold text-white">
+                {t("send")}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigator.clipboard?.writeText(handle).then(() => setCopied(app))}
+                className="shrink-0 rounded-full bg-cream px-3.5 py-1.5 text-xs font-bold ring-1 ring-lavender/60"
+              >
+                {copied === app ? t("copied") : t("copy")}
+              </button>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

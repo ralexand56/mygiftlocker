@@ -50,6 +50,8 @@ export interface Person {
   favorites?: Favorites;
   /** Set when this card stays in sync with the person's own profile (see connections.ts). */
   linked?: { connectionId: string; syncedAt?: string; ended?: boolean };
+  /** Payment apps they can receive money gifts on (see payments.ts). Private unless shared. */
+  payments?: import("./payments").PaymentHandles;
   /** Owner-only photos (storage paths), at most MAX_PERSON_PHOTOS; used for gift ideas. Adults only. */
   photos?: string[];
   /** The last "find the perfect gift" list, so reopening it is free. */

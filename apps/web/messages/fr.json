@@ -109,7 +109,8 @@
         "exchanges": "<strong>Échanges de cadeaux.</strong> Le nom, la date, le budget et le message de l’échange ; le nom de chaque participant, son e-mail facultatif et sa liste de souhaits ; les exclusions ; et qui a tiré qui.",
         "invites": "<strong>Invitations.</strong> Lorsque quelqu’un remplit une invitation que vous avez envoyée, les informations qu’il choisit de partager avec vous.",
         "technical": "<strong>Données techniques.</strong> Notre hébergeur conserve des journaux serveur standard (adresse IP, type de navigateur, heure de la requête, par exemple) pour faire fonctionner et sécuriser le service. Nous mémorisons votre choix de langue dans un cookie. Nous n’utilisons aucun traceur publicitaire ou d’analyse.",
-        "photos": "<strong>Photos et idées cadeaux.</strong> Les photos que vous ajoutez à une fiche (jusqu’à 5, adultes uniquement) et les informations de la fiche, y compris vos notes privées, servent à suggérer des cadeaux. Elles sont stockées de façon privée dans votre compte."
+        "photos": "<strong>Photos et idées cadeaux.</strong> Les photos que vous ajoutez à une fiche (jusqu’à 5, adultes uniquement) et les informations de la fiche, y compris vos notes privées, servent à suggérer des cadeaux. Elles sont stockées de façon privée dans votre compte.",
+        "payments": "<strong>Identifiants d’applis de paiement.</strong> Si quelqu’un indique où recevoir des cadeaux en argent (par exemple son nom Venmo ou son e-mail Zelle), c’est enregistré sur sa fiche. Seules les personnes avec qui il choisit de le partager le voient ; ce n’est jamais affiché dans les échanges de cadeaux ni utilisé pour les idées cadeaux."
       }
     },
     "use": {
@@ -298,6 +299,10 @@
       "kids": {
         "label": "Tailles de ses enfants",
         "desc": "Idéal pour les parents de tout-petits"
+      },
+      "payments": {
+        "label": "Applis pour cadeaux en argent",
+        "desc": "PayPal, Venmo, Cash App, Zelle, PIX…"
       }
     },
     "note": "Petit mot (facultatif)",
@@ -377,7 +382,11 @@
       "favorites": "Préférences",
       "colors": "Couleurs : {v}",
       "avoid": "À éviter : {v}",
-      "teams": "Équipes : {v}"
+      "teams": "Équipes : {v}",
+      "money": "Cadeaux en argent",
+      "send": "Envoyer de l’argent",
+      "copy": "Copier",
+      "copied": "Copié"
     },
     "owner": {
       "title": "Rien que pour vous",
@@ -530,7 +539,8 @@
       "kids": "Enfants",
       "skipped": "Passé",
       "edit": "Modifier : {label}",
-      "teams": "Équipes"
+      "teams": "Équipes",
+      "payments": "Cadeaux en argent"
     },
     "success": {
       "title": "Merci, {name} !",
@@ -552,6 +562,23 @@
       "keepUpdated": "Tenir {name} informé",
       "keepUpdatedBody": "Quand vous modifierez vos tailles ou vos souhaits plus tard, son casier se mettra aussi à jour.",
       "create": "Créer mon casier gratuit"
+    },
+    "payments": {
+      "usernames": "Applis avec un nom d’utilisateur",
+      "contacts": "Applis qui utilisent un téléphone, un e-mail ou une clé",
+      "contactsHint": "Visible uniquement par les personnes avec qui vous partagez les cadeaux en argent, pour le copier dans leur appli.",
+      "bad": "Cela ne ressemble pas à un nom d’utilisateur pour cette appli.",
+      "placeholders": {
+        "paypal": "nom paypal.me",
+        "venmo": "@utilisateur",
+        "cashapp": "$cashtag",
+        "wise": "@wisetag",
+        "revolut": "@revtag",
+        "zelle": "E-mail ou téléphone",
+        "applecash": "Téléphone ou e-mail",
+        "pix": "Clé PIX",
+        "mercadopago": "Alias ou lien"
+      }
     }
   },
   "colors": {

@@ -27,6 +27,7 @@ export type StepId =
   | "address"
   | "dates"
   | "favorites"
+  | "payments"
   | "kids"
   | "review";
 
@@ -51,6 +52,7 @@ export const STEP_DEFS: Record<StepId, StepDef> = {
   address: { id: "address", scene: "address", eyebrow: "Shipping", title: "Where should gifts be sent?", subtitle: "Only shared with people you connect with.", optional: true },
   dates: { id: "dates", scene: "dates", eyebrow: "Celebrations", title: "Dates worth celebrating", subtitle: "The year is optional — we won't tell.", optional: true },
   favorites: { id: "favorites", scene: "favorites", eyebrow: "Favorites", title: "A few of your favorite things", optional: true },
+  payments: { id: "payments", scene: "favorites", eyebrow: "Money gifts", title: "Prefer cash? Where can you get paid?", subtitle: "Only the apps you use. They're only shared with people you choose.", optional: true },
   kids: { id: "kids", scene: "kids", eyebrow: "Little ones", title: "Shopping for your kids too?", subtitle: "Add children you manage — you stay in control of their info.", optional: true },
   review: { id: "review", scene: "done", eyebrow: "All set", title: "Look good?", optional: false },
 };
@@ -66,6 +68,7 @@ export function stepsFor(ask: InvitePayload["ask"], fit?: Fit): StepDef[] {
   if (ask.address) ids.push("address");
   if (ask.dates) ids.push("dates");
   if (ask.favorites) ids.push("favorites");
+  if (ask.payments) ids.push("payments");
   if (ask.kids) ids.push("kids");
   ids.push("review");
   return ids.map((id) => STEP_DEFS[id]);

@@ -10,6 +10,7 @@ import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtim
 import {
   DrawError,
   cleanAddress,
+  cleanPayments,
   cleanShared,
   cleanShares,
   sharesFromAsk,
@@ -309,6 +310,8 @@ async function submitInvite(inviteId: string, profile: unknown, kids: unknown) {
     color: pastelFor(name),
     sizes: json(p.sizes),
     address: json(cleanAddress(p.address)), // trimmed, per-country checks; dropped if unusable
+    // Only when the invite asked for them.
+    payments: (parseJson(inv.ask) as { payments?: boolean } | undefined)?.payments ? json(cleanPayments(p.payments)) : undefined,
     birthday: date(p.birthday),
     anniversary: date(p.anniversary),
     favorites: json(cleanFavorites(p.favorites)),
@@ -347,7 +350,7 @@ const needSignIn = (sub: string | undefined): string => {
   return sub;
 };
 
-async function loadSelf(sub: string): Promise<(Pick<Person, "sizes" | "favorites" | "birthday" | "anniversary" | "address"> & { name: string }) | null> {
+async function loadSelf(sub: string): Promise<(Pick<Person, "sizes" | "favorites" | "birthday" | "anniversary" | "address" | "payments"> & { name: string }) | null> {
   const { data: p } = await client.models.SelfProfile.get({ ownerSub: sub });
   if (!p) return null;
   const d = (x: { month: number; day: number; year?: number | null } | null | undefined) => (x ? { month: x.month, day: x.day, year: x.year ?? undefined } : undefined);
@@ -358,6 +361,7 @@ async function loadSelf(sub: string): Promise<(Pick<Person, "sizes" | "favorites
     birthday: d(p.birthday),
     anniversary: d(p.anniversary),
     address: parseJson(p.address) as Person["address"],
+    payments: cleanPayments(parseJson(p.payments)),
   };
 }
 
@@ -380,6 +384,7 @@ async function pushTo(conn: Connection, self: NonNullable<Awaited<ReturnType<typ
     ...(f.birthday !== undefined && { birthday: f.birthday }),
     ...(f.anniversary !== undefined && { anniversary: f.anniversary }),
     ...(f.address !== undefined && { address: json(f.address) }),
+    ...(f.payments !== undefined && { payments: json(f.payments) }),
     connectionId: conn.id,
     connectionEnded: false,
     syncedAt: now,

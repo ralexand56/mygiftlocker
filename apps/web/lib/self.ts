@@ -8,7 +8,7 @@
  * Someone who answers an invite and then creates an account gets those answers
  * as their profile: the invite flow keeps a copy in this browser until they sign in.
  */
-import { pastelFor, sharesFromAsk, type Person, type PublicInvite } from "@mgl/core";
+import { pastelFor, sharesFromAsk, type Person, type PublicInvite, cleanPayments } from "@mgl/core";
 import { connectProfile, syncMyProfile } from "./connections";
 import { api, backendEnabled, parseJson } from "./amplify";
 import { readDB, update } from "./store";
@@ -32,6 +32,7 @@ export async function getSelfProfile(sub: string): Promise<Person | null> {
     birthday: date(p.birthday),
     anniversary: date(p.anniversary),
     favorites: parseJson(p.favorites ?? "null") ?? undefined,
+    payments: cleanPayments(parseJson(p.payments ?? "null")),
     updatedAt: p.updatedAt,
   };
 }
@@ -50,6 +51,7 @@ export async function saveSelfProfile(sub: string, p: Person): Promise<void> {
     birthday: p.birthday ?? null,
     anniversary: p.anniversary ?? null,
     favorites: json(p.favorites),
+    payments: json(cleanPayments(p.payments)),
   };
   const c = api();
   const { data: existing } = await c.models.SelfProfile.get({ ownerSub: sub });

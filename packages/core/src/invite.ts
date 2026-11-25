@@ -7,7 +7,7 @@
  */
 import { defaultT, type Tr } from "./i18n";
 
-export type InviteSection = "sizes" | "address" | "dates" | "favorites" | "kids";
+export type InviteSection = "sizes" | "address" | "dates" | "favorites" | "payments" | "kids";
 
 export interface InvitePayload {
   v: 1;
@@ -28,6 +28,7 @@ export const DEFAULT_ASK: InvitePayload["ask"] = {
   address: true,
   dates: true,
   favorites: true,
+  payments: false,
   kids: false,
 };
 

@@ -114,6 +114,11 @@
       "review": {
         "eyebrow": "C’est prêt",
         "title": "Tout est bon ?"
+      },
+      "payments": {
+        "eyebrow": "Cadeaux en argent",
+        "title": "Vous préférez de l’argent ? Où peut-on vous payer ?",
+        "subtitle": "Seulement les applis que vous utilisez. Partagées uniquement avec les personnes de votre choix."
       }
     },
     "shares": {
@@ -133,7 +138,11 @@
         "label": "Adresse de livraison",
         "hint": "Pour qu’on puisse vous envoyer des cadeaux"
       },
-      "nothing": "rien pour l’instant"
+      "nothing": "rien pour l’instant",
+      "payments": {
+        "label": "Cadeaux en argent",
+        "hint": "PayPal, Venmo, Zelle et autres applis de paiement"
+      }
     },
     "links": {
       "registry": "Liste de cadeaux {store}",

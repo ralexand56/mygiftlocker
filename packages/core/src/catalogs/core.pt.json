@@ -114,6 +114,11 @@
       "review": {
         "eyebrow": "Tudo pronto",
         "title": "Tudo certo?"
+      },
+      "payments": {
+        "eyebrow": "Presentes em dinheiro",
+        "title": "Prefere dinheiro? Onde podem te pagar?",
+        "subtitle": "Só os apps que você usa. Compartilhados só com quem você escolher."
       }
     },
     "shares": {
@@ -133,7 +138,11 @@
         "label": "Endereço de entrega",
         "hint": "Para poderem te enviar presentes"
       },
-      "nothing": "nada ainda"
+      "nothing": "nada ainda",
+      "payments": {
+        "label": "Presentes em dinheiro",
+        "hint": "PayPal, Venmo, PIX e outros apps de pagamento"
+      }
     },
     "links": {
       "registry": "Lista de presentes {store}",

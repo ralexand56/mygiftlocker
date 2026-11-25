@@ -8,6 +8,7 @@
 import {
   MAX_PERSON_PHOTOS,
   cleanGiftIdeas,
+  cleanPayments,
   cleanGifted,
   cleanHolidays,
   decodeInvite,
@@ -56,7 +57,7 @@ export async function submitInvite(invite: PublicInvite, profile: Person, kids: 
     kids.forEach(upsertPerson);
     return undefined;
   }
-  const strip = ({ name, sizes, address, birthday, anniversary, favorites }: Person) => ({ name, sizes, address, birthday, anniversary, favorites });
+  const strip = ({ name, sizes, address, birthday, anniversary, favorites, payments }: Person) => ({ name, sizes, address, birthday, anniversary, favorites, payments });
   const res = unwrap<{ claimToken?: string }>(
     await api().mutations.submitInvite(
       { inviteId: invite.id, profile: JSON.stringify(strip(profile)), kids: JSON.stringify(kids.map((k) => ({ ...strip(k), relationship: k.relationship }))) },
@@ -86,6 +87,7 @@ export async function listLockerPeople(): Promise<Person[]> {
     ownerNote: p.ownerNote ?? undefined,
     gifted: cleanGifted(p.gifted),
     linked: p.connectionId ? { connectionId: p.connectionId, syncedAt: p.syncedAt ?? undefined, ended: !!p.connectionEnded } : undefined,
+    payments: cleanPayments(parseJson(p.payments ?? "null")),
     photos: p.photos?.filter((x): x is string => !!x),
     giftIdeas: savedIdeas(p.giftIdeas),
     updatedAt: p.updatedAt,

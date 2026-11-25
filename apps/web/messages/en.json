@@ -109,7 +109,8 @@
         "exchanges": "<strong>Gift exchanges.</strong> The exchange name, date, budget and message; each participant’s name, optional email and wishlist; exclusions; and who drew whom.",
         "invites": "<strong>Invites.</strong> When someone fills in an invite you sent, the details they choose to share with you.",
         "technical": "<strong>Technical data.</strong> Our hosting provider keeps standard server logs (such as IP address, browser type and request time) to run and secure the service. We remember your language choice in a cookie. We don’t use advertising or analytics trackers.",
-        "photos": "<strong>Photos and gift ideas.</strong> Photos you add to a card (up to 5, adults only) and the card’s details, including your private notes, are used to suggest gifts. They’re stored privately in your account."
+        "photos": "<strong>Photos and gift ideas.</strong> Photos you add to a card (up to 5, adults only) and the card’s details, including your private notes, are used to suggest gifts. They’re stored privately in your account.",
+        "payments": "<strong>Payment app handles.</strong> If someone adds where they take money gifts (for example a Venmo username or a Zelle email), it’s stored on their card. People only see it when that person chooses to share it; it’s never shown in gift exchanges or used for gift ideas."
       }
     },
     "use": {
@@ -298,6 +299,10 @@
       "kids": {
         "label": "Their kids' sizes",
         "desc": "Great for parents of little ones"
+      },
+      "payments": {
+        "label": "Money gift apps",
+        "desc": "PayPal, Venmo, Cash App, Zelle, PIX…"
       }
     },
     "note": "Personal note (optional)",
@@ -377,7 +382,11 @@
       "favorites": "Favorites",
       "colors": "Colors: {v}",
       "avoid": "Avoid: {v}",
-      "teams": "Teams: {v}"
+      "teams": "Teams: {v}",
+      "money": "Money gifts",
+      "send": "Send money",
+      "copy": "Copy",
+      "copied": "Copied"
     },
     "owner": {
       "title": "Just for you",
@@ -530,7 +539,8 @@
       "kids": "Kids",
       "skipped": "Skipped",
       "edit": "Edit {label}",
-      "teams": "Teams"
+      "teams": "Teams",
+      "payments": "Money gifts"
     },
     "success": {
       "title": "Thank you, {name}!",
@@ -552,6 +562,23 @@
       "keepUpdated": "Keep {name} updated",
       "keepUpdatedBody": "When you change your sizes or wishes later, their locker updates too.",
       "create": "Create my free locker"
+    },
+    "payments": {
+      "usernames": "Apps with a username",
+      "contacts": "Apps that use a phone, email or key",
+      "contactsHint": "Shown only to people you share money gifts with, so they can copy it into their app.",
+      "bad": "That doesn't look like a username for this app.",
+      "placeholders": {
+        "paypal": "paypal.me name",
+        "venmo": "@username",
+        "cashapp": "$cashtag",
+        "wise": "@wisetag",
+        "revolut": "@revtag",
+        "zelle": "Email or phone",
+        "applecash": "Phone or email",
+        "pix": "PIX key",
+        "mercadopago": "Alias or link"
+      }
     }
   },
   "colors": {

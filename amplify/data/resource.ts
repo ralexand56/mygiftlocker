@@ -37,6 +37,8 @@ const schema = a
         sizes: a.json(),
         /** Address from @mgl/core. */
         address: a.json(),
+        /** PaymentHandles from @mgl/core (money gifts). Private unless shared. */
+        payments: a.json(),
         birthday: a.ref("PartialDate"),
         anniversary: a.ref("PartialDate"),
         favorites: a.json(),
@@ -67,6 +69,8 @@ const schema = a
         name: a.string().required(),
         sizes: a.json(),
         address: a.json(),
+        /** PaymentHandles from @mgl/core (money gifts). Private unless shared. */
+        payments: a.json(),
         birthday: a.ref("PartialDate"),
         anniversary: a.ref("PartialDate"),
         favorites: a.json(),

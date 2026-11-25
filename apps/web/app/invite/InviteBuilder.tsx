@@ -12,7 +12,7 @@ import { createInvite } from "@/lib/invites";
 import { useTranslations } from "next-intl";
 import { useTr } from "@/lib/i18n";
 
-const SECTIONS: InviteSection[] = ["sizes", "address", "dates", "favorites", "kids"];
+const SECTIONS: InviteSection[] = ["sizes", "address", "dates", "favorites", "payments", "kids"];
 
 export function InviteBuilder() {
   const me = useUser();
