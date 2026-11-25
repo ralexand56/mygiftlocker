@@ -120,7 +120,7 @@
         "signIn": "Pour vous connecter et sécuriser votre compte.",
         "reminders": "Pour vous envoyer des rappels par e-mail avant les anniversaires et les fêtes de votre casier. Chaque rappel contient un lien pour ne plus en recevoir.",
         "contact": "Pour vous répondre lorsque vous nous contactez.",
-        "ai": "Pour suggérer des cadeaux : lorsque vous demandez des idées, les informations de la fiche, vos notes et ses photos sont envoyées au modèle Claude d’Anthropic exécuté dans Amazon Bedrock pour créer la liste. Amazon Bedrock ne les utilise pas pour entraîner des modèles."
+        "ai": "Pour suggérer des cadeaux : lorsque vous demandez des idées, les informations de la fiche, vos notes et ses photos sont envoyées au modèle Claude d’Anthropic (via l’API d’Anthropic ou Amazon Bedrock) pour créer la liste. Aucun des deux ne les utilise pour entraîner des modèles."
       },
       "noSale": "Nous ne vendons ni ne louons d’informations personnelles, et nous ne les utilisons pas à des fins publicitaires."
     },

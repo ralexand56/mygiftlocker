@@ -9,8 +9,9 @@
  * Error keys the site translates: notFound, limit, declined, failed.
  */
 import { AnthropicBedrockMantle } from "@anthropic-ai/bedrock-sdk";
+import Anthropic from "@anthropic-ai/sdk";
+import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import type Anthropic from "@anthropic-ai/sdk";
 import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
 import {
   DAILY_GIFT_RUNS,
@@ -35,9 +36,9 @@ import type { Schema } from "../../data/resource";
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
 Amplify.configure(resourceConfig, libraryOptions);
 const data = generateClient<Schema>({ authMode: "iam" });
-const claude = new AnthropicBedrockMantle({ awsRegion: process.env.BEDROCK_REGION || process.env.AWS_REGION, apiKey: null });
-
-const MODEL = "anthropic.claude-opus-5-5";
+// Anthropic's API when the ANTHROPIC_API_KEY secret is set; otherwise Claude in Amazon Bedrock.
+const direct = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
+const bedrock = direct ? null : new AnthropicBedrockMantle({ awsRegion: process.env.BEDROCK_REGION || process.env.AWS_REGION, apiKey: null });
 
 interface FindGiftsEvent {
   arguments: { jobId?: string; photoUrls?: (string | null)[] | null };
@@ -174,14 +175,27 @@ export const handler = async (event: FindGiftsEvent) => {
       .filter(Boolean)
       .join("\n\n");
 
-    const response = await claude.messages.parse({
-      model: MODEL,
-      max_tokens: 16000,
-      system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-      output_config: { effort: "medium", format: zodOutputFormat(IdeasSchema) },
-      messages: [{ role: "user", content: [...photos, { type: "text", text }] }],
-    });
-    console.log("gift ideas", { stop: response.stop_reason, usage: response.usage, photos: photos.length });
+    const system = [{ type: "text" as const, text: SYSTEM, cache_control: { type: "ephemeral" as const } }];
+    const messages = [{ role: "user" as const, content: [...photos, { type: "text" as const, text }] }];
+    // On the direct API, a declined request is retried on a fallback model chosen by the API.
+    const response = direct
+      ? await direct.beta.messages.parse({
+          model: "claude-opus-5-5",
+          max_tokens: 16000,
+          betas: ["server-side-fallback-2026-07-01"],
+          fallbacks: "default",
+          system,
+          output_config: { effort: "medium", format: betaZodOutputFormat(IdeasSchema) },
+          messages,
+        })
+      : await bedrock!.messages.parse({
+          model: "anthropic.claude-opus-5-5",
+          max_tokens: 16000,
+          system,
+          output_config: { effort: "medium", format: zodOutputFormat(IdeasSchema) },
+          messages,
+        });
+    console.log("gift ideas", { via: direct ? "anthropic" : "bedrock", model: response.model, stop: response.stop_reason, usage: response.usage, photos: photos.length });
     if (response.stop_reason === "refusal") throw new Failure("declined");
     const ideas = cleanGiftIdeas(response.parsed_output?.ideas);
     if (!ideas.length) throw new Failure("failed");

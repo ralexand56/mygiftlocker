@@ -120,7 +120,7 @@
         "signIn": "To sign you in and keep your account secure.",
         "reminders": "To email you reminders before birthdays, anniversaries and holidays in your locker. Every reminder has a link to stop them.",
         "contact": "To respond when you contact us.",
-        "ai": "To suggest gifts: when you ask for gift ideas, the card’s details, your notes and its photos are sent to Anthropic’s Claude model running in Amazon Bedrock to generate the list. Amazon Bedrock doesn’t use them to train models."
+        "ai": "To suggest gifts: when you ask for gift ideas, the card’s details, your notes and its photos are sent to Anthropic’s Claude model (through Anthropic’s API, or Amazon Bedrock) to generate the list. Neither uses them to train models."
       },
       "noSale": "We don’t sell or rent personal information, and we don’t use it for advertising."
     },

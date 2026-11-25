@@ -120,7 +120,7 @@
         "signIn": "Para você entrar e manter sua conta segura.",
         "reminders": "Para enviar lembretes por e-mail antes de aniversários, bodas e datas comemorativas do seu armário. Todo lembrete tem um link para parar de recebê-los.",
         "contact": "Para responder quando você entrar em contato.",
-        "ai": "Para sugerir presentes: quando você pede ideias, os dados do cartão, suas anotações e as fotos são enviados ao modelo Claude, da Anthropic, executado no Amazon Bedrock, para criar a lista. O Amazon Bedrock não os usa para treinar modelos."
+        "ai": "Para sugerir presentes: quando você pede ideias, os dados do cartão, suas anotações e as fotos são enviados ao modelo Claude, da Anthropic (pela API da Anthropic ou pelo Amazon Bedrock), para criar a lista. Nenhum dos dois os usa para treinar modelos."
       },
       "noSale": "Não vendemos nem alugamos informações pessoais, e não as usamos para publicidade."
     },

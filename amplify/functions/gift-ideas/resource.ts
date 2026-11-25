@@ -1,4 +1,4 @@
-import { defineFunction } from "@aws-amplify/backend";
+import { defineFunction, secret } from "@aws-amplify/backend";
 
 /** "Find the perfect gift": asks Claude (Amazon Bedrock) for ideas for one locker person. */
 export const giftIdeas = defineFunction({
@@ -8,4 +8,6 @@ export const giftIdeas = defineFunction({
   timeoutSeconds: 180,
   memoryMB: 512,
   resourceGroupName: "data",
+  // Set in the Amplify console (Hosting → Secrets). Without it the function uses Amazon Bedrock.
+  environment: { ANTHROPIC_API_KEY: secret("ANTHROPIC_API_KEY") },
 });

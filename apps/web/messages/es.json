@@ -120,7 +120,7 @@
         "signIn": "Para que inicies sesión y mantener tu cuenta segura.",
         "reminders": "Para enviarte recordatorios antes de los cumpleaños, aniversarios y fiestas de tu casillero. Cada recordatorio incluye un enlace para dejar de recibirlos.",
         "contact": "Para responderte cuando nos escribas.",
-        "ai": "Para sugerir regalos: cuando pides ideas, los datos de la tarjeta, tus notas y sus fotos se envían al modelo Claude de Anthropic, que se ejecuta en Amazon Bedrock, para crear la lista. Amazon Bedrock no los usa para entrenar modelos."
+        "ai": "Para sugerir regalos: cuando pides ideas, los datos de la tarjeta, tus notas y sus fotos se envían al modelo Claude de Anthropic (mediante la API de Anthropic o Amazon Bedrock) para crear la lista. Ninguno de los dos los usa para entrenar modelos."
       },
       "noSale": "No vendemos ni alquilamos información personal, y no la usamos para publicidad."
     },
