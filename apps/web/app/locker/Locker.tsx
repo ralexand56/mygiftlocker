@@ -332,7 +332,8 @@ function PersonRow({
 /** The user's own profile: what they share in gift exchanges. */
 function SelfCard({ self }: { self: Person | null }) {
   const t = useTranslations("locker");
-  const sizes = self ? summarizeSizes(self.sizes, useTr()) : "";
+  const tr = useTr(); // hooks run on every render, never only once the profile has loaded
+  const sizes = self ? summarizeSizes(self.sizes, tr) : "";
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/60 p-4 ring-1 ring-lavender/40 sm:p-5">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-lavender/60">

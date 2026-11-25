@@ -144,7 +144,8 @@ function SharePanel({ url, from, to, onAnother }: { url: string; from: string; t
   const [qr, setQr] = useState<string>("");
   const [canShare, setCanShare] = useState(false);
   const t = useTranslations("inviteBuilder");
-  const links = inviteShareLinks(url, from, to || undefined, useTr());
+  const tr = useTr();
+  const links = inviteShareLinks(url, from, to || undefined, tr);
 
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && "share" in navigator);
