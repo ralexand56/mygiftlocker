@@ -1,4 +1,5 @@
 import { defineAuth, secret } from "@aws-amplify/backend";
+import { authMessage } from "../functions/auth-message/resource";
 
 /**
  * One Cognito user pool shared by web (Next.js) and mobile (Expo), so a person
@@ -26,8 +27,8 @@ const SITE_URLS = [
 
 export const auth = defineAuth({
   loginWith: {
-    // Passwordless one-time codes by email (USER_AUTH / EMAIL_OTP). New users get the
-    // verification email below; returning users get Cognito's standard sign-in code email.
+    // Passwordless one-time codes by email (USER_AUTH / EMAIL_OTP). The auth-message trigger
+    // rewrites both code emails in the user's language; this text is the English fallback.
     email: {
       otpLogin: true,
       verificationEmailStyle: "CODE",
@@ -46,6 +47,8 @@ export const auth = defineAuth({
       logoutUrls: [...SITE_URLS, "mygiftlocker://"],
     },
   },
+  // Code emails in the user's language (see functions/auth-message).
+  triggers: { customMessage: authMessage },
   userAttributes: {
     fullname: { required: false, mutable: true },
   },

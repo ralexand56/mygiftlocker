@@ -1,6 +1,7 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 import { eventReminders } from "../functions/event-reminders/resource";
 import { exchangeApi } from "../functions/exchange-api/resource";
+import { authMessage } from "../functions/auth-message/resource";
 
 /**
  * Data model. Mirrors the TypeScript types in packages/core.
@@ -311,7 +312,7 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
   })
-  .authorization((allow) => [allow.resource(exchangeApi), allow.resource(eventReminders)]);
+  .authorization((allow) => [allow.resource(exchangeApi), allow.resource(eventReminders), allow.resource(authMessage).to(["query"])]);
 
 export type Schema = ClientSchema<typeof schema>;
 

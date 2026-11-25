@@ -234,5 +234,10 @@
     "why": "You're getting this because you keep people's dates in My Gift Lockers.",
     "stopText": "Stop these reminders: {url}",
     "stop": "Stop these reminders"
+  },
+  "authEmail": {
+    "subject": "Your My Gift Lockers code",
+    "signUp": "Welcome to My Gift Lockers! Your sign-in code is {code}. If you didn't ask for this, you can ignore this email.",
+    "signIn": "Your My Gift Lockers sign-in code is {code}. It works for a few minutes. If you didn't ask for this, you can ignore this email."
   }
 }

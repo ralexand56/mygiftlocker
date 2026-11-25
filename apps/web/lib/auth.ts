@@ -108,7 +108,7 @@ export async function startEmailSignIn(email: string): Promise<EmailStep> {
   pendingSignUp = null;
 
   try {
-    const res = await a.signUp({ username, options: { userAttributes: { email: username }, autoSignIn: { authFlowType: "USER_AUTH" } } });
+    const res = await a.signUp({ username, options: { userAttributes: { email: username }, autoSignIn: { authFlowType: "USER_AUTH" }, clientMetadata: lang() } });
     if (res.isSignUpComplete) return "signed-in";
     pendingSignUp = username;
     return "code-sent";
@@ -117,18 +117,21 @@ export async function startEmailSignIn(email: string): Promise<EmailStep> {
   }
 
   try {
-    const res = await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
+    const res = await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP", clientMetadata: lang() } });
     return res.isSignedIn ? "signed-in" : "code-sent";
   } catch (e) {
     // Signed up earlier but never entered the code: send a fresh confirmation code.
     if (errName(e) !== "UserNotConfirmedException") throw e;
-    await a.resendSignUpCode({ username });
+    await a.resendSignUpCode({ username, options: { clientMetadata: lang() } });
     pendingSignUp = username;
     return "code-sent";
   }
 }
 
 let pendingSignUp: string | null = null;
+
+/** The visitor's language, so the code email (functions/auth-message) is written in it. */
+const lang = () => ({ locale: currentTr().locale });
 
 /** Step 2: the 6-digit code from the email. */
 export async function confirmEmailCode(email: string, code: string): Promise<void> {
@@ -142,7 +145,7 @@ export async function confirmEmailCode(email: string, code: string): Promise<voi
       await a.autoSignIn();
     } catch {
       // autoSignIn only works in the session that called signUp (not after a resend).
-      await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP" } });
+      await a.signIn({ username, options: { authFlowType: "USER_AUTH", preferredChallenge: "EMAIL_OTP", clientMetadata: lang() } });
       throw new Error(currentTr()("errors.emailVerified"));
     }
     return;

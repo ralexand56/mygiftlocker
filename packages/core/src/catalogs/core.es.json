@@ -1,41 +1,145 @@
 {
   "core": {
-    "fit": { "mens": "Hombre", "womens": "Mujer", "kids": "Niños" },
-    "sizeSystem": { "US": "Estados Unidos", "UK": "Reino Unido", "EU": "Europa", "JP": "Japón", "BR": "Brasil", "MX": "México", "CO": "Colombia" },
-    "sizeWord": { "Preemie": "Prematuro", "NB": "Recién nacido", "One size": "Talla única" },
-    "shoeWidth": { "Narrow": "Angosto", "Regular": "Normal", "Wide": "Ancho", "Extra wide": "Extra ancho" },
-    "summary": { "top": "Camisa {v}", "pants": "Pantalón {v}", "dress": "Vestido {v}", "shoe": "Zapato {v}", "foot": "Pie {v} cm" },
+    "fit": {
+      "mens": "Hombre",
+      "womens": "Mujer",
+      "kids": "Niños"
+    },
+    "sizeSystem": {
+      "US": "Estados Unidos",
+      "UK": "Reino Unido",
+      "EU": "Europa",
+      "JP": "Japón",
+      "BR": "Brasil",
+      "MX": "México",
+      "CO": "Colombia"
+    },
+    "sizeWord": {
+      "Preemie": "Prematuro",
+      "NB": "Recién nacido",
+      "One size": "Talla única"
+    },
+    "shoeWidth": {
+      "Narrow": "Angosto",
+      "Regular": "Normal",
+      "Wide": "Ancho",
+      "Extra wide": "Extra ancho"
+    },
+    "summary": {
+      "top": "Camisa {v}",
+      "pants": "Pantalón {v}",
+      "dress": "Vestido {v}",
+      "shoe": "Zapato {v}",
+      "foot": "Pie {v} cm"
+    },
     "days": "{days, plural, =0 {hoy} =1 {mañana} other {en # días}}",
-    "events": { "birthday": "Cumpleaños", "anniversary": "Aniversario", "specialDay": "Día especial" },
+    "events": {
+      "birthday": "Cumpleaños",
+      "anniversary": "Aniversario",
+      "specialDay": "Día especial"
+    },
     "holidays": {
-      "valentines": { "name": "San Valentín", "when": "14 de febrero" },
-      "mothers-day": { "name": "Día de las Madres", "when": "2.º domingo de mayo" },
-      "fathers-day": { "name": "Día del Padre", "when": "3.er domingo de junio" },
-      "christmas": { "name": "Navidad", "when": "25 de diciembre" }
+      "valentines": {
+        "name": "San Valentín",
+        "when": "14 de febrero"
+      },
+      "mothers-day": {
+        "name": "Día de las Madres",
+        "when": "2.º domingo de mayo"
+      },
+      "fathers-day": {
+        "name": "Día del Padre",
+        "when": "3.er domingo de junio"
+      },
+      "christmas": {
+        "name": "Navidad",
+        "when": "25 de diciembre"
+      }
     },
     "steps": {
-      "welcome": { "eyebrow": "Hola", "title": "Hagamos que tus regalos sean perfectos" },
-      "fit": { "eyebrow": "Tallas", "title": "¿En qué sección sueles comprar?", "subtitle": "Ajustaremos las opciones de talla a tu elección." },
-      "tops": { "eyebrow": "Parte de arriba", "title": "¿Qué talla de camisa usas?", "subtitle": "Playeras, suéteres, camisas." },
-      "bottoms": { "eyebrow": "Parte de abajo", "title": "¿Y tu talla de pantalón?" },
-      "dresses": { "eyebrow": "Vestidos", "title": "Vestidos y faldas" },
-      "outerwear": { "eyebrow": "Abrigos", "title": "Chamarras y abrigos" },
-      "shoes": { "eyebrow": "Calzado", "title": "¿Qué talla de calzado usas?" },
-      "accessories": { "eyebrow": "Extras", "title": "Gorros, anillos y detalles", "subtitle": "Totalmente opcional, pero ideal para una joya sorpresa." },
-      "address": { "eyebrow": "Envío", "title": "¿A dónde enviamos los regalos?", "subtitle": "Solo se comparte con las personas con las que te conectes." },
-      "dates": { "eyebrow": "Celebraciones", "title": "Fechas para celebrar", "subtitle": "El año es opcional: no le diremos a nadie." },
-      "favorites": { "eyebrow": "Favoritos", "title": "Algunas de tus cosas favoritas" },
-      "kids": { "eyebrow": "Los peques", "title": "¿También compras para tus hijos?", "subtitle": "Agrega a los niños que administras: tú controlas su información." },
-      "review": { "eyebrow": "Todo listo", "title": "¿Todo bien?" }
+      "welcome": {
+        "eyebrow": "Hola",
+        "title": "Hagamos que tus regalos sean perfectos"
+      },
+      "fit": {
+        "eyebrow": "Tallas",
+        "title": "¿En qué sección sueles comprar?",
+        "subtitle": "Ajustaremos las opciones de talla a tu elección."
+      },
+      "tops": {
+        "eyebrow": "Parte de arriba",
+        "title": "¿Qué talla de camisa usas?",
+        "subtitle": "Playeras, suéteres, camisas."
+      },
+      "bottoms": {
+        "eyebrow": "Parte de abajo",
+        "title": "¿Y tu talla de pantalón?"
+      },
+      "dresses": {
+        "eyebrow": "Vestidos",
+        "title": "Vestidos y faldas"
+      },
+      "outerwear": {
+        "eyebrow": "Abrigos",
+        "title": "Chamarras y abrigos"
+      },
+      "shoes": {
+        "eyebrow": "Calzado",
+        "title": "¿Qué talla de calzado usas?"
+      },
+      "accessories": {
+        "eyebrow": "Extras",
+        "title": "Gorros, anillos y detalles",
+        "subtitle": "Totalmente opcional, pero ideal para una joya sorpresa."
+      },
+      "address": {
+        "eyebrow": "Envío",
+        "title": "¿A dónde enviamos los regalos?",
+        "subtitle": "Solo se comparte con las personas con las que te conectes."
+      },
+      "dates": {
+        "eyebrow": "Celebraciones",
+        "title": "Fechas para celebrar",
+        "subtitle": "El año es opcional: no le diremos a nadie."
+      },
+      "favorites": {
+        "eyebrow": "Favoritos",
+        "title": "Algunas de tus cosas favoritas"
+      },
+      "kids": {
+        "eyebrow": "Los peques",
+        "title": "¿También compras para tus hijos?",
+        "subtitle": "Agrega a los niños que administras: tú controlas su información."
+      },
+      "review": {
+        "eyebrow": "Todo listo",
+        "title": "¿Todo bien?"
+      }
     },
     "shares": {
-      "sizes": { "label": "Tallas", "hint": "Ropa, calzado, anillos…" },
-      "favorites": { "label": "Gustos y deseos", "hint": "Lo que le gusta, deseos, listas de deseos y de regalos" },
-      "dates": { "label": "Cumpleaños y aniversario", "hint": "Para sus recordatorios" },
-      "address": { "label": "Dirección de envío", "hint": "Para que te puedan enviar regalos" },
+      "sizes": {
+        "label": "Tallas",
+        "hint": "Ropa, calzado, anillos…"
+      },
+      "favorites": {
+        "label": "Gustos y deseos",
+        "hint": "Lo que le gusta, deseos, listas de deseos y de regalos"
+      },
+      "dates": {
+        "label": "Cumpleaños y aniversario",
+        "hint": "Para sus recordatorios"
+      },
+      "address": {
+        "label": "Dirección de envío",
+        "hint": "Para que te puedan enviar regalos"
+      },
       "nothing": "nada todavía"
     },
-    "links": { "registry": "Mesa de regalos de {store}", "wishList": "Lista de deseos de {store}", "list": "Lista de {store}" },
+    "links": {
+      "registry": "Mesa de regalos de {store}",
+      "wishList": "Lista de deseos de {store}",
+      "list": "Lista de {store}"
+    },
     "address": {
       "aptSuite": "Depto., interior, unidad",
       "colonia": "Colonia",
@@ -130,5 +234,10 @@
     "why": "Recibes este correo porque guardas las fechas de tus seres queridos en My Gift Lockers.",
     "stopText": "Dejar de recibir estos recordatorios: {url}",
     "stop": "Dejar de recibir estos recordatorios"
+  },
+  "authEmail": {
+    "subject": "Tu código de My Gift Lockers",
+    "signUp": "¡Te damos la bienvenida a My Gift Lockers! Tu código de acceso es {code}. Si no lo pediste, puedes ignorar este correo.",
+    "signIn": "Tu código de acceso a My Gift Lockers es {code}. Vale por unos minutos. Si no lo pediste, puedes ignorar este correo."
   }
 }

@@ -5,8 +5,9 @@ import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { eventReminders } from "./functions/event-reminders/resource";
 import { exchangeApi } from "./functions/exchange-api/resource";
+import { authMessage } from "./functions/auth-message/resource";
 
-const backend = defineBackend({ auth, data, exchangeApi, eventReminders });
+const backend = defineBackend({ auth, data, exchangeApi, eventReminders, authMessage });
 
 // Reminder emails: look up owners' email addresses and send through SES.
 const reminders = backend.eventReminders.resources.lambda;
