@@ -386,7 +386,8 @@
       "money": "Regalos en dinero",
       "send": "Enviar dinero",
       "copy": "Copiar",
-      "copied": "Copiado"
+      "copied": "Copiado",
+      "copyAddress": "Copiar dirección"
     },
     "owner": {
       "title": "Solo para ti",

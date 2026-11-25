@@ -386,7 +386,8 @@
       "money": "Money gifts",
       "send": "Send money",
       "copy": "Copy",
-      "copied": "Copied"
+      "copied": "Copied",
+      "copyAddress": "Copy address"
     },
     "owner": {
       "title": "Just for you",

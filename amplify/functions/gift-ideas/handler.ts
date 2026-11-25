@@ -58,6 +58,7 @@ const IdeasSchema = z.object({
       category: z.enum(GIFT_CATEGORIES),
       store: z.enum(GIFT_STORES),
       searchQuery: z.string(),
+      photoQuery: z.string(),
     }),
   ),
 });
@@ -80,6 +81,7 @@ Fields:
 - title and why: in the language the user names.
 - store: "etsy" for handmade or personalized things, "target" or "walmart" for everyday home and kids' basics, otherwise "amazon".
 - searchQuery: a short English search for that US store (3-6 words), e.g. "personalized leather passport holder".
+- photoQuery: 1-3 plain English words for a stock photo that shows this kind of gift, the concrete object or scene, no brands or adjectives like "personalized" (e.g. "passport wallet", "vinyl records", "pottery class").
 - category: the closest of the allowed values.`;
 
 function toPerson(raw: Schema["Profile"]["type"]): Person {
@@ -152,14 +154,14 @@ async function loadPhotos(urls: string[], profileId: string): Promise<Anthropic.
  * their hotlinked URL, credit the photographer, and ping download_location when a photo is used.
  * Without UNSPLASH_ACCESS_KEY, or if Unsplash is slow, ideas simply have no photo.
  */
-async function addPhotos(ideas: GiftIdea[]): Promise<GiftIdea[]> {
+async function addPhotos(ideas: GiftIdea[], photoQueries: Map<string, string>): Promise<GiftIdea[]> {
   const key = process.env.UNSPLASH_ACCESS_KEY;
   if (!key) return ideas;
   const headers = { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" };
   return Promise.all(
     ideas.map(async (idea) => {
       try {
-        const q = new URLSearchParams({ query: idea.searchQuery, per_page: "1", orientation: "landscape", content_filter: "high" });
+        const q = new URLSearchParams({ query: photoQueries.get(idea.title) || idea.searchQuery, per_page: "1", orientation: "landscape", content_filter: "high" });
         const res = await fetch(`https://api.unsplash.com/search/photos?${q}`, { headers, signal: AbortSignal.timeout(4000) });
         if (!res.ok) return idea;
         const photo = ((await res.json()) as { results?: UnsplashPhoto[] }).results?.[0];
@@ -235,7 +237,9 @@ export const handler = async (event: FindGiftsEvent) => {
         });
     console.log("gift ideas", { via: direct ? "anthropic" : "bedrock", model: response.model, stop: response.stop_reason, usage: response.usage, photos: photos.length });
     if (response.stop_reason === "refusal") throw new Failure("declined");
-    const ideas = cleanGiftIdeas(await addPhotos(cleanGiftIdeas(response.parsed_output?.ideas)));
+    // The model also suggests a short stock-photo search per idea (long product searches match poorly).
+    const photoQueries = new Map((response.parsed_output?.ideas ?? []).map((i) => [i.title.trim().slice(0, 120), i.photoQuery.trim().slice(0, 60)]));
+    const ideas = cleanGiftIdeas(await addPhotos(cleanGiftIdeas(response.parsed_output?.ideas), photoQueries));
     if (!ideas.length) throw new Failure("failed");
 
     await recordRun(sub);

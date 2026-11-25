@@ -37,7 +37,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Check, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -516,13 +516,16 @@ function PersonDetail({
           {p.address && (
             <motion.section variants={item}>
               <SectionTitle icon={MapPin}>{t("shipTo")}</SectionTitle>
-              <address className="rounded-2xl bg-white p-4 not-italic shadow-soft">
-                {[p.name, ...formatAddress(p.address, "US", tr)].map((line, i) => (
-                  <span key={i} className="block">
-                    {line}
-                  </span>
-                ))}
-              </address>
+              <div className="relative rounded-2xl bg-white p-4 shadow-soft">
+                <address className="pr-24 not-italic">
+                  {[p.name, ...formatAddress(p.address, "US", tr)].map((line, i) => (
+                    <span key={i} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </address>
+                <CopyAddress lines={[p.address.name?.trim() || p.name, ...formatAddress({ ...p.address, name: undefined }, "", tr)]} />
+              </div>
             </motion.section>
           )}
 
@@ -654,6 +657,26 @@ export function WishlistLinkList({ links }: { links: string[] }) {
         </a>
       ))}
     </div>
+  );
+}
+
+/** Copies the address one line per field, ready to paste into a store's checkout (e.g. Amazon's "Add a new address"). */
+function CopyAddress({ lines }: { lines: string[] }) {
+  const t = useTranslations("locker.detail");
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        navigator.clipboard?.writeText(lines.join("\n")).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+        })
+      }
+      className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1.5 text-xs font-bold ring-1 ring-lavender/60 hover:bg-blush/40"
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? t("copied") : t("copyAddress")}
+    </button>
   );
 }
 

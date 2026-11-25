@@ -386,7 +386,8 @@
       "money": "Cadeaux en argent",
       "send": "Envoyer de l’argent",
       "copy": "Copier",
-      "copied": "Copié"
+      "copied": "Copié",
+      "copyAddress": "Copier l’adresse"
     },
     "owner": {
       "title": "Rien que pour vous",
