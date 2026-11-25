@@ -37,14 +37,14 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Check, ImagePlus, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Check, Trash2, ImagePlus, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
 import { HolidayLists } from "./HolidayLists";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
-import { listLockerPeople, updateOwnerFields, type OwnerFields } from "@/lib/invites";
+import { listLockerPeople, removeLockerPerson, updateOwnerFields, type OwnerFields } from "@/lib/invites";
 import { addSelfWish, getSelfProfile, loadOrClaimSelf } from "@/lib/self";
 import { askToConnect, connectionsEnabled, endConnection, sharesBack } from "@/lib/connections";
 import { ShareToggles } from "@/components/ShareToggles";
@@ -95,6 +95,16 @@ export function Locker() {
   const [sort, setSort] = useState<PeopleSort>("next");
   const shown = useMemo(() => sortPeople(filterPeopleByName(people, query), sort), [people, query, sort]);
   const upcoming = useMemo(() => upcomingEvents(people)[0], [people]);
+
+  // Coming back from editing someone (/locker?open=<id>) reopens their card.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("open");
+    if (!id) return;
+    setOpenId(id);
+    params.delete("open");
+    window.history.replaceState(null, "", `${window.location.pathname}${params.size ? `?${params}` : ""}`);
+  }, []);
 
   useEffect(() => {
     // The gift finder sits on top of the card and closes first.
@@ -239,6 +249,11 @@ export function Locker() {
                     onToggleGift={(e) => toggleGift(open, e)}
                     onConnectionChanged={reloadPeople}
                     onLocalChange={(changes) => patchLocal(open.id, changes)}
+                    onRemove={async () => {
+                      await removeLockerPerson(open);
+                      setOpenId(null);
+                      reloadPeople();
+                    }}
                   />
                 </motion.article>
               </div>
@@ -405,6 +420,7 @@ function PersonDetail({
   onToggleGift,
   onConnectionChanged,
   onLocalChange,
+  onRemove,
 }: {
   person: Person;
   onClose: () => void;
@@ -412,6 +428,7 @@ function PersonDetail({
   onToggleGift: (e: UpcomingEvent) => void;
   onConnectionChanged: () => void;
   onLocalChange: (changes: Partial<Person>) => void;
+  onRemove: () => Promise<void>;
 }) {
   const t = useTranslations("locker.detail");
   const tg = useTranslations("gifts");
@@ -464,6 +481,16 @@ function PersonDetail({
         >
           <Sparkles className="h-4 w-4" /> {p.giftIdeas ? tg("open") : tg("find")}
         </motion.button>
+        {p.linked && !p.linked.ended ? (
+          <p className="relative mt-3 max-w-xs text-xs text-ink-soft">{t("liveNoEdit", { name: p.name.split(" ")[0]! })}</p>
+        ) : (
+          <a
+            href={`/locker/edit?id=${encodeURIComponent(p.id)}`}
+            className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-2 text-sm font-bold text-ink ring-1 ring-lavender/50 hover:bg-white"
+          >
+            <Pencil className="h-3.5 w-3.5" /> {t("edit")}
+          </a>
+        )}
         {connectionsEnabled && p.kind === "adult" && <ConnectionPanel person={p} onChanged={onConnectionChanged} />}
       </div>
 
@@ -594,11 +621,67 @@ function PersonDetail({
               </div>
             </motion.section>
           )}
+
+          <motion.section variants={item}>
+            <RemovePerson person={p} onRemove={onRemove} />
+          </motion.section>
         </motion.div>
       </div>
       <AnimatePresence>
         {finding && <GiftFinder person={p} onClose={() => setFinding(false)} onSaved={(giftIdeas) => onLocalChange({ giftIdeas })} />}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/** "Remove from locker", confirmed in place (no browser dialog). */
+function RemovePerson({ person: p, onRemove }: { person: Person; onRemove: () => Promise<void> }) {
+  const t = useTranslations("locker.detail");
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+  const live = !!p.linked && !p.linked.ended;
+  const go = async () => {
+    setBusy(true);
+    setError(false);
+    try {
+      await onRemove();
+    } catch {
+      setError(true);
+      setBusy(false);
+    }
+  };
+  if (!asking)
+    return (
+      <button
+        type="button"
+        onClick={() => setAsking(true)}
+        className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-bold text-rose-deep hover:bg-blush/40"
+      >
+        <Trash2 className="h-4 w-4" /> {t("remove")}
+      </button>
+    );
+  return (
+    <div className="rounded-2xl bg-blush/40 p-4 ring-1 ring-rose/30" role="alertdialog" aria-label={t("removeTitle", { name: p.name })}>
+      <p className="font-bold">{t("removeTitle", { name: p.name })}</p>
+      <p className="mt-1 text-sm text-ink-soft">
+        {t("removeBody")}
+        {live ? ` ${t("removeLinked")}` : ""}
+      </p>
+      {error && <p className="mt-2 text-sm font-bold text-rose-deep">{t("removeFailed")}</p>}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={go}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 rounded-full bg-rose-deep px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+        >
+          <Trash2 className="h-4 w-4" /> {busy ? t("removing") : t("removeYes")}
+        </button>
+        <Button variant="ghost" onClick={() => setAsking(false)} disabled={busy}>
+          {t("cancel")}
+        </Button>
+      </div>
     </div>
   );
 }

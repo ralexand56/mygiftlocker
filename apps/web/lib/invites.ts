@@ -19,7 +19,8 @@ import {
   type PublicInvite,
 } from "@mgl/core";
 import { api, backendEnabled, parseJson, unwrap } from "./amplify";
-import { patchPerson, readDB, saveInvite, upsertPerson } from "./store";
+import { patchPerson, readDB, removePerson, saveInvite, upsertPerson } from "./store";
+import { endConnection } from "./connections";
 import { currentTr } from "./i18n-current";
 
 /** Returns the path segment for /join/<segment>. */
@@ -113,4 +114,41 @@ export async function updateOwnerFields(id: string, changes: OwnerFields): Promi
   };
   if (!backendEnabled) return patchPerson(id, clean);
   unwrap(await api().models.Profile.update({ id, ...clean }));
+}
+
+/** The details the owner can edit on a card (what an invite asks for, plus how they know them). */
+export type EditableFields = Pick<Person, "name" | "relationship" | "sizes" | "address" | "birthday" | "anniversary" | "favorites" | "payments">;
+
+/** Saves the owner's edits to someone's details. Cleared fields are removed. */
+export async function updateLockerPerson(id: string, f: EditableFields): Promise<void> {
+  const fields = { ...f, name: f.name.trim(), relationship: f.relationship?.trim() || undefined, payments: cleanPayments(f.payments) };
+  if (!backendEnabled) return patchPerson(id, { ...fields, updatedAt: new Date().toISOString() });
+  const json = (v: unknown) => (v === undefined ? null : JSON.stringify(v));
+  unwrap(
+    await api().models.Profile.update({
+      id,
+      name: fields.name,
+      relationship: fields.relationship ?? null,
+      sizes: JSON.stringify(fields.sizes ?? {}),
+      address: json(fields.address),
+      birthday: fields.birthday ?? null,
+      anniversary: fields.anniversary ?? null,
+      favorites: json(fields.favorites),
+      payments: json(fields.payments),
+    }),
+  );
+}
+
+/**
+ * Removes someone from the locker for good: ends a live connection first (so their
+ * updates stop), deletes their photos, then the card with its notes and gift ideas.
+ */
+export async function removeLockerPerson(p: Person): Promise<void> {
+  if (!backendEnabled) return removePerson(p.id);
+  if (p.linked && !p.linked.ended) await endConnection(p.linked.connectionId);
+  if (p.photos?.length) {
+    const { remove } = await import("aws-amplify/storage");
+    await Promise.all(p.photos.map((path) => remove({ path }).catch(() => {})));
+  }
+  unwrap(await api().models.Profile.delete({ id: p.id }));
 }

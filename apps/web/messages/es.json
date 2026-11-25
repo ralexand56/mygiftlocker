@@ -94,7 +94,8 @@
     "signIn": "Iniciar sesión",
     "connect": "Conectar perfiles",
     "reminders": "Correos de recordatorio",
-    "privacy": "Política de privacidad"
+    "privacy": "Política de privacidad",
+    "editPerson": "Editar datos"
   },
   "privacy": {
     "description": "Qué recopila My Gift Lockers, por qué y qué opciones tienes.",
@@ -388,7 +389,17 @@
       "send": "Enviar dinero",
       "copy": "Copiar",
       "copied": "Copiado",
-      "copyAddress": "Copiar dirección"
+      "copyAddress": "Copiar dirección",
+      "edit": "Editar datos",
+      "remove": "Quitar del casillero",
+      "removeTitle": "¿Quitar a {name}?",
+      "removeBody": "Se borran su tarjeta, tus notas, fotos e ideas de regalo. No se puede deshacer.",
+      "removeLinked": "También dejarás de recibir sus actualizaciones.",
+      "removeYes": "Quitar",
+      "cancel": "Cancelar",
+      "removing": "Quitando…",
+      "removeFailed": "No se pudo quitar. Inténtalo de nuevo.",
+      "liveNoEdit": "{name} mantiene esta tarjeta al día, así que no puedes editar sus datos aquí."
     },
     "owner": {
       "title": "Solo para ti",
@@ -507,7 +518,12 @@
       "wish": "Deseo n.º {n}",
       "lists": "Listas de deseos y de regalos (opcional)",
       "teams": "Equipos favoritos (opcional)",
-      "teamsPlaceholder": "América, Real Madrid, los Lakers…"
+      "teamsPlaceholder": "América, Real Madrid, los Lakers…",
+      "nameEdit": "Nombre",
+      "nameHintEdit": "Solo tú ves lo que hay en esta tarjeta.",
+      "relationship": "Relación",
+      "relationshipPlaceholder": "Hermana, mejor amigo, compañera…",
+      "lovesEdit": "Cosas que le encantan"
     },
     "links": {
       "placeholder": "Pega un enlace de lista de deseos de Amazon o de una mesa de regalos",
@@ -581,7 +597,8 @@
         "pix": "Clave PIX",
         "mercadopago": "Alias o enlace"
       }
-    }
+    },
+    "saveChanges": "Guardar cambios"
   },
   "colors": {
     "blush": "Rosa pálido",
@@ -835,5 +852,11 @@
     "hint": "Hasta {max}. Solo tú las ves; ayudan a elegir regalos con su estilo.",
     "uploadFailed": "No se pudo agregar la foto. Prueba con JPEG o PNG.",
     "removeFailed": "No se pudo quitar la foto. Inténtalo de nuevo."
+  },
+  "editPerson": {
+    "loading": "Cargando…",
+    "notFound": "Esa persona ya no está en tu casillero.",
+    "back": "Volver a mi casillero",
+    "live": "{name} mantiene esta tarjeta al día desde su propio perfil, así que no se puede editar aquí."
   }
 }

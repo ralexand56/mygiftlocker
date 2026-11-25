@@ -7,10 +7,15 @@ import type { InvitePayload } from "./invite";
 import type { Fit } from "./sizes";
 import { defaultT, type Tr } from "./i18n";
 
-/** A step's heading text in the translator's language. */
-export function stepText(step: Pick<StepDef, "id" | "subtitle">, t: Tr = defaultT): { eyebrow: string; title: string; subtitle?: string } {
+/**
+ * A step's heading text in the translator's language.
+ * about: the name of someone else whose details are being edited ("What's Maya's shoe size?").
+ */
+export function stepText(step: Pick<StepDef, "id" | "subtitle">, t: Tr = defaultT, about?: string): { eyebrow: string; title: string; subtitle?: string } {
   const k = `core.steps.${step.id}`;
-  return { eyebrow: t(`${k}.eyebrow`), title: t(`${k}.title`), subtitle: step.subtitle ? t(`${k}.subtitle`) : undefined };
+  const h = about ? `core.stepsAbout.${step.id}` : k;
+  const v = about ? { name: about } : undefined;
+  return { eyebrow: t(`${k}.eyebrow`), title: t(`${h}.title`, v), subtitle: step.subtitle ? t(`${h}.subtitle`, v) : undefined };
 }
 
 export type Scene = "welcome" | "fit" | "tops" | "bottoms" | "dresses" | "outerwear" | "shoes" | "accessories" | "address" | "dates" | "favorites" | "kids" | "done";

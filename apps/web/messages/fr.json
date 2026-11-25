@@ -94,7 +94,8 @@
     "signIn": "Se connecter",
     "connect": "Relier des profils",
     "reminders": "E-mails de rappel",
-    "privacy": "Politique de confidentialité"
+    "privacy": "Politique de confidentialité",
+    "editPerson": "Modifier la fiche"
   },
   "privacy": {
     "description": "Ce que My Gift Lockers collecte, pourquoi, et les choix dont vous disposez.",
@@ -388,7 +389,17 @@
       "send": "Envoyer de l’argent",
       "copy": "Copier",
       "copied": "Copié",
-      "copyAddress": "Copier l’adresse"
+      "copyAddress": "Copier l’adresse",
+      "edit": "Modifier",
+      "remove": "Retirer du casier",
+      "removeTitle": "Retirer {name} ?",
+      "removeBody": "Sa fiche, vos notes, photos et idées cadeaux sont supprimées. C'est définitif.",
+      "removeLinked": "Vous ne recevrez plus ses mises à jour.",
+      "removeYes": "Retirer",
+      "cancel": "Annuler",
+      "removing": "Suppression…",
+      "removeFailed": "Impossible de retirer cette personne. Réessayez.",
+      "liveNoEdit": "{name} tient cette fiche à jour : ses infos ne sont pas modifiables ici."
     },
     "owner": {
       "title": "Rien que pour vous",
@@ -507,7 +518,12 @@
       "wish": "Souhait n° {n}",
       "lists": "Listes de souhaits et listes de cadeaux (facultatif)",
       "teams": "Équipes de sport préférées (facultatif)",
-      "teamsPlaceholder": "PSG, Real Madrid, les Lakers…"
+      "teamsPlaceholder": "PSG, Real Madrid, les Lakers…",
+      "nameEdit": "Nom",
+      "nameHintEdit": "Vous seul voyez le contenu de cette fiche.",
+      "relationship": "Lien",
+      "relationshipPlaceholder": "Sœur, meilleur ami, collègue…",
+      "lovesEdit": "Ce que cette personne adore"
     },
     "links": {
       "placeholder": "Collez le lien d’une liste d’envies Amazon ou d’une liste de cadeaux",
@@ -581,7 +597,8 @@
         "pix": "Clé PIX",
         "mercadopago": "Alias ou lien"
       }
-    }
+    },
+    "saveChanges": "Enregistrer"
   },
   "colors": {
     "blush": "Rose poudré",
@@ -835,5 +852,11 @@
     "hint": "Jusqu’à {max}. Vous seul les voyez ; elles aident à choisir des cadeaux à son goût.",
     "uploadFailed": "Impossible d’ajouter cette photo. Essayez un JPEG ou un PNG.",
     "removeFailed": "Impossible de retirer la photo. Réessayez."
+  },
+  "editPerson": {
+    "loading": "Chargement…",
+    "notFound": "Cette personne n'est plus dans votre casier.",
+    "back": "Retour à mon casier",
+    "live": "{name} tient cette fiche à jour depuis son propre profil : elle n'est pas modifiable ici."
   }
 }

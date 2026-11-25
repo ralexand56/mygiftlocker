@@ -94,6 +94,10 @@ export function patchPerson(id: string, changes: Partial<Person>) {
   update((db) => ({ ...db, people: db.people.map((p) => (p.id === id ? { ...p, ...changes } : p)) }));
 }
 
+export function removePerson(id: string) {
+  update((db) => ({ ...db, people: db.people.filter((p) => p.id !== id) }));
+}
+
 export function newPersonColor(name: string) {
   return pastelFor(name);
 }

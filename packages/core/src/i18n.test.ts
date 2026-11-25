@@ -74,3 +74,21 @@ describe("pickLocale", () => {
     expect(pickLocale(undefined)).toBe("en");
   });
 });
+
+describe("step headings about someone else", () => {
+  it("names the person when the owner edits their card", async () => {
+    const { STEP_DEFS, stepText } = await import("./steps");
+    const en = createTr("en", CORE_CATALOGS.en);
+    expect(stepText(STEP_DEFS.shoes, en).title).toBe("What's your shoe size?");
+    expect(stepText(STEP_DEFS.shoes, en, "Maya").title).toBe("What's Maya's shoe size?");
+    expect(stepText(STEP_DEFS.address, en, "Maya").subtitle).toBe("Only you see it in your locker.");
+    for (const l of LOCALES) {
+      const t = createTr(l, CORE_CATALOGS[l]);
+      for (const step of Object.values(STEP_DEFS)) {
+        const s = stepText(step, t, "Maya");
+        expect(s.title).not.toContain("core.");
+        if (step.subtitle) expect(s.subtitle).not.toContain("core.");
+      }
+    }
+  });
+});

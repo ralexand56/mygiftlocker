@@ -94,7 +94,8 @@
     "signIn": "Entrar",
     "connect": "Conectar perfis",
     "reminders": "E-mails de lembrete",
-    "privacy": "Política de Privacidade"
+    "privacy": "Política de Privacidade",
+    "editPerson": "Editar dados"
   },
   "privacy": {
     "description": "O que o My Gift Lockers coleta, por quê, e as escolhas que você tem.",
@@ -388,7 +389,17 @@
       "send": "Enviar dinheiro",
       "copy": "Copiar",
       "copied": "Copiado",
-      "copyAddress": "Copiar endereço"
+      "copyAddress": "Copiar endereço",
+      "edit": "Editar dados",
+      "remove": "Remover do armário",
+      "removeTitle": "Remover {name}?",
+      "removeBody": "O cartão, suas notas, fotos e ideias de presente são apagados. Não dá para desfazer.",
+      "removeLinked": "Você também deixará de receber as atualizações da pessoa.",
+      "removeYes": "Remover",
+      "cancel": "Cancelar",
+      "removing": "Removendo…",
+      "removeFailed": "Não foi possível remover. Tente de novo.",
+      "liveNoEdit": "{name} mantém este cartão atualizado, então não dá para editar os dados aqui."
     },
     "owner": {
       "title": "Só para você",
@@ -507,7 +518,12 @@
       "wish": "Desejo nº {n}",
       "lists": "Listas de desejos e de presentes (opcional)",
       "teams": "Times do coração (opcional)",
-      "teamsPlaceholder": "Flamengo, Real Madrid, Lakers…"
+      "teamsPlaceholder": "Flamengo, Real Madrid, Lakers…",
+      "nameEdit": "Nome",
+      "nameHintEdit": "Só você vê o que está neste cartão.",
+      "relationship": "Relação",
+      "relationshipPlaceholder": "Irmã, melhor amigo, colega…",
+      "lovesEdit": "Coisas que a pessoa ama"
     },
     "links": {
       "placeholder": "Cole o link de uma lista de desejos da Amazon ou de uma lista de presentes",
@@ -581,7 +597,8 @@
         "pix": "Chave PIX",
         "mercadopago": "Alias ou link"
       }
-    }
+    },
+    "saveChanges": "Salvar alterações"
   },
   "colors": {
     "blush": "Rosa-claro",
@@ -835,5 +852,11 @@
     "hint": "Até {max}. Só você vê; elas ajudam a escolher presentes com o estilo da pessoa.",
     "uploadFailed": "Não foi possível adicionar a foto. Tente JPEG ou PNG.",
     "removeFailed": "Não foi possível remover a foto. Tente de novo."
+  },
+  "editPerson": {
+    "loading": "Carregando…",
+    "notFound": "Essa pessoa não está mais no seu armário.",
+    "back": "Voltar ao meu armário",
+    "live": "{name} mantém este cartão atualizado pelo próprio perfil, então ele não pode ser editado aqui."
   }
 }

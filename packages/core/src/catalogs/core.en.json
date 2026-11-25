@@ -216,7 +216,58 @@
       "linkInactive": "This link is no longer active.",
       "exchangeNotFound": "We couldn't find that gift exchange."
     },
-    "occasion": "{name}'s {eventLower}"
+    "occasion": "{name}'s {eventLower}",
+    "stepsAbout": {
+      "welcome": {
+        "title": "Edit {name}'s details"
+      },
+      "fit": {
+        "title": "Which section does {name} usually shop?",
+        "subtitle": "We'll tailor the size options to match."
+      },
+      "tops": {
+        "title": "What size shirt does {name} wear?",
+        "subtitle": "Tees, sweaters, button-ups."
+      },
+      "bottoms": {
+        "title": "And {name}'s pants size?"
+      },
+      "dresses": {
+        "title": "Dresses & skirts"
+      },
+      "outerwear": {
+        "title": "Jackets & coats"
+      },
+      "shoes": {
+        "title": "What's {name}'s shoe size?"
+      },
+      "accessories": {
+        "title": "Hats, rings & little things",
+        "subtitle": "Totally optional, but great for surprise jewelry."
+      },
+      "address": {
+        "title": "Where should {name}'s gifts be sent?",
+        "subtitle": "Only you see it in your locker."
+      },
+      "dates": {
+        "title": "Dates worth celebrating",
+        "subtitle": "The year is optional."
+      },
+      "favorites": {
+        "title": "A few of {name}'s favorite things"
+      },
+      "payments": {
+        "title": "Where can {name} get paid?",
+        "subtitle": "Only the apps they use. Only you see these."
+      },
+      "kids": {
+        "title": "Kids they look after",
+        "subtitle": "Add children they manage."
+      },
+      "review": {
+        "title": "Look good?"
+      }
+    }
   },
   "email": {
     "hi": "Hi {name},",

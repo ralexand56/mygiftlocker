@@ -216,7 +216,58 @@
       "linkInactive": "Este link não está mais ativo.",
       "exchangeNotFound": "Não encontramos esse amigo secreto."
     },
-    "occasion": "{eventLower} de {name}"
+    "occasion": "{eventLower} de {name}",
+    "stepsAbout": {
+      "welcome": {
+        "title": "Editar os dados de {name}"
+      },
+      "fit": {
+        "title": "Em qual seção {name} costuma comprar?",
+        "subtitle": "Vamos ajustar as opções de tamanho."
+      },
+      "tops": {
+        "title": "Qual o tamanho de camiseta de {name}?",
+        "subtitle": "Camisetas, suéteres, camisas."
+      },
+      "bottoms": {
+        "title": "E o tamanho de calça de {name}?"
+      },
+      "dresses": {
+        "title": "Vestidos e saias"
+      },
+      "outerwear": {
+        "title": "Jaquetas e casacos"
+      },
+      "shoes": {
+        "title": "Qual o número do calçado de {name}?"
+      },
+      "accessories": {
+        "title": "Chapéus, anéis e mimos",
+        "subtitle": "Opcional, mas ótimo para uma joia surpresa."
+      },
+      "address": {
+        "title": "Para onde enviar os presentes de {name}?",
+        "subtitle": "Só você vê isso no seu armário."
+      },
+      "dates": {
+        "title": "Datas para comemorar",
+        "subtitle": "O ano é opcional."
+      },
+      "favorites": {
+        "title": "Algumas coisas favoritas de {name}"
+      },
+      "payments": {
+        "title": "Onde {name} pode receber dinheiro?",
+        "subtitle": "Só os apps que a pessoa usa. Só você vê."
+      },
+      "kids": {
+        "title": "Crianças sob seus cuidados",
+        "subtitle": "Adicione as crianças sob os cuidados da pessoa."
+      },
+      "review": {
+        "title": "Tudo certo?"
+      }
+    }
   },
   "email": {
     "hi": "Oi, {name},",

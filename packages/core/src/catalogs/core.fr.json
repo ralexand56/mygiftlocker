@@ -216,7 +216,58 @@
       "linkInactive": "Ce lien n’est plus actif.",
       "exchangeNotFound": "Nous n’avons pas trouvé cet échange de cadeaux."
     },
-    "occasion": "{name} : {eventLower}"
+    "occasion": "{name} : {eventLower}",
+    "stepsAbout": {
+      "welcome": {
+        "title": "Modifier les infos de {name}"
+      },
+      "fit": {
+        "title": "Quel rayon pour {name} ?",
+        "subtitle": "Nous adapterons les tailles proposées."
+      },
+      "tops": {
+        "title": "Quelle taille de haut pour {name} ?",
+        "subtitle": "T-shirts, pulls, chemises."
+      },
+      "bottoms": {
+        "title": "Et la taille de pantalon de {name} ?"
+      },
+      "dresses": {
+        "title": "Robes et jupes"
+      },
+      "outerwear": {
+        "title": "Vestes et manteaux"
+      },
+      "shoes": {
+        "title": "Quelle pointure pour {name} ?"
+      },
+      "accessories": {
+        "title": "Chapeaux, bagues et petits riens",
+        "subtitle": "Facultatif, mais idéal pour un bijou surprise."
+      },
+      "address": {
+        "title": "Où envoyer les cadeaux de {name} ?",
+        "subtitle": "Visible seulement par vous dans votre casier."
+      },
+      "dates": {
+        "title": "Les dates à fêter",
+        "subtitle": "L'année est facultative."
+      },
+      "favorites": {
+        "title": "Quelques coups de cœur de {name}"
+      },
+      "payments": {
+        "title": "Où envoyer de l'argent à {name} ?",
+        "subtitle": "Seulement les applis utilisées. Visible par vous seul."
+      },
+      "kids": {
+        "title": "Enfants à charge",
+        "subtitle": "Ajoutez les enfants dont cette personne s'occupe."
+      },
+      "review": {
+        "title": "Tout est bon ?"
+      }
+    }
   },
   "email": {
     "hi": "Bonjour {name},",

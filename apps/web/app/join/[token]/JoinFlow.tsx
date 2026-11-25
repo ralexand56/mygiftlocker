@@ -100,6 +100,8 @@ interface FormState {
   wishlists: string[];
   payments: PaymentHandles;
   kids: Kid[];
+  /** Only when the owner edits someone's card. */
+  relationship: string;
 }
 
 const initial: FormState = {
@@ -116,6 +118,7 @@ const initial: FormState = {
   wishlists: [""],
   payments: {},
   kids: [],
+  relationship: "",
 };
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -153,8 +156,16 @@ function formFrom(p: Person): FormState {
     wishes,
     wishlists: p.favorites?.wishlists?.length ? [...p.favorites.wishlists] : [""],
     payments: { ...p.payments },
+    relationship: p.relationship ?? "",
   };
 }
+
+/** The same questions, answered by the locker owner about someone on their card. */
+export const editInvite = (kind: Person["kind"]): PublicInvite => ({
+  id: "edit",
+  from: { name: "you" },
+  ask: { sizes: true, address: true, dates: true, favorites: true, payments: kind === "adult", kids: false },
+});
 
 /** The same questions, for the signed-in user's own profile. */
 export const SELF_INVITE: PublicInvite = { id: "self", from: { name: "you" }, ask: { sizes: true, address: true, dates: true, favorites: true, payments: true, kids: false } };
@@ -164,7 +175,8 @@ export function JoinFlow({
   self,
 }: {
   invite: PublicInvite;
-  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string };
+  /** about: first name of the person being edited, when it isn't the user's own profile. */
+  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string; about?: string };
 }) {
   const router = useRouter();
   const t = useTranslations("join");
@@ -193,7 +205,8 @@ export function JoinFlow({
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
   const step = steps[Math.min(index, steps.length - 1)]!;
-  const text = stepText(step, tr);
+  const about = self?.about;
+  const text = stepText(step, tr, about);
   const progress = (index + 1) / steps.length;
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -237,6 +250,7 @@ export function JoinFlow({
       id: newId("p_"),
       name: form.name.trim(),
       kind: "adult",
+      relationship: form.relationship.trim() || undefined,
       color: pastelFor(form.name),
       sizes: form.sizes,
       address: isCompleteAddress(a) ? a : undefined,
@@ -353,7 +367,7 @@ export function JoinFlow({
                       {text.eyebrow}
                     </motion.p>
                     <motion.h1 custom={dir} variants={line} className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-[2.6rem]">
-                      {step.id === "welcome" ? (self ? t("ownProfile") : t("wantsGifts", { name: invite.from.name })) : text.title}
+                      {step.id === "welcome" ? (about ? text.title : self ? t("ownProfile") : t("wantsGifts", { name: invite.from.name })) : text.title}
                     </motion.h1>
                     {text.subtitle && (
                       <motion.p custom={dir} variants={line} className="mt-2 text-ink-soft">
@@ -404,7 +418,7 @@ export function JoinFlow({
                         )}
                         {step.id === "review" ? (
                           <Button onClick={submit} disabled={sending}>
-                            <Sparkles className="h-4 w-4" /> {sending ? (self ? t("saving") : t("sending")) : self ? t("saveProfile") : t("shareWith", { name: invite.from.name })}
+                            <Sparkles className="h-4 w-4" /> {sending ? (self ? t("saving") : t("sending")) : about ? t("saveChanges") : self ? t("saveProfile") : t("shareWith", { name: invite.from.name })}
                           </Button>
                         ) : (
                           <Button onClick={() => go(1)} disabled={!canContinue}>
@@ -594,6 +608,7 @@ function StepBody({
 }) {
   const t = useTranslations("join.body");
   const tr = useTr();
+  const editing = invite.id === "edit";
   const s = form.sizes;
   const fit: Fit = s.fit ?? "womens";
   const alpha = (v: AlphaSize) => convertAlpha(v)[sys];
@@ -611,11 +626,24 @@ function StepBody({
         <>
           {invite.note && <blockquote className="mb-6 rounded-2xl bg-white/70 p-4 text-ink-soft italic">“{invite.note}”</blockquote>}
           <Field
-            label={t("name")}
-            hint={invite.id === "self" ? t("nameHintSelf") : t("nameHint", { name: invite.from.name })}
+            label={editing ? t("nameEdit") : t("name")}
+            hint={editing ? t("nameHintEdit") : invite.id === "self" ? t("nameHintSelf") : t("nameHint", { name: invite.from.name })}
           >
-            <Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("namePlaceholder")} autoComplete="name" />
+            <Input
+              autoFocus
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              placeholder={editing ? undefined : t("namePlaceholder")}
+              autoComplete={editing ? "off" : "name"}
+            />
           </Field>
+          {editing && (
+            <div className="mt-5">
+              <Field label={t("relationship")}>
+                <Input value={form.relationship} maxLength={60} onChange={(e) => set("relationship", e.target.value)} placeholder={t("relationshipPlaceholder")} />
+              </Field>
+            </div>
+          )}
         </>
       );
 
@@ -756,7 +784,7 @@ function StepBody({
           <Group label={t("colors")}>
             <ColorPicker value={form.colors} onChange={(v) => set("colors", v)} />
           </Group>
-          <Group label={t("loves")}>
+          <Group label={editing ? t("lovesEdit") : t("loves")}>
             <Textarea value={form.likes} onChange={(e) => set("likes", e.target.value)} placeholder={t("lovesPlaceholder")} />
           </Group>
           <Group label={t("teams")}>

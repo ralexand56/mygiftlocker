@@ -94,7 +94,8 @@
     "signIn": "Sign in",
     "connect": "Connect profiles",
     "reminders": "Reminder emails",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "editPerson": "Edit details"
   },
   "privacy": {
     "description": "What My Gift Lockers collects, why, and the choices you have.",
@@ -388,7 +389,17 @@
       "send": "Send money",
       "copy": "Copy",
       "copied": "Copied",
-      "copyAddress": "Copy address"
+      "copyAddress": "Copy address",
+      "edit": "Edit details",
+      "remove": "Remove from locker",
+      "removeTitle": "Remove {name}?",
+      "removeBody": "Their card, your notes, photos and gift ideas for them are deleted. This can't be undone.",
+      "removeLinked": "You'll also stop getting their updates.",
+      "removeYes": "Remove",
+      "cancel": "Cancel",
+      "removing": "Removing…",
+      "removeFailed": "Couldn't remove them. Try again.",
+      "liveNoEdit": "{name} keeps this card up to date, so you can't edit their details here."
     },
     "owner": {
       "title": "Just for you",
@@ -507,7 +518,12 @@
       "wish": "Wish #{n}",
       "lists": "Wish lists & registries (optional)",
       "teams": "Favorite sports teams (optional)",
-      "teamsPlaceholder": "Chicago Cubs, Real Madrid, the Lakers…"
+      "teamsPlaceholder": "Chicago Cubs, Real Madrid, the Lakers…",
+      "nameEdit": "Name",
+      "nameHintEdit": "Only you see what's on this card.",
+      "relationship": "Relationship",
+      "relationshipPlaceholder": "Sister, best friend, coworker…",
+      "lovesEdit": "Things they love"
     },
     "links": {
       "placeholder": "Paste an Amazon wish list or registry link",
@@ -581,7 +597,8 @@
         "pix": "PIX key",
         "mercadopago": "Alias or link"
       }
-    }
+    },
+    "saveChanges": "Save changes"
   },
   "colors": {
     "blush": "Blush",
@@ -835,5 +852,11 @@
     "hint": "Up to {max}. Only you see them; they help pick gifts that match their style.",
     "uploadFailed": "Couldn't add that photo. Try a JPEG or PNG.",
     "removeFailed": "Couldn't remove the photo. Try again."
+  },
+  "editPerson": {
+    "loading": "Loading…",
+    "notFound": "That person isn't in your locker anymore.",
+    "back": "Back to my locker",
+    "live": "{name} keeps this card up to date from their own profile, so it can't be edited here."
   }
 }

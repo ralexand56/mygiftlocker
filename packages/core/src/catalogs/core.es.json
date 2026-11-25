@@ -216,7 +216,58 @@
       "linkInactive": "Este enlace ya no está activo.",
       "exchangeNotFound": "No encontramos ese intercambio de regalos."
     },
-    "occasion": "{eventLower} de {name}"
+    "occasion": "{eventLower} de {name}",
+    "stepsAbout": {
+      "welcome": {
+        "title": "Editar los datos de {name}"
+      },
+      "fit": {
+        "title": "¿En qué sección suele comprar {name}?",
+        "subtitle": "Adaptaremos las opciones de talla."
+      },
+      "tops": {
+        "title": "¿Qué talla de camisa usa {name}?",
+        "subtitle": "Camisetas, suéteres, camisas."
+      },
+      "bottoms": {
+        "title": "¿Y la talla de pantalón de {name}?"
+      },
+      "dresses": {
+        "title": "Vestidos y faldas"
+      },
+      "outerwear": {
+        "title": "Chaquetas y abrigos"
+      },
+      "shoes": {
+        "title": "¿Qué talla de zapato usa {name}?"
+      },
+      "accessories": {
+        "title": "Sombreros, anillos y detalles",
+        "subtitle": "Totalmente opcional, pero ideal para sorprender con joyas."
+      },
+      "address": {
+        "title": "¿A dónde enviar los regalos de {name}?",
+        "subtitle": "Solo tú lo ves en tu casillero."
+      },
+      "dates": {
+        "title": "Fechas para celebrar",
+        "subtitle": "El año es opcional."
+      },
+      "favorites": {
+        "title": "Algunas cosas favoritas de {name}"
+      },
+      "payments": {
+        "title": "¿Dónde puede recibir dinero {name}?",
+        "subtitle": "Solo las apps que usa. Solo tú las ves."
+      },
+      "kids": {
+        "title": "Niños a su cargo",
+        "subtitle": "Agrega los niños que tiene a cargo."
+      },
+      "review": {
+        "title": "¿Todo bien?"
+      }
+    }
   },
   "email": {
     "hi": "Hola, {name}:",
