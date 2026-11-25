@@ -116,12 +116,19 @@ export async function updateOwnerFields(id: string, changes: OwnerFields): Promi
   unwrap(await api().models.Profile.update({ id, ...clean }));
 }
 
-/** The details the owner can edit on a card (what an invite asks for, plus how they know them). */
-export type EditableFields = Pick<Person, "name" | "relationship" | "sizes" | "address" | "birthday" | "anniversary" | "favorites" | "payments">;
+/**
+ * The details the owner can edit on a card (what an invite asks for, plus how they know them).
+ * Sections left out aren't touched (on a linked card, the ones the person shares).
+ */
+export type EditableFields = Pick<Person, "name" | "relationship"> &
+  Partial<Pick<Person, "sizes" | "address" | "birthday" | "anniversary" | "favorites" | "payments">>;
 
 /** Saves the owner's edits to someone's details. Cleared fields are removed. */
 export async function updateLockerPerson(id: string, f: EditableFields): Promise<void> {
-  const fields = { ...f, name: f.name.trim(), relationship: f.relationship?.trim() || undefined, payments: cleanPayments(f.payments) };
+  const has = (k: keyof EditableFields) => k in f;
+  const fields: Partial<Person> = { name: f.name.trim(), relationship: f.relationship?.trim() || undefined };
+  for (const k of ["sizes", "address", "birthday", "anniversary", "favorites"] as const) if (has(k)) Object.assign(fields, { [k]: f[k] });
+  if (has("payments")) fields.payments = cleanPayments(f.payments);
   if (!backendEnabled) return patchPerson(id, { ...fields, updatedAt: new Date().toISOString() });
   const json = (v: unknown) => (v === undefined ? null : JSON.stringify(v));
   unwrap(
@@ -129,12 +136,12 @@ export async function updateLockerPerson(id: string, f: EditableFields): Promise
       id,
       name: fields.name,
       relationship: fields.relationship ?? null,
-      sizes: JSON.stringify(fields.sizes ?? {}),
-      address: json(fields.address),
-      birthday: fields.birthday ?? null,
-      anniversary: fields.anniversary ?? null,
-      favorites: json(fields.favorites),
-      payments: json(fields.payments),
+      ...(has("sizes") && { sizes: JSON.stringify(fields.sizes ?? {}) }),
+      ...(has("address") && { address: json(fields.address) }),
+      ...(has("birthday") && { birthday: fields.birthday ?? null }),
+      ...(has("anniversary") && { anniversary: fields.anniversary ?? null }),
+      ...(has("favorites") && { favorites: json(fields.favorites) }),
+      ...(has("payments") && { payments: json(fields.payments) }),
     }),
   );
 }

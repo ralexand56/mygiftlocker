@@ -6,7 +6,9 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
-import { listLockerPeople, updateLockerPerson } from "@/lib/invites";
+import { listLockerPeople, updateLockerPerson, type EditableFields } from "@/lib/invites";
+import { cardShares } from "@/lib/connections";
+import type { ConnectionShares } from "@mgl/core";
 import { useDB, useHydrated } from "@/lib/store";
 import { JoinFlow, editInvite } from "../../join/[token]/JoinFlow";
 
@@ -19,6 +21,12 @@ export function EditPerson() {
   const hydrated = useHydrated();
   const localPeople = useDB((db) => db.people);
   const { data: remotePeople, loading } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
+  // On a linked card, the sections the person shares come from their profile; the rest is editable.
+  const linkId = remotePeople?.find((p) => p.id === id && p.linked && !p.linked.ended)?.linked?.connectionId;
+  const { data: shared, loading: loadingShares } = useAsync(
+    async (): Promise<ConnectionShares | null> => (linkId ? cardShares(linkId).catch(() => ALL_SHARED) : null),
+    [linkId],
+  );
 
   if (authMode === "amplify" && user === null)
     return (
@@ -30,7 +38,7 @@ export function EditPerson() {
       </Screen>
     );
   const people = authMode === "amplify" ? remotePeople : hydrated ? localPeople : undefined;
-  if (!people || (authMode === "amplify" && (user === undefined || loading)))
+  if (!people || (authMode === "amplify" && (user === undefined || loading || loadingShares)))
     return (
       <Screen>
         <p className="text-ink-soft">{t("loading")}</p>
@@ -39,12 +47,11 @@ export function EditPerson() {
 
   const person = people.find((p) => p.id === id);
   const first = person?.name.split(" ")[0] ?? "";
-  // A live connection overwrites these fields from the person's own profile.
   const live = !!person?.linked && !person.linked.ended;
-  if (!person || live)
+  if (!person || (live && !shared))
     return (
       <Screen>
-        <p className="text-lg">{person ? t("live", { name: first }) : t("notFound")}</p>
+        <p className="text-lg">{t("notFound")}</p>
         <div className="mt-6">
           <Button href="/locker">{t("back")}</Button>
         </div>
@@ -53,22 +60,22 @@ export function EditPerson() {
 
   return (
     <JoinFlow
-      invite={editInvite(person.kind)}
+      invite={editInvite(person.kind, live ? shared! : undefined)}
       self={{
         initial: person,
         about: first,
+        notice: live ? t("live", { name: first }) : undefined,
         doneHref: `/locker?open=${encodeURIComponent(person.id)}`,
-        onSave: (p) =>
-          updateLockerPerson(person.id, {
-            name: p.name,
-            relationship: p.relationship,
-            sizes: p.sizes,
-            address: p.address,
-            birthday: p.birthday,
-            anniversary: p.anniversary,
-            favorites: p.favorites,
-            payments: person.kind === "adult" ? p.payments : person.payments,
-          }),
+        onSave: (p) => {
+          const skip = live ? shared! : NONE_SHARED;
+          const f: EditableFields = { name: p.name, relationship: p.relationship };
+          if (!skip.sizes) f.sizes = p.sizes;
+          if (!skip.address) f.address = p.address;
+          if (!skip.dates) Object.assign(f, { birthday: p.birthday, anniversary: p.anniversary });
+          if (!skip.favorites) f.favorites = p.favorites;
+          if (!skip.payments && person.kind === "adult") f.payments = p.payments;
+          return updateLockerPerson(person.id, f);
+        },
       }}
     />
   );
@@ -81,3 +88,6 @@ function Screen({ children }: { children: ReactNode }) {
     </main>
   );
 }
+
+const ALL_SHARED: ConnectionShares = { sizes: true, favorites: true, dates: true, address: true, payments: true };
+const NONE_SHARED: ConnectionShares = { sizes: false, favorites: false, dates: false, address: false, payments: false };

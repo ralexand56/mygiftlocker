@@ -52,6 +52,7 @@ import {
   type Address,
   type AlphaSize,
   type Fit,
+  type ConnectionShares,
   type PublicInvite,
   type PartialDate,
   type Person,
@@ -161,10 +162,18 @@ function formFrom(p: Person): FormState {
 }
 
 /** The same questions, answered by the locker owner about someone on their card. */
-export const editInvite = (kind: Person["kind"]): PublicInvite => ({
+export const editInvite = (kind: Person["kind"], shared?: Partial<ConnectionShares>): PublicInvite => ({
   id: "edit",
   from: { name: "you" },
-  ask: { sizes: true, address: true, dates: true, favorites: true, payments: kind === "adult", kids: false },
+  // On a linked card, the sections the person shares update from their own profile: leave those out.
+  ask: {
+    sizes: !shared?.sizes,
+    address: !shared?.address,
+    dates: !shared?.dates,
+    favorites: !shared?.favorites,
+    payments: kind === "adult" && !shared?.payments,
+    kids: false,
+  },
 });
 
 /** The same questions, for the signed-in user's own profile. */
@@ -176,7 +185,7 @@ export function JoinFlow({
 }: {
   invite: PublicInvite;
   /** about: first name of the person being edited, when it isn't the user's own profile. */
-  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string; about?: string };
+  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string; about?: string; notice?: string };
 }) {
   const router = useRouter();
   const t = useTranslations("join");
@@ -376,7 +385,7 @@ export function JoinFlow({
                     )}
 
                     <motion.div custom={dir} variants={line} className="mt-7">
-                      <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} />
+                      <StepBody step={step} invite={invite} form={form} set={set} setSize={setSize} sys={sys} jump={jump} notice={self?.notice} />
                     </motion.div>
 
                     {step.id === "review" && offerLink && (
@@ -597,8 +606,10 @@ function StepBody({
   setSize,
   sys,
   jump,
+  notice,
 }: {
   step: StepDef;
+  notice?: string;
   invite: PublicInvite;
   form: FormState;
   set: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
@@ -624,6 +635,7 @@ function StepBody({
     case "welcome":
       return (
         <>
+          {notice && <p className="mb-6 rounded-2xl bg-white/70 p-4 text-sm text-ink-soft">{notice}</p>}
           {invite.note && <blockquote className="mb-6 rounded-2xl bg-white/70 p-4 text-ink-soft italic">“{invite.note}”</blockquote>}
           <Field
             label={editing ? t("nameEdit") : t("name")}

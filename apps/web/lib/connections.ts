@@ -71,6 +71,13 @@ export async function endConnection(connectionId: string, both = false): Promise
   unwrap(await api().mutations.endConnection({ connectionId, both }));
 }
 
+/** What the person on a linked card shares into it (those sections update from their profile). */
+export async function cardShares(connectionId: string): Promise<ConnectionShares> {
+  const { data } = await api().models.Connection.get({ id: connectionId });
+  if (!data) throw new Error("connection not found");
+  return cleanShares(parseJson(data.shares ?? "{}"));
+}
+
 /** For a card synced from someone's profile: do I also share mine back with them? */
 export async function sharesBack(connectionId: string, mySub: string): Promise<boolean> {
   if (!backendEnabled) return false;

@@ -481,16 +481,12 @@ function PersonDetail({
         >
           <Sparkles className="h-4 w-4" /> {p.giftIdeas ? tg("open") : tg("find")}
         </motion.button>
-        {p.linked && !p.linked.ended ? (
-          <p className="relative mt-3 max-w-xs text-xs text-ink-soft">{t("liveNoEdit", { name: p.name.split(" ")[0]! })}</p>
-        ) : (
-          <a
-            href={`/locker/edit?id=${encodeURIComponent(p.id)}`}
-            className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-2 text-sm font-bold text-ink ring-1 ring-lavender/50 hover:bg-white"
-          >
-            <Pencil className="h-3.5 w-3.5" /> {t("edit")}
-          </a>
-        )}
+        <a
+          href={`/locker/edit?id=${encodeURIComponent(p.id)}`}
+          className="relative mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-2 text-sm font-bold text-ink ring-1 ring-lavender/50 hover:bg-white"
+        >
+          <Pencil className="h-3.5 w-3.5" /> {t("edit")}
+        </a>
         {connectionsEnabled && p.kind === "adult" && <ConnectionPanel person={p} onChanged={onConnectionChanged} />}
       </div>
 

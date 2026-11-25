@@ -398,8 +398,7 @@
       "removeYes": "Quitar",
       "cancel": "Cancelar",
       "removing": "Quitando…",
-      "removeFailed": "No se pudo quitar. Inténtalo de nuevo.",
-      "liveNoEdit": "{name} mantiene esta tarjeta al día, así que no puedes editar sus datos aquí."
+      "removeFailed": "No se pudo quitar. Inténtalo de nuevo."
     },
     "owner": {
       "title": "Solo para ti",
@@ -857,6 +856,6 @@
     "loading": "Cargando…",
     "notFound": "Esa persona ya no está en tu casillero.",
     "back": "Volver a mi casillero",
-    "live": "{name} mantiene esta tarjeta al día desde su propio perfil, así que no se puede editar aquí."
+    "live": "{name} mantiene al día lo que comparte contigo. Aquí puedes editar el resto."
   }
 }

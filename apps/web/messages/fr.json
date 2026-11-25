@@ -398,8 +398,7 @@
       "removeYes": "Retirer",
       "cancel": "Annuler",
       "removing": "Suppression…",
-      "removeFailed": "Impossible de retirer cette personne. Réessayez.",
-      "liveNoEdit": "{name} tient cette fiche à jour : ses infos ne sont pas modifiables ici."
+      "removeFailed": "Impossible de retirer cette personne. Réessayez."
     },
     "owner": {
       "title": "Rien que pour vous",
@@ -857,6 +856,6 @@
     "loading": "Chargement…",
     "notFound": "Cette personne n'est plus dans votre casier.",
     "back": "Retour à mon casier",
-    "live": "{name} tient cette fiche à jour depuis son propre profil : elle n'est pas modifiable ici."
+    "live": "{name} tient à jour ce qui vous est partagé. Vous pouvez modifier le reste ici."
   }
 }

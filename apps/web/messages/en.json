@@ -398,8 +398,7 @@
       "removeYes": "Remove",
       "cancel": "Cancel",
       "removing": "Removing…",
-      "removeFailed": "Couldn't remove them. Try again.",
-      "liveNoEdit": "{name} keeps this card up to date, so you can't edit their details here."
+      "removeFailed": "Couldn't remove them. Try again."
     },
     "owner": {
       "title": "Just for you",
@@ -857,6 +856,6 @@
     "loading": "Loading…",
     "notFound": "That person isn't in your locker anymore.",
     "back": "Back to my locker",
-    "live": "{name} keeps this card up to date from their own profile, so it can't be edited here."
+    "live": "{name} keeps what they share with you up to date. You can edit the rest here."
   }
 }

@@ -398,8 +398,7 @@
       "removeYes": "Remover",
       "cancel": "Cancelar",
       "removing": "Removendo…",
-      "removeFailed": "Não foi possível remover. Tente de novo.",
-      "liveNoEdit": "{name} mantém este cartão atualizado, então não dá para editar os dados aqui."
+      "removeFailed": "Não foi possível remover. Tente de novo."
     },
     "owner": {
       "title": "Só para você",
@@ -857,6 +856,6 @@
     "loading": "Carregando…",
     "notFound": "Essa pessoa não está mais no seu armário.",
     "back": "Voltar ao meu armário",
-    "live": "{name} mantém este cartão atualizado pelo próprio perfil, então ele não pode ser editado aqui."
+    "live": "{name} mantém atualizado o que compartilha com você. O resto você edita aqui."
   }
 }
