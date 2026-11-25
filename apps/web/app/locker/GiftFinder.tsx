@@ -112,7 +112,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
           transition={{ type: "spring", stiffness: 260, damping: 28 }}
           className="pointer-events-auto relative flex max-h-[94dvh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] bg-cream shadow-lift"
         >
-          <header className="relative flex items-center gap-4 overflow-hidden px-6 pt-6 pb-4 sm:px-8">
+          <header className="relative flex shrink-0 items-center gap-4 overflow-hidden px-6 pt-6 pb-4 sm:px-8">
             <div className="absolute inset-0 -z-0" style={{ background: `radial-gradient(120% 140% at 0% 0%, ${p.color}, transparent 60%)` }} />
             <div className="relative">
               <Avatar name={p.name} color="#fffaf6" size={52} />
@@ -219,7 +219,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
             {!loading && !error && !ideas.length && <p className="py-10 text-center text-ink-soft">{t("allHidden")}</p>}
           </div>
 
-          <form onSubmit={submit} className="border-t border-white bg-white/70 px-4 pt-3 pb-4 sm:px-8">
+          <form onSubmit={submit} className="shrink-0 border-t border-white bg-white/70 px-4 pt-3 pb-4 sm:px-8">
             <div className="mb-2.5 flex gap-2 overflow-x-auto pb-1">
               {CHIPS.map((c) => (
                 <button
