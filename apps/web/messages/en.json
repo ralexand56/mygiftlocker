@@ -60,8 +60,8 @@
         "body": "Friends and family share their own sizes — tops, pants, shoes, rings — with conversions for US, UK, EU, Japan and Latin America."
       },
       "dates": {
-        "title": "Never miss a date",
-        "body": "Birthdays and anniversaries (year optional) with gentle reminders before they sneak up on you."
+        "title": "Reminders with time to shop",
+        "body": "An email a week before birthdays and anniversaries, and three weeks before holidays, with their sizes and wish lists right there. Mark a gift bought and that reminder stops."
       },
       "exchanges": {
         "title": "Gift exchanges in a minute",
@@ -79,7 +79,8 @@
         "title": "One locker, every device",
         "body": "Web, iPhone and iPad stay perfectly in sync."
       }
-    }
+    },
+    "reminderLine": "Free email reminders before every birthday and holiday"
   },
   "titles": {
     "exchange": "Gift exchange",

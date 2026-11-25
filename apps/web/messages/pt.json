@@ -60,8 +60,8 @@
         "body": "Amigos e família informam os próprios tamanhos (blusas, calças, calçados, anéis), com conversão para EUA, Reino Unido, Europa, Japão e América Latina."
       },
       "dates": {
-        "title": "Nunca esqueça uma data",
-        "body": "Aniversários e bodas (o ano é opcional), com lembretes gentis antes que te peguem de surpresa."
+        "title": "Lembretes com tempo para comprar",
+        "body": "Um e-mail uma semana antes de aniversários e bodas, e três semanas antes das datas comemorativas, com os tamanhos e as listas de desejos à mão. Marque um presente como comprado e esse lembrete para."
       },
       "exchanges": {
         "title": "Amigo secreto em um minuto",
@@ -79,7 +79,8 @@
         "title": "Um armário, em todos os aparelhos",
         "body": "Web, iPhone e iPad sempre sincronizados."
       }
-    }
+    },
+    "reminderLine": "Lembretes grátis por e-mail antes de cada aniversário e data comemorativa"
   },
   "titles": {
     "exchange": "Amigo secreto",

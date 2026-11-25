@@ -60,8 +60,8 @@
         "body": "Vos proches indiquent eux-mêmes leurs tailles (hauts, pantalons, chaussures, bagues), avec les conversions pour les États-Unis, le Royaume-Uni, l’Europe, le Japon et l’Amérique latine."
       },
       "dates": {
-        "title": "Ne ratez plus aucune date",
-        "body": "Anniversaires et anniversaires de mariage (année facultative), avec des rappels en douceur avant qu’ils ne vous prennent au dépourvu."
+        "title": "Des rappels avec le temps de faire vos achats",
+        "body": "Un e-mail une semaine avant les anniversaires, et trois semaines avant les fêtes, avec ses tailles et ses listes d’envies sous la main. Marquez un cadeau comme acheté et ce rappel s’arrête."
       },
       "exchanges": {
         "title": "Un échange de cadeaux en une minute",
@@ -79,7 +79,8 @@
         "title": "Un casier, sur tous vos appareils",
         "body": "Web, iPhone et iPad restent parfaitement synchronisés."
       }
-    }
+    },
+    "reminderLine": "Rappels gratuits par e-mail avant chaque anniversaire et chaque fête"
   },
   "titles": {
     "exchange": "Échange de cadeaux",

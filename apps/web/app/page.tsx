@@ -2,7 +2,7 @@ import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
-import { CalendarHeart, Gift, Ruler, Shuffle, Users, Baby } from "lucide-react";
+import { BellRing, CalendarHeart, Gift, Ruler, Shuffle, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const FEATURES = [
@@ -38,6 +38,9 @@ export default function Home() {
               {t("startExchange")}
             </Button>
           </div>
+          <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink-soft">
+            <BellRing className="h-4 w-4 shrink-0 text-rose" aria-hidden /> {t("reminderLine")}
+          </p>
         </div>
         <HeroCollage />
       </section>

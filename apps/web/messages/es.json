@@ -60,8 +60,8 @@
         "body": "Tus amigos y familia comparten sus propias tallas (camisas, pantalones, zapatos, anillos) con conversiones para EE. UU., Reino Unido, Europa, Japón y Latinoamérica."
       },
       "dates": {
-        "title": "Nunca olvides una fecha",
-        "body": "Cumpleaños y aniversarios (el año es opcional) con recordatorios amables antes de que te tomen por sorpresa."
+        "title": "Recordatorios con tiempo para comprar",
+        "body": "Un correo una semana antes de cumpleaños y aniversarios, y tres semanas antes de las fiestas, con sus tallas y listas de deseos a la mano. Marca un regalo como comprado y ese recordatorio se detiene."
       },
       "exchanges": {
         "title": "Intercambios en un minuto",
@@ -79,7 +79,8 @@
         "title": "Un casillero, en todos tus dispositivos",
         "body": "Web, iPhone y iPad, siempre sincronizados."
       }
-    }
+    },
+    "reminderLine": "Recordatorios gratis por correo antes de cada cumpleaños y fiesta"
   },
   "titles": {
     "exchange": "Intercambio de regalos",
