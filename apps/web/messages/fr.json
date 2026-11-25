@@ -818,7 +818,14 @@
     "forMe": "Des idées pour moi",
     "titleSelf": "Des idées pour vous",
     "addWish": "Ajouter à mes souhaits",
-    "inWishes": "Dans mes souhaits"
+    "inWishes": "Dans mes souhaits",
+    "placeholderSelf": "Demandez ce que vous voulez : « pour mon jardin, moins de 40 $ »",
+    "thinkingSelf": {
+      "0": "Lecture de vos tailles et de vos goûts…",
+      "1": "Coup d’œil à vos photos…",
+      "2": "Vérification des dates à venir…",
+      "3": "Choix d’idées qui vous plairont…"
+    }
   },
   "photos": {
     "title": "Photos de {name}",

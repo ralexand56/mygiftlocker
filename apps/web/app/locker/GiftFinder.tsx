@@ -144,7 +144,7 @@ export function GiftFinder({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-8">
             {loading ? (
-              <Thinking name={first} step={step} />
+              <Thinking name={first} step={step} forSelf={forSelf} />
             ) : error ? (
               <div className="grid place-items-center py-16 text-center">
                 <p className="text-4xl">🎁</p>
@@ -272,7 +272,7 @@ export function GiftFinder({
                 onChange={(e) => setRequest(e.target.value)}
                 maxLength={300}
                 disabled={loading}
-                placeholder={t("placeholder", { name: first })}
+                placeholder={forSelf ? t("placeholderSelf") : t("placeholder", { name: first })}
                 aria-label={t("askLabel")}
                 className="min-w-0 flex-1 bg-transparent py-2 outline-none placeholder:text-ink-soft/70"
               />
@@ -292,7 +292,7 @@ export function GiftFinder({
 }
 
 /** While Claude thinks: rotating status lines over shimmering placeholder cards. */
-function Thinking({ name, step }: { name: string; step: number }) {
+function Thinking({ name, step, forSelf }: { name: string; step: number; forSelf: boolean }) {
   const t = useTranslations("gifts");
   return (
     <div className="py-4">
@@ -302,7 +302,7 @@ function Thinking({ name, step }: { name: string; step: number }) {
         </motion.span>
         <AnimatePresence mode="wait">
           <motion.p key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="font-bold text-ink-soft">
-            {t(`thinking.${(step % STEPS) as 0 | 1 | 2 | 3}`, { name })}
+            {forSelf ? t(`thinkingSelf.${(step % STEPS) as 0 | 1 | 2 | 3}`) : t(`thinking.${(step % STEPS) as 0 | 1 | 2 | 3}`, { name })}
           </motion.p>
         </AnimatePresence>
       </div>

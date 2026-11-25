@@ -818,7 +818,14 @@
     "forMe": "Ideas para mí",
     "titleSelf": "Ideas para ti",
     "addWish": "Agregar a mis deseos",
-    "inWishes": "En mis deseos"
+    "inWishes": "En mis deseos",
+    "placeholderSelf": "Pide lo que quieras: «algo para mi jardín, menos de $40»",
+    "thinkingSelf": {
+      "0": "Leyendo tus tallas y gustos…",
+      "1": "Revisando tus fotos…",
+      "2": "Viendo qué fechas se acercan…",
+      "3": "Eligiendo ideas que te encantarán…"
+    }
   },
   "photos": {
     "title": "Fotos de {name}",
