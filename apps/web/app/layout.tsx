@@ -21,7 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { themeColor: "#fffaf7" };
+// The design is light-only; "only light" asks browsers not to auto-darken it.
+export const viewport: Viewport = { themeColor: "#fffaf7", colorScheme: "only light" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
