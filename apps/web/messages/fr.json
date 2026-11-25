@@ -136,7 +136,7 @@
     },
     "providers": {
       "title": "Prestataires",
-      "body": "Nous stockons et traitons les données avec Amazon Web Services (hébergement, connexion et base de données, aux États-Unis). Si vous choisissez la connexion avec Google, Google traite cette connexion selon sa propre politique de confidentialité. Les invitations que vous envoyez par SMS, e-mail, WhatsApp ou d’autres applications passent par ces applications, pas par nous."
+      "body": "Nous stockons et traitons les données avec Amazon Web Services (hébergement, connexion et base de données, aux États-Unis). Si vous choisissez la connexion avec Google, Google traite cette connexion selon sa propre politique de confidentialité. Les invitations que vous envoyez par SMS, e-mail, WhatsApp ou d’autres applications passent par ces applications, pas par nous. Les photos d’exemple des idées cadeaux sont chargées depuis Unsplash, qui reçoit la requête de votre navigateur comme n’importe quel site."
     },
     "google": {
       "title": "Données utilisateur Google",
@@ -811,7 +811,8 @@
       "1": "Coup d’œil à vos notes et photos…",
       "2": "Vérification des dates à venir…",
       "3": "Choix d’idées qui plairont à {name}…"
-    }
+    },
+    "photoBy": "Photo d’exemple : <who>{name}</who> sur <site>Unsplash</site>"
   },
   "photos": {
     "title": "Photos de {name}",

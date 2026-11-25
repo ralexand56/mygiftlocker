@@ -1,6 +1,6 @@
 "use client";
 
-import { DAILY_GIFT_RUNS, LOCALE_TAGS, giftShopUrl, hasAffiliate, type GiftCategory, type GiftIdea, type Person } from "@mgl/core";
+import { DAILY_GIFT_RUNS, LOCALE_TAGS, giftShopUrl, hasAffiliate, unsplashLink, type GiftCategory, type GiftIdea, type Person } from "@mgl/core";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, ExternalLink, RotateCcw, Sparkles, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -153,8 +153,31 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
                       animate={{ opacity: 1, y: 0, scale: 1, rotate: 0, transition: { type: "spring", stiffness: 220, damping: 22, delay: Math.min(i, 12) * 0.07 } }}
                       exit={{ opacity: 0, scale: 0.9, x: 40, transition: { duration: 0.22 } }}
                       whileHover={{ y: -4 }}
-                      className="group relative flex flex-col rounded-3xl bg-white p-4 shadow-soft"
+                      className="group relative flex flex-col overflow-hidden rounded-3xl bg-white p-4 shadow-soft"
                     >
+                      {idea.image && (
+                        <div className="relative -mx-4 -mt-4 mb-3 aspect-[16/9] overflow-hidden" style={{ background: idea.image.color ?? "#f6eedc" }}>
+                          {/* Shown straight from Unsplash, as their guidelines require. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={idea.image.url} alt={idea.image.alt ?? idea.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
+                          <p className="absolute right-2.5 bottom-1.5 left-2.5 truncate text-right text-[10px] text-white/90">
+                            {t.rich("photoBy", {
+                              name: idea.image.by,
+                              who: (c) => (
+                                <a href={unsplashLink(idea.image!.byUrl)} target="_blank" rel="noopener noreferrer" className="underline">
+                                  {c}
+                                </a>
+                              ),
+                              site: (c) => (
+                                <a href={unsplashLink("https://unsplash.com/")} target="_blank" rel="noopener noreferrer" className="underline">
+                                  {c}
+                                </a>
+                              ),
+                            })}
+                          </p>
+                        </div>
+                      )}
                       <div className="flex items-start gap-3">
                         <motion.span
                           initial={{ scale: 0, rotate: -30 }}
@@ -172,7 +195,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
                         </div>
                         <button
                           onClick={() => setIdeas((xs) => xs.filter((x) => x.id !== idea.id))}
-                          className="-mt-1 -mr-1 rounded-full p-1.5 text-ink-soft opacity-60 hover:bg-cream hover:opacity-100"
+                          className={`rounded-full p-1.5 ${idea.image ? "absolute top-2.5 right-2.5 z-10 bg-white/85 text-ink shadow-soft hover:bg-white" : "-mt-1 -mr-1 text-ink-soft opacity-60 hover:bg-cream hover:opacity-100"}`}
                           aria-label={t("notThis", { title: idea.title })}
                           title={t("notThisShort")}
                         >

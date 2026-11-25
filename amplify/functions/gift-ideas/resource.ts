@@ -9,5 +9,10 @@ export const giftIdeas = defineFunction({
   memoryMB: 512,
   resourceGroupName: "data",
   // Set in the Amplify console (Hosting → Secrets). Without it the function uses Amazon Bedrock.
-  environment: { ANTHROPIC_API_KEY: secret("ANTHROPIC_API_KEY") },
+  environment: {
+    ANTHROPIC_API_KEY: secret("ANTHROPIC_API_KEY"),
+    // Unsplash "Access Key" (a public client id, so a plain build variable rather than a secret).
+    // Set UNSPLASH_ACCESS_KEY in Amplify → Hosting → Environment variables; without it ideas have no photos.
+    UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY ?? "",
+  },
 });

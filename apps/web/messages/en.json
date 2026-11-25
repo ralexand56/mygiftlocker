@@ -136,7 +136,7 @@
     },
     "providers": {
       "title": "Service providers",
-      "body": "We store and process data with Amazon Web Services (hosting, sign-in and database, in the United States). If you choose Google sign-in, Google processes that sign-in under its own privacy policy. Invites you send by text, email, WhatsApp or other apps go through those apps, not through us."
+      "body": "We store and process data with Amazon Web Services (hosting, sign-in and database, in the United States). If you choose Google sign-in, Google processes that sign-in under its own privacy policy. Invites you send by text, email, WhatsApp or other apps go through those apps, not through us. Example photos on gift ideas load from Unsplash, which sees your browser’s request like any website."
     },
     "google": {
       "title": "Google user data",
@@ -811,7 +811,8 @@
       "1": "Looking through your notes and photos…",
       "2": "Checking what's coming up…",
       "3": "Picking ideas {name} will love…"
-    }
+    },
+    "photoBy": "Example photo: <who>{name}</who> on <site>Unsplash</site>"
   },
   "photos": {
     "title": "Photos of {name}",

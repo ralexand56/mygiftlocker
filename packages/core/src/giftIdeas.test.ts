@@ -12,6 +12,15 @@ describe("gift ideas", () => {
     expect(ideas).toHaveLength(2);
     expect(ideas[0]).toMatchObject({ priceMin: 60, priceMax: 60, store: "etsy" });
     expect(ideas[1]).toMatchObject({ category: "other", store: "amazon", priceMin: 0, searchQuery: "Mystery" });
+    expect(ideas[0]!.image).toBeUndefined();
+  });
+
+  it("keeps only credited Unsplash photos", () => {
+    const base = { title: "Mug", searchQuery: "mug" };
+    const good = { url: "https://images.unsplash.com/photo-1?w=400", by: "Ana", byUrl: "https://unsplash.com/@ana", color: "#a0b0c0" };
+    expect(cleanGiftIdeas([{ ...base, image: good }])[0]!.image).toEqual({ ...good, alt: undefined });
+    expect(cleanGiftIdeas([{ ...base, image: { ...good, url: "https://evil.example/x.jpg" } }])[0]!.image).toBeUndefined();
+    expect(cleanGiftIdeas([{ ...base, image: { ...good, by: "" } }])[0]!.image).toBeUndefined();
   });
 
   it("builds shop links, tagged only when configured", () => {

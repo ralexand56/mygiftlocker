@@ -25,7 +25,45 @@ export interface GiftIdea {
   store: GiftStore;
   /** What to type into the store's search box. */
   searchQuery: string;
+  /** An illustrative photo of this kind of gift (not the exact product), with its required credit. */
+  image?: GiftImage;
 }
+
+/** A stock photo from Unsplash, shown straight from Unsplash with the photographer credited. */
+export interface GiftImage {
+  /** images.unsplash.com URL (hotlinked, as Unsplash requires). */
+  url: string;
+  /** Average color, shown while the photo loads. */
+  color?: string;
+  alt?: string;
+  by: string;
+  /** Photographer's Unsplash profile. */
+  byUrl: string;
+}
+
+const isHttps = (v: unknown, host: RegExp): v is string => {
+  if (typeof v !== "string") return false;
+  try {
+    const u = new URL(v);
+    return u.protocol === "https:" && host.test(u.hostname);
+  } catch {
+    return false;
+  }
+};
+
+/** Keeps a photo only if it points at Unsplash (images and profile) and has a credit. */
+export function cleanGiftImage(v: unknown): GiftImage | undefined {
+  if (!v || typeof v !== "object") return undefined;
+  const o = v as Record<string, unknown>;
+  if (!isHttps(o.url, /^images\.unsplash\.com$/) || !isHttps(o.byUrl, /^unsplash\.com$/)) return undefined;
+  const by = str(o.by, 80);
+  if (!by) return undefined;
+  const color = typeof o.color === "string" && /^#[0-9a-f]{6}$/i.test(o.color) ? o.color : undefined;
+  return { url: o.url, color, alt: str(o.alt, 200) || undefined, by, byUrl: o.byUrl };
+}
+
+/** Unsplash's referral parameters, required on links back to them. */
+export const unsplashLink = (url: string) => `${url}${url.includes("?") ? "&" : "?"}utm_source=my_gift_lockers&utm_medium=referral`;
 
 /** Most photos kept per person (they're sent to the AI as images). */
 export const MAX_PERSON_PHOTOS = 5;
@@ -57,6 +95,7 @@ export function cleanGiftIdeas(input: unknown): GiftIdea[] {
       category: (GIFT_CATEGORIES as readonly string[]).includes(o.category as string) ? (o.category as GiftCategory) : "other",
       store: (GIFT_STORES as readonly string[]).includes(o.store as string) ? (o.store as GiftStore) : "amazon",
       searchQuery,
+      image: cleanGiftImage(o.image),
     });
     if (out.length >= 15) break;
   }

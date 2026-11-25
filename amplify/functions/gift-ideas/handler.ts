@@ -25,6 +25,7 @@ import {
   dateKey,
   giftContext,
   isLocale,
+  type GiftIdea,
   type Person,
 } from "@mgl/core";
 import { env } from "$amplify/env/gift-ideas";
@@ -146,6 +147,43 @@ async function loadPhotos(urls: string[], profileId: string): Promise<Anthropic.
   return out;
 }
 
+/**
+ * One illustrative Unsplash photo per idea (not the exact product). Unsplash's rules: show
+ * their hotlinked URL, credit the photographer, and ping download_location when a photo is used.
+ * Without UNSPLASH_ACCESS_KEY, or if Unsplash is slow, ideas simply have no photo.
+ */
+async function addPhotos(ideas: GiftIdea[]): Promise<GiftIdea[]> {
+  const key = process.env.UNSPLASH_ACCESS_KEY;
+  if (!key) return ideas;
+  const headers = { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" };
+  return Promise.all(
+    ideas.map(async (idea) => {
+      try {
+        const q = new URLSearchParams({ query: idea.searchQuery, per_page: "1", orientation: "landscape", content_filter: "high" });
+        const res = await fetch(`https://api.unsplash.com/search/photos?${q}`, { headers, signal: AbortSignal.timeout(4000) });
+        if (!res.ok) return idea;
+        const photo = ((await res.json()) as { results?: UnsplashPhoto[] }).results?.[0];
+        if (!photo) return idea;
+        void fetch(photo.links.download_location, { headers, signal: AbortSignal.timeout(4000) }).catch(() => {});
+        return {
+          ...idea,
+          image: { url: photo.urls.small, color: photo.color ?? undefined, alt: photo.alt_description ?? undefined, by: photo.user.name, byUrl: photo.user.links.html },
+        };
+      } catch {
+        return idea;
+      }
+    }),
+  );
+}
+
+interface UnsplashPhoto {
+  color?: string | null;
+  alt_description?: string | null;
+  urls: { small: string };
+  links: { download_location: string };
+  user: { name: string; links: { html: string } };
+}
+
 export const handler = async (event: FindGiftsEvent) => {
   const sub = event.identity?.sub;
   const jobId = event.arguments.jobId;
@@ -197,7 +235,7 @@ export const handler = async (event: FindGiftsEvent) => {
         });
     console.log("gift ideas", { via: direct ? "anthropic" : "bedrock", model: response.model, stop: response.stop_reason, usage: response.usage, photos: photos.length });
     if (response.stop_reason === "refusal") throw new Failure("declined");
-    const ideas = cleanGiftIdeas(response.parsed_output?.ideas);
+    const ideas = cleanGiftIdeas(await addPhotos(cleanGiftIdeas(response.parsed_output?.ideas)));
     if (!ideas.length) throw new Failure("failed");
 
     await recordRun(sub);

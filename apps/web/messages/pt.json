@@ -136,7 +136,7 @@
     },
     "providers": {
       "title": "Prestadores de serviço",
-      "body": "Armazenamos e processamos os dados com a Amazon Web Services (hospedagem, login e banco de dados, nos Estados Unidos). Se você escolher entrar com o Google, o Google processa esse login conforme a própria política de privacidade. Convites que você envia por SMS, e-mail, WhatsApp ou outros apps passam por esses apps, não por nós."
+      "body": "Armazenamos e processamos os dados com a Amazon Web Services (hospedagem, login e banco de dados, nos Estados Unidos). Se você escolher entrar com o Google, o Google processa esse login conforme a própria política de privacidade. Convites que você envia por SMS, e-mail, WhatsApp ou outros apps passam por esses apps, não por nós. As fotos ilustrativas das ideias de presente são carregadas do Unsplash, que recebe a requisição do seu navegador como qualquer site."
     },
     "google": {
       "title": "Dados de usuário do Google",
@@ -811,7 +811,8 @@
       "1": "Olhando suas anotações e fotos…",
       "2": "Vendo as datas que estão chegando…",
       "3": "Escolhendo ideias que {name} vai amar…"
-    }
+    },
+    "photoBy": "Foto ilustrativa: <who>{name}</who> no <site>Unsplash</site>"
   },
   "photos": {
     "title": "Fotos de {name}",
