@@ -8,9 +8,9 @@
  * Someone who answers an invite and then creates an account gets those answers
  * as their profile: the invite flow keeps a copy in this browser until they sign in.
  */
-import { pastelFor, sharesFromAsk, type Person, type PublicInvite, cleanPayments } from "@mgl/core";
+import { MAX_PERSON_PHOTOS, cleanGiftIdeas, cleanPayments, pastelFor, sharesFromAsk, type Person, type PublicInvite } from "@mgl/core";
 import { connectProfile, syncMyProfile } from "./connections";
-import { api, backendEnabled, parseJson } from "./amplify";
+import { api, backendEnabled, parseJson, unwrap } from "./amplify";
 import { readDB, update } from "./store";
 
 const PENDING = "mgl:pendingSelf";
@@ -33,6 +33,8 @@ export async function getSelfProfile(sub: string): Promise<Person | null> {
     anniversary: date(p.anniversary),
     favorites: parseJson(p.favorites ?? "null") ?? undefined,
     payments: cleanPayments(parseJson(p.payments ?? "null")),
+    photos: p.photos?.filter((x): x is string => !!x),
+    giftIdeas: savedGiftIdeas(p.giftIdeas),
     updatedAt: p.updatedAt,
   };
 }
@@ -59,6 +61,27 @@ export async function saveSelfProfile(sub: string, p: Person): Promise<void> {
   if (errors?.length) throw new Error(errors[0]!.message);
   // Connected lockers get the update; a failure here shouldn't undo the save.
   await syncMyProfile().catch(() => {});
+}
+
+/** A saved gift list, validated. */
+function savedGiftIdeas(v: unknown): Person["giftIdeas"] {
+  const o = parseJson<{ ideas?: unknown; request?: string; at?: string } | null>(v ?? "null");
+  const ideas = cleanGiftIdeas(o?.ideas);
+  return ideas.length && o?.at ? { ideas, request: o.request, at: o.at } : undefined;
+}
+
+/** Photos of yourself: private, never synced to connections. */
+export async function saveSelfPhotos(sub: string, photos: string[]): Promise<void> {
+  unwrap(await api().models.SelfProfile.update({ ownerSub: sub, photos: photos.slice(0, MAX_PERSON_PHOTOS) }));
+}
+
+/** Adds a gift idea to your own wishes (and so to everyone you share favorites with). */
+export async function addSelfWish(sub: string, self: Person, wish: string): Promise<Person> {
+  const wishes = [...(self.favorites?.wishes ?? []).filter(Boolean)];
+  if (!wishes.some((w) => w.toLocaleLowerCase() === wish.toLocaleLowerCase())) wishes.push(wish.slice(0, 120));
+  const next = { ...self, favorites: { ...self.favorites, wishes: wishes.slice(-10) } };
+  await saveSelfProfile(sub, next);
+  return next;
 }
 
 interface Pending {

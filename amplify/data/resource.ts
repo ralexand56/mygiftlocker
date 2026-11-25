@@ -74,6 +74,10 @@ const schema = a
         birthday: a.ref("PartialDate"),
         anniversary: a.ref("PartialDate"),
         favorites: a.json(),
+        /** Owner-only: up to 5 photos of themselves (never synced), used for their own gift ideas. */
+        photos: a.string().array(),
+        /** Their last "ideas for me" list. */
+        giftIdeas: a.json(),
       })
       .identifier(["ownerSub"])
       .authorization((allow) => [allow.ownerDefinedIn("ownerSub").identityClaim("sub")]),

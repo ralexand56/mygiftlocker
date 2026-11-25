@@ -38,7 +38,20 @@ const CHIPS = ["under50", "experience", "handmade", "lastMinute", "splurge"] as 
 const STEPS = 4;
 
 /** "Find the perfect gift": an animated list of ideas for one person, refined in plain words. */
-export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; onClose: () => void; onSaved: (saved: NonNullable<Person["giftIdeas"]>) => void }) {
+export function GiftFinder({
+  person: p,
+  onClose,
+  onSaved,
+  onAddWish,
+}: {
+  person: Person;
+  onClose: () => void;
+  onSaved: (saved: NonNullable<Person["giftIdeas"]>) => void;
+  /** Your own profile: add an idea to your wishes. */
+  onAddWish?: (idea: GiftIdea) => Promise<void>;
+}) {
+  const forSelf = p.id === "self";
+  const [wished, setWished] = useState<Set<string>>(() => new Set((p.favorites?.wishes ?? []).map((w) => w.toLocaleLowerCase())));
   const t = useTranslations("gifts");
   const locale = useLocale();
   const first = p.name.split(" ")[0]!;
@@ -104,7 +117,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
         <motion.section
           role="dialog"
           aria-modal
-          aria-label={t("title", { name: first })}
+          aria-label={forSelf ? t("titleSelf") : t("title", { name: first })}
           data-gift-finder
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -121,7 +134,7 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
               <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-rose uppercase">
                 <Sparkles className="h-3.5 w-3.5" /> {t("eyebrow")}
               </p>
-              <h2 className="truncate font-display text-2xl font-semibold sm:text-3xl">{t("title", { name: first })}</h2>
+              <h2 className="truncate font-display text-2xl font-semibold sm:text-3xl">{forSelf ? t("titleSelf") : t("title", { name: first })}</h2>
               {!loading && shown && <p className="truncate text-sm text-ink-soft">“{shown}”</p>}
             </div>
             <button onClick={onClose} className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/80 shadow-soft" aria-label={t("close")}>
@@ -211,6 +224,25 @@ export function GiftFinder({ person: p, onClose, onSaved }: { person: Person; on
                       >
                         {t("shop", { store: t(`stores.${idea.store}`) })} <ExternalLink className="h-3.5 w-3.5" />
                       </a>
+                      {onAddWish && (
+                        <button
+                          type="button"
+                          disabled={wished.has(idea.title.toLocaleLowerCase())}
+                          onClick={async () => {
+                            setWished((w) => new Set(w).add(idea.title.toLocaleLowerCase()));
+                            await onAddWish(idea).catch(() =>
+                              setWished((w) => {
+                                const n = new Set(w);
+                                n.delete(idea.title.toLocaleLowerCase());
+                                return n;
+                              }),
+                            );
+                          }}
+                          className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-cream px-3.5 py-1.5 text-sm font-bold text-ink ring-1 ring-lavender/60 hover:bg-blush/40 disabled:opacity-70"
+                        >
+                          {wished.has(idea.title.toLocaleLowerCase()) ? <>✓ {t("inWishes")}</> : <>＋ {t("addWish")}</>}
+                        </button>
+                      )}
                     </motion.li>
                   ))}
                 </AnimatePresence>

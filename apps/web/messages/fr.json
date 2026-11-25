@@ -353,7 +353,8 @@
       "noSizes": "Aucune taille pour l’instant",
       "addBody": "Remplissez-le une fois, puis partagez-le dans les échanges de cadeaux au lieu de tout ressaisir.",
       "edit": "Modifier",
-      "add": "Ajouter le mien"
+      "add": "Ajouter le mien",
+      "photos": "Photos ({n})"
     },
     "liveTitle": "Mis à jour automatiquement depuis son propre profil",
     "live": "En direct",
@@ -813,7 +814,11 @@
       "2": "Vérification des dates à venir…",
       "3": "Choix d’idées qui plairont à {name}…"
     },
-    "photoBy": "Photo d’exemple : <who>{name}</who> sur <site>Unsplash</site>"
+    "photoBy": "Photo d’exemple : <who>{name}</who> sur <site>Unsplash</site>",
+    "forMe": "Des idées pour moi",
+    "titleSelf": "Des idées pour vous",
+    "addWish": "Ajouter à mes souhaits",
+    "inWishes": "Dans mes souhaits"
   },
   "photos": {
     "title": "Photos de {name}",

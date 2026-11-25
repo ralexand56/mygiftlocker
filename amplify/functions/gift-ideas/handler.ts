@@ -195,11 +195,17 @@ export const handler = async (event: FindGiftsEvent) => {
   await data.models.GiftJob.update({ id: job.id, status: "running" });
 
   try {
-    const { data: raw } = await data.models.Profile.get({ id: job.profileId });
-    if (!raw || (raw.ownerSub !== sub && !(raw.guardians ?? []).includes(sub))) throw new Failure("notFound");
+    // "self" means the caller's own profile ("ideas for me"); otherwise a card in their locker.
+    const forSelf = job.profileId === "self";
+    const raw = forSelf ? (await data.models.SelfProfile.get({ ownerSub: sub })).data : (await data.models.Profile.get({ id: job.profileId })).data;
+    if (!raw) throw new Failure("notFound");
+    if (!forSelf) {
+      const card = raw as Schema["Profile"]["type"];
+      if (card.ownerSub !== sub && !(card.guardians ?? []).includes(sub)) throw new Failure("notFound");
+    }
     await checkLimit(sub);
 
-    const person = toPerson(raw);
+    const person = forSelf ? toPerson({ ...(raw as Schema["SelfProfile"]["type"]), id: "self", kind: "adult" } as unknown as Schema["Profile"]["type"]) : toPerson(raw as Schema["Profile"]["type"]);
     const locale = isLocale(job.locale) ? job.locale : "en";
     const request = (job.request ?? "").trim().slice(0, MAX_GIFT_REQUEST);
     const photos = person.kind === "adult" ? await loadPhotos((event.arguments.photoUrls ?? []).filter((u): u is string => !!u), person.id) : [];
@@ -207,6 +213,7 @@ export const handler = async (event: FindGiftsEvent) => {
 
     const text = [
       `Write the title and why in ${LOCALE_NAMES[locale]} (${locale}).`,
+      forSelf ? "These ideas are for me: I'm building my own wish list. Write each why to me (\"You love…\")." : "",
       `About the person:\n${giftContext(person)}`,
       photos.length ? `${photos.length} photo${photos.length === 1 ? "" : "s"} of them ${photos.length === 1 ? "is" : "are"} attached.` : "No photos.",
       request && previous.length ? `Ideas I already saw (don't repeat them): ${previous.map((i) => i.title).join("; ")}` : "",
@@ -245,7 +252,9 @@ export const handler = async (event: FindGiftsEvent) => {
     await recordRun(sub);
     const at = new Date().toISOString();
     await data.models.GiftJob.update({ id: job.id, status: "done", ideas: JSON.stringify(ideas) });
-    await data.models.Profile.update({ id: raw.id, giftIdeas: JSON.stringify({ ideas, request: request || undefined, at }) });
+    const saved = JSON.stringify({ ideas, request: request || undefined, at });
+    if (forSelf) await data.models.SelfProfile.update({ ownerSub: sub, giftIdeas: saved });
+    else await data.models.Profile.update({ id: job.profileId, giftIdeas: saved });
   } catch (e) {
     const key = e instanceof Failure ? e.message : "failed";
     if (!(e instanceof Failure)) console.error("gift ideas failed", e);

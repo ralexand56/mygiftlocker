@@ -353,7 +353,8 @@
       "noSizes": "Nenhum tamanho ainda",
       "addBody": "Preencha uma vez e compartilhe no amigo secreto em vez de digitar tudo de novo.",
       "edit": "Editar",
-      "add": "Adicionar o meu"
+      "add": "Adicionar o meu",
+      "photos": "Fotos ({n})"
     },
     "liveTitle": "Atualiza automaticamente a partir do perfil da própria pessoa",
     "live": "Ao vivo",
@@ -813,7 +814,11 @@
       "2": "Vendo as datas que estão chegando…",
       "3": "Escolhendo ideias que {name} vai amar…"
     },
-    "photoBy": "Foto ilustrativa: <who>{name}</who> no <site>Unsplash</site>"
+    "photoBy": "Foto ilustrativa: <who>{name}</who> no <site>Unsplash</site>",
+    "forMe": "Ideias para mim",
+    "titleSelf": "Ideias para você",
+    "addWish": "Adicionar aos meus desejos",
+    "inWishes": "Nos meus desejos"
   },
   "photos": {
     "title": "Fotos de {name}",

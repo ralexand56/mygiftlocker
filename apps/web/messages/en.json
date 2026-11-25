@@ -353,7 +353,8 @@
       "noSizes": "No sizes yet",
       "addBody": "Fill it in once, then share it in gift exchanges instead of retyping it.",
       "edit": "Edit",
-      "add": "Add mine"
+      "add": "Add mine",
+      "photos": "Photos ({n})"
     },
     "liveTitle": "Updates automatically from their own profile",
     "live": "Live",
@@ -813,7 +814,11 @@
       "2": "Checking what's coming up…",
       "3": "Picking ideas {name} will love…"
     },
-    "photoBy": "Example photo: <who>{name}</who> on <site>Unsplash</site>"
+    "photoBy": "Example photo: <who>{name}</who> on <site>Unsplash</site>",
+    "forMe": "Ideas for me",
+    "titleSelf": "Ideas for you",
+    "addWish": "Add to my wishes",
+    "inWishes": "In my wishes"
   },
   "photos": {
     "title": "Photos of {name}",

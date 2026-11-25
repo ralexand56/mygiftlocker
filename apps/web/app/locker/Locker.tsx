@@ -37,7 +37,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Check, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Check, ImagePlus, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -45,7 +45,7 @@ import { HolidayLists } from "./HolidayLists";
 import { authMode, useUser } from "@/lib/auth";
 import { useAsync } from "@/lib/exchanges";
 import { listLockerPeople, updateOwnerFields, type OwnerFields } from "@/lib/invites";
-import { getSelfProfile, loadOrClaimSelf } from "@/lib/self";
+import { addSelfWish, getSelfProfile, loadOrClaimSelf } from "@/lib/self";
 import { askToConnect, connectionsEnabled, endConnection, sharesBack } from "@/lib/connections";
 import { ShareToggles } from "@/components/ShareToggles";
 import { GiftLock } from "@/components/GiftLock";
@@ -330,29 +330,68 @@ function PersonRow({
 }
 
 /** The user's own profile: what they share in gift exchanges. */
-function SelfCard({ self }: { self: Person | null }) {
+function SelfCard({ self: loaded }: { self: Person | null }) {
   const t = useTranslations("locker");
+  const tg = useTranslations("gifts");
   const tr = useTr(); // hooks run on every render, never only once the profile has loaded
+  const user = useUser();
+  // Local copy so new photos, wishes and idea lists show without a reload.
+  const [self, setSelf] = useState<Person | null>(loaded);
+  useEffect(() => setSelf(loaded), [loaded]);
+  const [finding, setFinding] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
   const sizes = self ? summarizeSizes(self.sizes, tr) : "";
   return (
-    <div className="mb-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/60 p-4 ring-1 ring-lavender/40 sm:p-5">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-lavender/60">
-        <UserRound className="h-6 w-6" />
-      </span>
-      <div className="min-w-0 flex-1 basis-56">
-        <p className="font-bold">
-          {self ? t("self.title") : t("self.addTitle")}
-          {self && connectionsEnabled && (
-            <a href="/locker/sharing" className="ml-2 text-sm font-bold text-plum underline">
-              {t("self.whoCanSee")}
-            </a>
+    <div className="mb-5 rounded-3xl bg-white/60 p-4 ring-1 ring-lavender/40 sm:p-5">
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-lavender/60">
+          <UserRound className="h-6 w-6" />
+        </span>
+        <div className="min-w-0 flex-1 basis-56">
+          <p className="font-bold">
+            {self ? t("self.title") : t("self.addTitle")}
+            {self && connectionsEnabled && (
+              <a href="/locker/sharing" className="ml-2 text-sm font-bold text-plum underline">
+                {t("self.whoCanSee")}
+              </a>
+            )}
+          </p>
+          <p className="truncate text-sm text-ink-soft">{self ? sizes || t("self.noSizes") : t("self.addBody")}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {self && (
+            <Button onClick={() => setFinding(true)}>
+              <Sparkles className="h-4 w-4" /> {tg("forMe")}
+            </Button>
           )}
-        </p>
-        <p className="truncate text-sm text-ink-soft">{self ? sizes || t("self.noSizes") : t("self.addBody")}</p>
+          {self && photosEnabled && (
+            <Button variant="soft" onClick={() => setShowPhotos((v) => !v)} aria-expanded={showPhotos}>
+              <ImagePlus className="h-4 w-4" /> {t("self.photos", { n: self.photos?.length ?? 0 })}
+            </Button>
+          )}
+          <Button href="/locker/me" variant="soft">
+            <Pencil className="h-4 w-4" /> {self ? t("self.edit") : t("self.add")}
+          </Button>
+        </div>
       </div>
-      <Button href="/locker/me" variant="soft">
-        <Pencil className="h-4 w-4" /> {self ? t("self.edit") : t("self.add")}
-      </Button>
+      {self && showPhotos && (
+        <div className="mt-4">
+          <PersonPhotos person={self} onChange={(photos) => setSelf((s) => (s ? { ...s, photos } : s))} />
+        </div>
+      )}
+      <AnimatePresence>
+        {finding && self && (
+          <GiftFinder
+            person={self}
+            onClose={() => setFinding(false)}
+            onSaved={(giftIdeas) => setSelf((s) => (s ? { ...s, giftIdeas } : s))}
+            onAddWish={async (idea) => {
+              if (!user || !self) return;
+              setSelf(await addSelfWish(user.sub, self, idea.title));
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

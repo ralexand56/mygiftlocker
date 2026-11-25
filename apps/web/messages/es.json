@@ -353,7 +353,8 @@
       "noSizes": "Sin tallas todavía",
       "addBody": "Llénalo una vez y compártelo en intercambios de regalos en lugar de volver a escribirlo.",
       "edit": "Editar",
-      "add": "Agregar el mío"
+      "add": "Agregar el mío",
+      "photos": "Fotos ({n})"
     },
     "liveTitle": "Se actualiza automáticamente desde su propio perfil",
     "live": "En vivo",
@@ -813,7 +814,11 @@
       "2": "Viendo qué fechas se acercan…",
       "3": "Eligiendo ideas que le encantarán a {name}…"
     },
-    "photoBy": "Foto de ejemplo: <who>{name}</who> en <site>Unsplash</site>"
+    "photoBy": "Foto de ejemplo: <who>{name}</who> en <site>Unsplash</site>",
+    "forMe": "Ideas para mí",
+    "titleSelf": "Ideas para ti",
+    "addWish": "Agregar a mis deseos",
+    "inWishes": "En mis deseos"
   },
   "photos": {
     "title": "Fotos de {name}",

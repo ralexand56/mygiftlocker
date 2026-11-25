@@ -8,6 +8,7 @@
 import { MAX_GIFT_REQUEST, MAX_PERSON_PHOTOS, cleanGiftIdeas, newId, type AffiliateConfig, type GiftIdea, type Locale, type Person } from "@mgl/core";
 import { api, backendEnabled } from "./amplify";
 import { updateOwnerFields } from "./invites";
+import { saveSelfPhotos } from "./self";
 
 export const giftAffiliate: AffiliateConfig = {
   amazonTag: process.env.NEXT_PUBLIC_AMAZON_TAG || undefined,
@@ -52,16 +53,23 @@ export async function addPersonPhoto(person: Person, file: File): Promise<string
     options: { contentType: "image/jpeg" },
   }).result;
   const photos = [...current, path];
-  await updateOwnerFields(person.id, { photos });
+  await savePhotos(person, photos);
   return photos;
 }
 
 export async function removePersonPhoto(person: Person, path: string): Promise<string[]> {
   const photos = (person.photos ?? []).filter((p) => p !== path);
-  await updateOwnerFields(person.id, { photos });
+  await savePhotos(person, photos);
   const { remove } = await import("aws-amplify/storage");
   await remove({ path }).catch(() => {}); // the card no longer points at it either way
   return photos;
+}
+
+/** Your own profile ("self") keeps photos on SelfProfile; locker cards on Profile. */
+async function savePhotos(person: Person, photos: string[]) {
+  if (person.id !== "self") return updateOwnerFields(person.id, { photos });
+  const { getCurrentUser } = await import("aws-amplify/auth");
+  await saveSelfPhotos((await getCurrentUser()).userId, photos);
 }
 
 /** Short-lived signed URL for showing (or sending) a photo. */
