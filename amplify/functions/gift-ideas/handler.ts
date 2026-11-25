@@ -106,11 +106,18 @@ function toPerson(raw: Schema["Profile"]["type"]): Person {
   };
 }
 
-/** One more run today, or a Failure("limit") once the daily cap is reached. */
-async function countRun(sub: string) {
-  const id = `${sub}#${dateKey(new Date())}`;
-  const { data: usage } = await data.models.GiftUsage.get({ id });
+const usageId = (sub: string) => `${sub}#${dateKey(new Date())}`;
+
+/** Failure("limit") once today's cap is reached. */
+async function checkLimit(sub: string) {
+  const { data: usage } = await data.models.GiftUsage.get({ id: usageId(sub) });
   if (usage && usage.count >= DAILY_GIFT_RUNS) throw new Failure("limit");
+}
+
+/** Counts a finished list (failed runs don't use up the day's lists). */
+async function recordRun(sub: string) {
+  const id = usageId(sub);
+  const { data: usage } = await data.models.GiftUsage.get({ id });
   if (usage) await data.models.GiftUsage.update({ id, count: usage.count + 1 });
   else await data.models.GiftUsage.create({ id, ownerSub: sub, count: 1 });
 }
@@ -149,7 +156,7 @@ export const handler = async (event: FindGiftsEvent) => {
   try {
     const { data: raw } = await data.models.Profile.get({ id: job.profileId });
     if (!raw || (raw.ownerSub !== sub && !(raw.guardians ?? []).includes(sub))) throw new Failure("notFound");
-    await countRun(sub);
+    await checkLimit(sub);
 
     const person = toPerson(raw);
     const locale = isLocale(job.locale) ? job.locale : "en";
@@ -179,6 +186,7 @@ export const handler = async (event: FindGiftsEvent) => {
     const ideas = cleanGiftIdeas(response.parsed_output?.ideas);
     if (!ideas.length) throw new Failure("failed");
 
+    await recordRun(sub);
     const at = new Date().toISOString();
     await data.models.GiftJob.update({ id: job.id, status: "done", ideas: JSON.stringify(ideas) });
     await data.models.Profile.update({ id: raw.id, giftIdeas: JSON.stringify({ ideas, request: request || undefined, at }) });
