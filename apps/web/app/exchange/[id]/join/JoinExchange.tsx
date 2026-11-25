@@ -83,7 +83,9 @@ function Form({ ex }: { ex: PublicExchange }) {
   return (
     <div className="pastel-wash relative min-h-dvh overflow-x-clip">
       <FlyingBackdrop scene="favorites" />
-      <LanguagePicker className="absolute top-4 right-4 z-20 text-[15px]" />
+      <div className="absolute top-4 right-4 z-20 text-[15px]">
+        <LanguagePicker />
+      </div>
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-lg items-center px-4 py-10">
         <motion.section initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 140, damping: 18 }} className="glass w-full rounded-[32px] p-7 shadow-lift md:p-9">
           <LogoMark size={44} />

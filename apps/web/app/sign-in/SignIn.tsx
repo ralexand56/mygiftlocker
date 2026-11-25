@@ -3,11 +3,11 @@
 import { motion } from "motion/react";
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Input } from "@/components/ui";
-import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn } from "@/lib/auth";
+import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { LanguagePicker } from "@/components/LanguagePicker";
 
@@ -19,18 +19,27 @@ export function SignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations("signIn");
+  const user = useUser();
 
   /** Return to where the user came from (?next=/exchange), else the locker. */
   const done = () => {
     const next = new URLSearchParams(window.location.search).get("next");
     router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/locker");
   };
+  // Already signed in (e.g. an old tab or a bookmark): go where they were headed.
+  useEffect(() => {
+    if (user) done();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const attempt = async (fn: () => Promise<void>) => {
     setBusy(true);
     setError(null);
     try {
       await fn();
     } catch (e) {
+      // A session already exists in this browser: treat it as signed in.
+      if (e instanceof Error && e.name === "UserAlreadyAuthenticatedException") return done();
       setError(e instanceof Error ? e.message : t("somethingWrong"));
     } finally {
       setBusy(false);
@@ -40,7 +49,9 @@ export function SignIn() {
   return (
     <main className="pastel-wash relative grid min-h-dvh place-items-center overflow-x-clip py-10 px-4">
       <FlyingBackdrop scene="welcome" />
-      <LanguagePicker className="absolute top-4 right-4 z-20 text-[15px]" />
+      <div className="absolute top-4 right-4 z-20 text-[15px]">
+        <LanguagePicker />
+      </div>
       <motion.section
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
