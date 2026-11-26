@@ -129,4 +129,7 @@ For the **size charts**, pitch gift-guide, expat and parenting bloggers: the cha
 | Date | Where | How | Status |
 |---|---|---|---|
 | 2026-11-26 | Streamer.guide "Best Secret Santa apps" (Kenji Arai, updated Oct 2026) | Contact form on /about, from hello@mygiftlockers.com | Sent; replies forward to the owner's Outlook via ImprovMX |
+| 2026-11-26 | Colombia Move (guide to buying used clothes & shoes) | Spanish contact form, from hello@ | Sent; case CM-20261126-2FE065 |
+| 2026-11-26 | Mexico Relocation Guide ("Quick Guide to Sizes in Mexico") | Email to info@mexicorelocationguide.com via SES from hello@ | Sent |
 | — | PopSci, Women Love Tech, The News Minute | Skipped: stale (2021), spammy comments, or sponsored post | |
+| — | Encarguelo, Shipito | Skipped: blog comments only / customer support only | |
