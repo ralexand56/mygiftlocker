@@ -2,7 +2,7 @@ import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
-import { BellRing, CalendarHeart, Gift, Ruler, Shuffle, Users, Baby } from "lucide-react";
+import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const FEATURES = [
@@ -13,6 +13,9 @@ const FEATURES = [
   { id: "kids", icon: Baby, tint: "bg-sky" },
   { id: "devices", icon: Gift, tint: "bg-peach" },
 ] as const;
+
+/** A sample gift idea; also verifies the site with Sovrn Commerce (affiliate program). */
+const EXAMPLE_IDEA_URL = "https://sovrn.co/dmq0v03";
 
 export default function Home() {
   const t = useTranslations("home");
@@ -56,6 +59,27 @@ export default function Home() {
               <p className="mt-2 text-ink-soft">{t(`features.${f.id}.body`)}</p>
             </div>
           ))}
+          <div className="glass rounded-[28px] p-7 shadow-soft sm:col-span-2 lg:col-span-3">
+            <div className="flex flex-wrap items-start gap-5">
+              <span className="inline-grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-rose to-plum">
+                <Sparkles className="h-6 w-6 text-white" strokeWidth={2.2} />
+              </span>
+              <div className="min-w-0 flex-1 basis-72">
+                <h3 className="font-display text-xl font-semibold">{t("ideas.title")}</h3>
+                <p className="mt-2 text-ink-soft">{t("ideas.body")}</p>
+                <p className="mt-4 text-sm font-bold text-ink-soft">{t("ideas.example")}</p>
+                <a
+                  href={EXAMPLE_IDEA_URL}
+                  target="_blank"
+                  rel="sponsored noopener"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blush/60 px-4 py-2 text-sm font-bold text-ink hover:bg-blush"
+                >
+                  {t("ideas.exampleLink")} <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                <p className="mt-2 text-xs text-ink-soft">{t("ideas.affiliate")}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

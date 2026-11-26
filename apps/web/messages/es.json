@@ -80,7 +80,14 @@
         "body": "Web, iPhone y iPad, siempre sincronizados."
       }
     },
-    "reminderLine": "Recordatorios gratis por correo antes de cada cumpleaños y fiesta"
+    "reminderLine": "Recordatorios gratis por correo antes de cada cumpleaños y fiesta",
+    "ideas": {
+      "title": "Ideas de regalo hechas para cada persona",
+      "body": "Pide ideas para cualquier persona de tu casillero. Las sugerencias salen de sus tallas, favoritos y listas de deseos, con enlaces para comprar cada una.",
+      "example": "Por ejemplo, para alguien que siempre tiene frío:",
+      "exampleLink": "Manta suave · Walmart",
+      "affiliate": "Enlace de afiliado: podemos ganar una comisión sin costo para ti."
+    }
   },
   "titles": {
     "exchange": "Intercambio de regalos",

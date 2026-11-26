@@ -80,7 +80,14 @@
         "body": "Web, iPhone e iPad sempre sincronizados."
       }
     },
-    "reminderLine": "Lembretes grátis por e-mail antes de cada aniversário e data comemorativa"
+    "reminderLine": "Lembretes grátis por e-mail antes de cada aniversário e data comemorativa",
+    "ideas": {
+      "title": "Ideias de presente feitas para cada pessoa",
+      "body": "Peça ideias para qualquer pessoa do seu armário. As sugestões vêm dos tamanhos, favoritos e listas de desejos dela, com links para comprar cada uma.",
+      "example": "Por exemplo, para alguém que sempre sente frio:",
+      "exampleLink": "Manta aconchegante · Walmart",
+      "affiliate": "Link de afiliado: podemos ganhar uma comissão sem custo para você."
+    }
   },
   "titles": {
     "exchange": "Amigo secreto",

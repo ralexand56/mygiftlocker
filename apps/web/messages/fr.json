@@ -80,7 +80,14 @@
         "body": "Web, iPhone et iPad restent parfaitement synchronisés."
       }
     },
-    "reminderLine": "Rappels gratuits par e-mail avant chaque anniversaire et chaque fête"
+    "reminderLine": "Rappels gratuits par e-mail avant chaque anniversaire et chaque fête",
+    "ideas": {
+      "title": "Des idées cadeaux faites pour eux",
+      "body": "Demandez des idées pour n'importe qui dans votre casier. Elles s'appuient sur ses tailles, ses coups de cœur et ses listes d'envies, avec un lien pour acheter chacune.",
+      "example": "Par exemple, pour quelqu'un qui a toujours froid :",
+      "exampleLink": "Plaid tout doux · Walmart",
+      "affiliate": "Lien affilié : nous pouvons toucher une commission, sans frais pour vous."
+    }
   },
   "titles": {
     "exchange": "Échange de cadeaux",

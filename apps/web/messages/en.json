@@ -80,7 +80,14 @@
         "body": "Web, iPhone and iPad stay perfectly in sync."
       }
     },
-    "reminderLine": "Free email reminders before every birthday and holiday"
+    "reminderLine": "Free email reminders before every birthday and holiday",
+    "ideas": {
+      "title": "Gift ideas made for them",
+      "body": "Ask for ideas for anyone in your locker. Suggestions come from their sizes, favorites and wish lists, with links to shop each one.",
+      "example": "For example, for someone who's always cold:",
+      "exampleLink": "Cozy throw blanket · Walmart",
+      "affiliate": "Affiliate link: we may earn a commission at no cost to you."
+    }
   },
   "titles": {
     "exchange": "Gift exchange",
