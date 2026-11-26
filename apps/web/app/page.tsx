@@ -2,7 +2,7 @@ import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
-import { TourButton, TourPreview } from "@/components/TourVideo";
+import { TourPreview } from "@/components/TourVideo";
 import { Button } from "@/components/ui";
 import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -83,7 +83,6 @@ export default function Home() {
               {t("startExchange")}
             </Button>
           </div>
-          <TourButton className="mt-6" />
           <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink-soft">
             <BellRing className="h-4 w-4 shrink-0 text-rose" aria-hidden /> {t("reminderLine")}
           </p>
