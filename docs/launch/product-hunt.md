@@ -12,6 +12,9 @@ Product Hunt account; this file holds the copy, assets and day-of plan.
   Secret Santa season that the exchange feature is timely.
 - Schedule it in advance in Product Hunt's launch form so it goes live on its own, then be online
   from about 6 am PT to answer comments.
+- **Uneed launches two days later, Thursday Dec 10** (fast-track, guaranteed on the homepage).
+  Keep the supporter messages about Product Hunt only; for Uneed, a single social post that
+  morning is enough. Don't ask the same people twice in one week.
 
 ## Listing fields
 
