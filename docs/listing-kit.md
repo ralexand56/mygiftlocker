@@ -120,8 +120,10 @@ For the **size charts**, pitch gift-guide, expat and parenting bloggers: the cha
 | SaaSHub | 2026-11-26 | Submitted by owner; awaiting approval | |
 | Product Hunt | | | |
 | BetaList | | | |
-| Uneed | | | |
-| Fazier | | | |
+| Uneed | 2026-11-26 | Free waiting line, launches 2027-07-12; needs upvote score ≥10 that day (≥20 for do-follow). Paid fast-track $19.99 / pick-a-date $39.99 if wanted. Tags: Events, Calendar | |
+| Launching Next | 2026-11-26 | Submitted by owner (free review); they email hello@ if published | |
+| Fazier | — | Skipped: free tier requires a Fazier badge/link on our homepage | |
+| SideProjectors | — | Skipped: mainly a marketplace for selling projects | |
 | Indie Hackers | | | |
 
 ### Outreach log
