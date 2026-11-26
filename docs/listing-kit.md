@@ -123,3 +123,10 @@ For the **size charts**, pitch gift-guide, expat and parenting bloggers: the cha
 | Uneed | | | |
 | Fazier | | | |
 | Indie Hackers | | | |
+
+### Outreach log
+
+| Date | Where | How | Status |
+|---|---|---|---|
+| 2026-11-26 | Streamer.guide "Best Secret Santa apps" (Kenji Arai, updated Oct 2026) | Contact form on /about, from hello@mygiftlockers.com | Sent; replies forward to the owner's Outlook via ImprovMX |
+| — | PopSci, Women Love Tech, The News Minute | Skipped: stale (2021), spammy comments, or sponsored post | |
