@@ -1,6 +1,8 @@
 {
   "meta": {
-    "description": "Guarda las tallas, direcciones y fechas especiales de todos en un solo lugar, y organiza intercambios de regalos divertidos."
+    "description": "Planificador de regalos gratis: guarda las tallas de ropa y zapatos, cumpleaños y listas de deseos de todos en un solo lugar, recibe recordatorios antes de cada ocasión, encuentra ideas de regalo y organiza amigos secretos.",
+    "homeTitle": "My Gift Lockers · Tallas, cumpleaños e ideas de regalo para todos tus seres queridos",
+    "exchangeDescription": "Organizador de amigo secreto gratis: invita a todos con un enlace, reúne listas de 3 deseos, define exclusiones y sortea nombres en segundos."
   },
   "common": {
     "language": "Idioma",

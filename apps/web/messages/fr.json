@@ -1,6 +1,8 @@
 {
   "meta": {
-    "description": "Gardez les tailles, adresses et dates importantes de chacun au même endroit, et organisez des échanges de cadeaux joyeux."
+    "description": "Organiseur de cadeaux gratuit : gardez au même endroit les tailles de vêtements et de chaussures, les anniversaires et les listes d'envies de chacun, recevez des rappels avant chaque occasion, trouvez des idées cadeaux et organisez des Secret Santa.",
+    "homeTitle": "My Gift Lockers · Tailles, anniversaires et idées cadeaux pour tous ceux que vous aimez",
+    "exchangeDescription": "Organisateur de Secret Santa gratuit : invitez tout le monde avec un lien, réunissez 3 envies par personne, définissez des exclusions et tirez au sort en quelques secondes."
   },
   "common": {
     "language": "Langue",

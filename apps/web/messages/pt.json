@@ -1,6 +1,8 @@
 {
   "meta": {
-    "description": "Guarde os tamanhos, endereços e datas especiais de todo mundo em um só lugar, e organize amigos secretos divertidos."
+    "description": "Organizador de presentes grátis: guarde em um só lugar os tamanhos de roupa e calçado, aniversários e listas de desejos de todos, receba lembretes antes de cada data, encontre ideias de presente e organize amigos secretos.",
+    "homeTitle": "My Gift Lockers · Tamanhos, aniversários e ideias de presente para quem você ama",
+    "exchangeDescription": "Organizador de amigo secreto grátis: convide todos com um link, reúna listas de 3 desejos, defina exclusões e sorteie os nomes em segundos."
   },
   "common": {
     "language": "Idioma",

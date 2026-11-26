@@ -4,7 +4,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ExchangeHome } from "./ExchangeHome";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: (await getTranslations("titles"))("exchange") };
+  const title = (await getTranslations("titles"))("exchange");
+  const description = (await getTranslations("meta"))("exchangeDescription");
+  return { title, description, openGraph: { title, description, url: "./" } };
 }
 
 export default function ExchangePage() {

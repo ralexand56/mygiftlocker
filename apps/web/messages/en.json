@@ -1,6 +1,8 @@
 {
   "meta": {
-    "description": "Keep everyone's sizes, addresses and special dates in one place — and run joyful gift exchanges."
+    "description": "Free gift planner: keep everyone's clothing and shoe sizes, birthdays and wish lists in one place, get reminders before every occasion, find gift ideas and run Secret Santa exchanges.",
+    "homeTitle": "My Gift Lockers · Sizes, birthdays and gift ideas for everyone you love",
+    "exchangeDescription": "Free Secret Santa organizer: invite everyone with one link, collect top-3 wish lists, set exclusions and draw names in seconds."
   },
   "common": {
     "language": "Language",

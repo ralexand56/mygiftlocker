@@ -4,6 +4,7 @@ import { MotionConfig } from "motion/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { I18nBridge } from "@/components/I18nBridge";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const fraunces = Fraunces({ subsets: ["latin", "latin-ext"], variable: "--font-fraunces", axes: ["opsz", "SOFT"] });
@@ -14,10 +15,15 @@ const nunito = Nunito({ subsets: ["latin", "latin-ext", "cyrillic"], variable: "
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
   return {
-    title: { default: "My Gift Lockers", template: "%s · My Gift Lockers" },
+    title: { default: t("homeTitle"), template: "%s · My Gift Lockers" },
     description: t("description"),
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://mygiftlockers.com"),
-    openGraph: { siteName: "My Gift Lockers", images: ["/lockup.svg"] },
+    applicationName: "My Gift Lockers",
+    metadataBase: new URL(SITE_URL),
+    // Each page names its own address as the one to list (www, no query strings).
+    alternates: { canonical: "./" },
+    // The preview image comes from app/opengraph-image.tsx.
+    openGraph: { siteName: "My Gift Lockers", type: "website", title: t("homeTitle"), description: t("description"), url: "./" },
+    twitter: { card: "summary_large_image", title: t("homeTitle"), description: t("description") },
   };
 }
 

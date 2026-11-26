@@ -4,6 +4,7 @@ import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
 import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { SITE_URL } from "@/lib/site";
 
 const FEATURES = [
   { id: "sizes", icon: Ruler, tint: "bg-blush" },
@@ -17,10 +18,29 @@ const FEATURES = [
 /** A sample gift idea; also verifies the site with Sovrn Commerce (affiliate program). */
 const EXAMPLE_IDEA_URL = "https://sovrn.co/dmq0v03";
 
+/** Tells search engines what the site is: a free web app (structured data, schema.org). */
+const STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: "My Gift Lockers" },
+    {
+      "@type": "WebApplication",
+      name: "My Gift Lockers",
+      url: SITE_URL,
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "Web",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: ["Clothing, shoe and ring sizes with international conversions", "Birthday, anniversary and holiday reminder emails", "Gift ideas for each person", "Secret Santa gift exchanges"],
+      inLanguage: ["en", "es", "fr", "pt-BR", "ru"],
+    },
+  ],
+};
+
 export default function Home() {
   const t = useTranslations("home");
   return (
     <main className="pastel-wash min-h-dvh overflow-x-clip">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
       <SignedInRedirect />
       <SiteHeader />
 
