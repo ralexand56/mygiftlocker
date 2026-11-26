@@ -116,11 +116,11 @@ For the **size charts**, pitch gift-guide, expat and parenting bloggers: the cha
 
 | Site | Submitted | Status | Link live |
 |---|---|---|---|
-| AlternativeTo | 2026-11-26 | In free review queue; alternative to Elfster, DrawNames, Giftster | |
+| AlternativeTo | 2026-11-26 | Priority review bought by owner (receipt from 27 Kilobyte AB); alternative to Elfster, DrawNames, Giftster | |
 | SaaSHub | 2026-11-26 | Submitted by owner; awaiting approval | |
 | Product Hunt | | | |
 | BetaList | | | |
-| Uneed | 2026-11-26 | Free waiting line, launches 2027-07-12; needs upvote score ≥10 that day (≥20 for do-follow). Paid fast-track $19.99 / pick-a-date $39.99 if wanted. Tags: Events, Calendar | |
+| Uneed | 2026-11-26 | Fast-track bought by owner: launches **2026-12-10**, guaranteed published; do-follow link from 10 upvotes that day. Tags: Events, Calendar | |
 | Launching Next | 2026-11-26 | Submitted by owner (free review); they email hello@ if published | |
 | Fazier | — | Skipped: free tier requires a Fazier badge/link on our homepage | |
 | SideProjectors | — | Skipped: mainly a marketplace for selling projects | |
