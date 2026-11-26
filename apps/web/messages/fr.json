@@ -2,7 +2,8 @@
   "meta": {
     "description": "Organiseur de cadeaux gratuit : gardez au même endroit les tailles de vêtements et de chaussures, les anniversaires et les listes d'envies de chacun, recevez des rappels avant chaque occasion, trouvez des idées cadeaux et organisez des Secret Santa.",
     "homeTitle": "My Gift Lockers · Tailles, anniversaires et idées cadeaux pour tous ceux que vous aimez",
-    "exchangeDescription": "Organisateur de Secret Santa gratuit : invitez tout le monde avec un lien, réunissez 3 envies par personne, définissez des exclusions et tirez au sort en quelques secondes."
+    "exchangeDescription": "Organisateur de Secret Santa gratuit : invitez tout le monde avec un lien, réunissez 3 envies par personne, définissez des exclusions et tirez au sort en quelques secondes.",
+    "exchangeTitle": "Tirage au sort Secret Santa gratuit et organisateur d'échange de cadeaux"
   },
   "common": {
     "language": "Langue",
@@ -866,5 +867,111 @@
     "notFound": "Cette personne n'est plus dans votre casier.",
     "back": "Retour à mon casier",
     "live": "{name} tient à jour ce qui vous est partagé. Vous pouvez modifier le reste ici."
+  },
+  "footer": {
+    "sizeCharts": "Guides des tailles",
+    "secretSanta": "Secret Santa",
+    "privacy": "Confidentialité"
+  },
+  "exchangeFaq": {
+    "title": "Questions sur le Secret Santa",
+    "items": {
+      "free": {
+        "q": "Est-ce gratuit ?",
+        "a": "Oui. Créer un échange, inviter les participants et tirer les noms au sort ne coûte rien."
+      },
+      "accounts": {
+        "q": "Tout le monde doit-il créer un compte ?",
+        "a": "Seul l'organisateur se connecte. Les autres rejoignent l'échange avec le lien d'invitation et ajoutent leurs envies, sans compte ni application."
+      },
+      "secret": {
+        "q": "L'organisateur peut-il voir qui offre à qui ?",
+        "a": "Les tirages restent cachés, l'organisateur peut donc jouer aussi. En cas de souci, il peut choisir de les afficher ou refaire le tirage."
+      },
+      "exclusions": {
+        "q": "Peut-on éviter que les couples se tirent entre eux ?",
+        "a": "Oui. Ajoutez des exclusions avant le tirage pour les couples, colocataires ou toute personne qui ne doit pas se tirer."
+      },
+      "budget": {
+        "q": "Peut-on fixer un budget ?",
+        "a": "Oui. Indiquez un budget en créant l'échange : chacun le verra en rejoignant."
+      },
+      "apart": {
+        "q": "Ça marche si on n'est pas au même endroit ?",
+        "a": "Oui. Chacun rejoint depuis un lien sur son téléphone ou son ordinateur, et reçoit un lien privé indiquant à qui il offre et les envies de cette personne."
+      },
+      "kids": {
+        "q": "Les jeunes enfants peuvent-ils participer ?",
+        "a": "Oui. L'organisateur peut ajouter des personnes par leur nom, comme un enfant qu'il aidera, pour que personne ne soit oublié."
+      },
+      "circle": {
+        "q": "Qu'est-ce que « un seul grand cercle » ?",
+        "a": "D'habitude, les noms sont tirés au hasard. Avec un seul grand cercle, le tirage forme une boucle qui passe par tout le monde : vous pouvez ouvrir les cadeaux à tour de rôle, chaque cadeau menant à la personne suivante."
+      }
+    }
+  },
+  "sizeCharts": {
+    "common": {
+      "eyebrow": "Conversion de tailles",
+      "breadcrumb": "Fil d'Ariane",
+      "approx": "≈ indique une estimation lorsque les tableaux publiés divergent.",
+      "brands": "Les tailles varient selon les marques : consultez le guide de la marque quand c'est possible.",
+      "ctaTitle": "Toutes les tailles au même endroit",
+      "ctaBody": "My Gift Lockers garde les tailles, anniversaires et listes d'envies des personnes à qui vous offrez des cadeaux, convertit les tailles pour tous les pays et vous prévient avant chaque occasion. C'est gratuit.",
+      "cta": "Créer mon casier",
+      "more": "Autres guides des tailles"
+    },
+    "hub": {
+      "title": "Guides des tailles internationales",
+      "metaTitle": "Tableaux de conversion des tailles : chaussures, vêtements et bagues",
+      "metaDescription": "Tableaux gratuits de conversion des tailles de chaussures, vêtements et bagues : États-Unis, Royaume-Uni, Europe, Japon, Brésil, Mexique et Colombie côte à côte. Trouvez la bonne taille pour un cadeau.",
+      "intro": "Vous offrez un cadeau à quelqu'un qui s'habille dans les tailles d'un autre pays ? Ces tableaux comparent les tailles américaines, britanniques, européennes, japonaises, brésiliennes, mexicaines et colombiennes."
+    },
+    "shoes": {
+      "short": "Pointures",
+      "blurb": "Chaussures homme, femme et enfant dans 7 systèmes.",
+      "title": "Tableau de conversion des pointures",
+      "metaTitle": "Conversion des pointures : US, UK, Europe, Japon, Brésil, Mexique",
+      "metaDescription": "Convertissez les pointures homme, femme et enfant entre États-Unis, Royaume-Uni, Europe, Japon (cm), Brésil, Mexique et Colombie.",
+      "intro": "Trouvez une pointure dans l'un des sept systèmes. Partez de la taille américaine dans la première colonne et lisez la ligne.",
+      "womens": "Chaussures femme",
+      "mens": "Chaussures homme",
+      "kids": "Chaussures enfant",
+      "cmNote": "Le Japon et le Mexique indiquent la pointure par la longueur du pied en centimètres.",
+      "kidsNote": "Tailles américaines bébé et petit enfant, de 4 à 13.",
+      "tipTitle": "Astuce : mesurez la longueur du pied",
+      "tip": "La longueur du pied, du talon aux orteils, en centimètres, est la seule mesure qui se convertit de façon fiable partout. Mesurez debout, puis comparez avec le guide de la marque."
+    },
+    "clothing": {
+      "short": "Tailles de vêtements",
+      "blurb": "Robes, hauts et pantalons, avec les tailles en lettres.",
+      "title": "Tableau de conversion des tailles de vêtements",
+      "metaTitle": "Conversion des tailles de vêtements : robes, hauts et pantalons",
+      "metaDescription": "Convertissez les tailles de robes, les tailles en lettres et les tailles de pantalons homme entre États-Unis, Royaume-Uni, Europe, Japon, Brésil, Mexique et Colombie.",
+      "intro": "Les tailles de vêtements changent d'un pays à l'autre. Ces tableaux traduisent une taille américaine en celle des étiquettes ailleurs.",
+      "womens": "Robes et pantalons femme",
+      "womensNote": "Tailles numériques américaines, avec la taille en lettres correspondante.",
+      "letter": "Taille en lettres",
+      "tops": "Hauts (tailles en lettres)",
+      "topsNote": "Le Brésil et le Mexique ont leurs propres lettres, et les tailles japonaises taillent environ une taille plus petit.",
+      "chest": "Tour de poitrine homme",
+      "pants": "Pantalons homme (tour de taille)",
+      "pantsNote": "Aux États-Unis, les pantalons homme sont indiqués tour de taille × entrejambe en pouces, par exemple 32×30. Ce tableau convertit le tour de taille.",
+      "tipTitle": "Astuce : dans le doute, prenez plus grand",
+      "tip": "Un cadeau un peu grand se porte quand même, et la plupart des magasins échangent les tailles. Savoir si la personne préfère une coupe ajustée, normale ou ample aide aussi."
+    },
+    "rings": {
+      "short": "Tailles de bagues",
+      "blurb": "US, UK, Europe et plus, avec le diamètre intérieur.",
+      "title": "Guide des tailles de bagues",
+      "metaTitle": "Conversion des tailles de bagues : US, UK, Europe, Japon et mm",
+      "metaDescription": "Convertissez les tailles de bagues entre États-Unis, lettres britanniques, Europe, Japon, Brésil, Mexique et Colombie, avec le diamètre et la circonférence intérieurs en millimètres.",
+      "intro": "La taille de bague est la plus difficile à deviner. Trouvez-la dans n'importe quel système, avec le diamètre intérieur en millimètres.",
+      "tableTitle": "Conversion des tailles de bagues",
+      "note": "Les tailles européennes correspondent à la circonférence intérieure en millimètres.",
+      "diameter": "Diamètre intérieur",
+      "tipTitle": "Astuce : mesurez une bague qu'elle porte déjà",
+      "tip": "Mesurez le diamètre intérieur d'une bague qui va au même doigt et cherchez la valeur la plus proche dans la dernière colonne. Les doigts gonflent à la chaleur : mesurez plutôt en fin de journée."
+    }
   }
 }

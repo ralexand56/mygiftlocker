@@ -2,7 +2,8 @@
   "meta": {
     "description": "Organizador de presentes grátis: guarde em um só lugar os tamanhos de roupa e calçado, aniversários e listas de desejos de todos, receba lembretes antes de cada data, encontre ideias de presente e organize amigos secretos.",
     "homeTitle": "My Gift Lockers · Tamanhos, aniversários e ideias de presente para quem você ama",
-    "exchangeDescription": "Organizador de amigo secreto grátis: convide todos com um link, reúna listas de 3 desejos, defina exclusões e sorteie os nomes em segundos."
+    "exchangeDescription": "Organizador de amigo secreto grátis: convide todos com um link, reúna listas de 3 desejos, defina exclusões e sorteie os nomes em segundos.",
+    "exchangeTitle": "Sorteio de amigo secreto grátis e organizador de troca de presentes"
   },
   "common": {
     "language": "Idioma",
@@ -866,5 +867,111 @@
     "notFound": "Essa pessoa não está mais no seu armário.",
     "back": "Voltar ao meu armário",
     "live": "{name} mantém atualizado o que compartilha com você. O resto você edita aqui."
+  },
+  "footer": {
+    "sizeCharts": "Tabelas de medidas",
+    "secretSanta": "Amigo secreto",
+    "privacy": "Privacidade"
+  },
+  "exchangeFaq": {
+    "title": "Perguntas sobre o amigo secreto",
+    "items": {
+      "free": {
+        "q": "É grátis?",
+        "a": "Sim. Criar uma troca, convidar as pessoas e sortear os nomes não custa nada."
+      },
+      "accounts": {
+        "q": "Todo mundo precisa de uma conta?",
+        "a": "Só quem organiza faz login. Os outros entram pelo link de convite e adicionam seus desejos, sem conta nem app."
+      },
+      "secret": {
+        "q": "Quem organiza consegue ver quem tirou quem?",
+        "a": "Os resultados ficam escondidos, então quem organiza também pode participar. Se precisar corrigir algo, dá para escolher ver ou refazer o sorteio."
+      },
+      "exclusions": {
+        "q": "Dá para impedir que casais tirem um ao outro?",
+        "a": "Sim. Adicione exclusões antes do sorteio para casais, quem mora junto ou qualquer pessoa que não deva se tirar."
+      },
+      "budget": {
+        "q": "Podemos definir um limite de gasto?",
+        "a": "Sim. Defina um valor ao criar a troca e todos verão ao entrar."
+      },
+      "apart": {
+        "q": "Funciona se não estivermos no mesmo lugar?",
+        "a": "Sim. Todos entram por um link no celular ou computador, e cada pessoa recebe um link privado mostrando quem tirou e os desejos dessa pessoa."
+      },
+      "kids": {
+        "q": "Crianças pequenas podem participar?",
+        "a": "Sim. Quem organiza pode adicionar pessoas pelo nome, como uma criança que vai ajudar, para que ninguém fique de fora."
+      },
+      "circle": {
+        "q": "O que é \"um grande círculo\"?",
+        "a": "Normalmente os nomes são sorteados ao acaso. Com um grande círculo, o sorteio forma uma corrente que passa por todos, então vocês podem abrir os presentes em ordem, e cada presente leva à próxima pessoa."
+      }
+    }
+  },
+  "sizeCharts": {
+    "common": {
+      "eyebrow": "Conversão de tamanhos",
+      "breadcrumb": "Navegação",
+      "approx": "≈ indica uma estimativa quando as tabelas publicadas não batem.",
+      "brands": "Os tamanhos variam conforme a marca; confira a tabela da marca quando puder.",
+      "ctaTitle": "Os tamanhos de todos em um só lugar",
+      "ctaBody": "O My Gift Lockers guarda tamanhos, aniversários e listas de desejos das pessoas que você presenteia, converte tamanhos para qualquer país e avisa antes de cada ocasião. É grátis.",
+      "cta": "Criar meu locker",
+      "more": "Mais tabelas de medidas"
+    },
+    "hub": {
+      "title": "Tabelas de medidas internacionais",
+      "metaTitle": "Tabelas de conversão de tamanhos: calçados, roupas e anéis",
+      "metaDescription": "Tabelas grátis de conversão de tamanhos de calçados, roupas e anéis: EUA, Reino Unido, Europa, Japão, Brasil, México e Colômbia lado a lado. Acerte o tamanho do presente.",
+      "intro": "Vai dar um presente para alguém que compra com tamanhos de outro país? Estas tabelas comparam tamanhos dos EUA, Reino Unido, Europa, Japão, Brasil, México e Colômbia."
+    },
+    "shoes": {
+      "short": "Numeração de calçados",
+      "blurb": "Calçados masculinos, femininos e infantis em 7 sistemas.",
+      "title": "Tabela de conversão de calçados",
+      "metaTitle": "Tabela de numeração de calçados: EUA, Reino Unido, Europa, Japão, Brasil, México",
+      "metaDescription": "Converta a numeração de calçados masculinos, femininos e infantis entre EUA, Reino Unido, Europa, Japão (cm), Brasil, México e Colômbia.",
+      "intro": "Encontre a numeração em qualquer um dos sete sistemas. Comece pelo tamanho dos EUA na primeira coluna e siga a linha.",
+      "womens": "Calçados femininos",
+      "mens": "Calçados masculinos",
+      "kids": "Calçados infantis",
+      "cmNote": "Japão e México indicam o tamanho pelo comprimento do pé em centímetros.",
+      "kidsNote": "Tamanhos infantis dos EUA, de 4 a 13.",
+      "tipTitle": "Dica: meça o comprimento do pé",
+      "tip": "O comprimento do pé, do calcanhar à ponta, em centímetros, é a única medida que converte bem em qualquer lugar. Meça em pé e compare com a tabela da marca."
+    },
+    "clothing": {
+      "short": "Tamanhos de roupas",
+      "blurb": "Vestidos, blusas e calças, com tamanhos em letras.",
+      "title": "Tabela de conversão de roupas",
+      "metaTitle": "Tabela de tamanhos de roupas: vestidos, blusas e calças",
+      "metaDescription": "Converta tamanhos de vestidos femininos, tamanhos em letras e tamanhos de calças masculinas entre EUA, Reino Unido, Europa, Japão, Brasil, México e Colômbia.",
+      "intro": "Os tamanhos de roupas mudam de país para país. Use estas tabelas para transformar um tamanho dos EUA no tamanho das etiquetas em outros lugares.",
+      "womens": "Vestidos e calças femininos",
+      "womensNote": "Tamanhos numéricos dos EUA, com o tamanho em letra correspondente.",
+      "letter": "Tamanho em letra",
+      "tops": "Blusas e camisetas (letras)",
+      "topsNote": "Brasil e México usam letras próprias, e os tamanhos japoneses costumam ser um número menores.",
+      "chest": "Tórax masculino",
+      "pants": "Calças masculinas (cintura)",
+      "pantsNote": "Nos EUA, calças masculinas são marcadas cintura × comprimento em polegadas, por exemplo 32×30. Esta tabela converte a cintura.",
+      "tipTitle": "Dica: na dúvida, um tamanho acima",
+      "tip": "Um presente um pouco largo ainda dá para usar, e a maioria das lojas troca o tamanho. Também ajuda saber se a pessoa prefere caimento justo, normal ou solto."
+    },
+    "rings": {
+      "short": "Tamanhos de anel",
+      "blurb": "EUA, Reino Unido, Europa e mais, com diâmetro interno.",
+      "title": "Tabela de tamanhos de anel",
+      "metaTitle": "Tabela de tamanhos de anel: EUA, Reino Unido, Europa, Japão e mm",
+      "metaDescription": "Converta tamanhos de anel entre EUA, letras do Reino Unido, Europa, Japão, Brasil, México e Colômbia, com diâmetro e circunferência internos em milímetros.",
+      "intro": "O tamanho do anel é o mais difícil de adivinhar. Encontre-o em qualquer sistema, junto com o diâmetro interno em milímetros.",
+      "tableTitle": "Conversão de tamanhos de anel",
+      "note": "Os tamanhos europeus são a circunferência interna em milímetros. No Brasil, a numeração (aro) varia entre joalherias, por isso mostramos os milímetros.",
+      "diameter": "Diâmetro interno",
+      "tipTitle": "Dica: meça um anel que a pessoa já usa",
+      "tip": "Meça o diâmetro interno de um anel que sirva no mesmo dedo e procure o valor mais próximo na última coluna. Os dedos incham no calor, então o ideal é medir no fim do dia."
+    }
   }
 }

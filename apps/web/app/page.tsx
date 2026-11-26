@@ -1,4 +1,5 @@
 import { SignedInRedirect } from "@/components/SignedInRedirect";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
@@ -103,12 +104,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="pb-10 text-center text-sm text-ink-soft">
-        © {new Date().getFullYear()} My Gift Lockers · mygiftlockers.com ·{" "}
-        <a href="/privacy" className="underline hover:text-ink">
-          {t("privacy")}
-        </a>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

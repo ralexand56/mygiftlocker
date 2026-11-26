@@ -53,7 +53,7 @@ export function ExchangeHome() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-24">
+    <div className="mx-auto max-w-6xl px-5 pb-12">
       <section className="grid items-center gap-8 pt-4 pb-12 md:grid-cols-[1.2fr_1fr]">
         <div>
           <p className="mb-4 inline-flex rounded-full bg-white/70 px-4 py-1.5 text-sm font-bold text-plum shadow-soft">{t("eyebrow")}</p>

@@ -2,7 +2,8 @@
   "meta": {
     "description": "Free gift planner: keep everyone's clothing and shoe sizes, birthdays and wish lists in one place, get reminders before every occasion, find gift ideas and run Secret Santa exchanges.",
     "homeTitle": "My Gift Lockers · Sizes, birthdays and gift ideas for everyone you love",
-    "exchangeDescription": "Free Secret Santa organizer: invite everyone with one link, collect top-3 wish lists, set exclusions and draw names in seconds."
+    "exchangeDescription": "Free Secret Santa organizer: invite everyone with one link, collect top-3 wish lists, set exclusions and draw names in seconds.",
+    "exchangeTitle": "Free Secret Santa Generator & Gift Exchange Organizer"
   },
   "common": {
     "language": "Language",
@@ -866,5 +867,111 @@
     "notFound": "That person isn't in your locker anymore.",
     "back": "Back to my locker",
     "live": "{name} keeps what they share with you up to date. You can edit the rest here."
+  },
+  "footer": {
+    "sizeCharts": "Size charts",
+    "secretSanta": "Secret Santa",
+    "privacy": "Privacy"
+  },
+  "exchangeFaq": {
+    "title": "Secret Santa questions",
+    "items": {
+      "free": {
+        "q": "Is it free?",
+        "a": "Yes. Creating an exchange, inviting people and drawing names costs nothing."
+      },
+      "accounts": {
+        "q": "Does everyone need an account?",
+        "a": "Only the organizer signs in. Everyone else joins from the invite link and adds their wishes, with no account or app needed."
+      },
+      "secret": {
+        "q": "Can the organizer see who got whom?",
+        "a": "Matches stay hidden, so the organizer can play too. If something needs fixing, the organizer can choose to peek or redo the draw."
+      },
+      "exclusions": {
+        "q": "Can I stop couples from drawing each other?",
+        "a": "Yes. Add exclusions before you draw, for couples, housemates or anyone who shouldn't get each other."
+      },
+      "budget": {
+        "q": "Can we set a spending limit?",
+        "a": "Yes. Set a budget when you create the exchange, and everyone sees it when they join."
+      },
+      "apart": {
+        "q": "Does it work if we're not in the same place?",
+        "a": "Yes. Everyone joins from a link on their phone or computer, and each person gets a private link showing who they're buying for and that person's wishes."
+      },
+      "kids": {
+        "q": "Can young children take part?",
+        "a": "Yes. The organizer can add people by name, such as a child they'll help, so everyone is included."
+      },
+      "circle": {
+        "q": "What is \"one big circle\"?",
+        "a": "Usually names are drawn at random. With one big circle, the draw makes a single loop through everyone, so you can open gifts in turn and each gift leads to the next person."
+      }
+    }
+  },
+  "sizeCharts": {
+    "common": {
+      "eyebrow": "Size conversion",
+      "breadcrumb": "Breadcrumb",
+      "approx": "≈ marks an estimate where published charts disagree.",
+      "brands": "Sizes vary by brand, so check the brand's own chart when you can.",
+      "ctaTitle": "Keep everyone's sizes in one place",
+      "ctaBody": "My Gift Lockers saves the sizes, birthdays and wish lists of the people you buy for, converts sizes for any country and reminds you before every occasion. It's free.",
+      "cta": "Start your locker",
+      "more": "More size charts"
+    },
+    "hub": {
+      "title": "International size charts",
+      "metaTitle": "Size Conversion Charts: Shoes, Clothing & Rings",
+      "metaDescription": "Free size conversion charts for shoes, clothing and rings: US, UK, EU, Japan, Brazil, Mexico and Colombia sizes side by side. Find the right size for a gift.",
+      "intro": "Buying a gift for someone who shops in another country's sizes? These charts put US, UK, European, Japanese, Brazilian, Mexican and Colombian sizes side by side."
+    },
+    "shoes": {
+      "short": "Shoe sizes",
+      "blurb": "Men's, women's and kids' shoes in 7 sizing systems.",
+      "title": "Shoe size conversion chart",
+      "metaTitle": "Shoe Size Conversion Chart: US, UK, EU, Japan, Brazil, Mexico",
+      "metaDescription": "Convert men's, women's and kids' shoe sizes between US, UK, EU, Japan (cm), Brazil, Mexico and Colombia.",
+      "intro": "Find a shoe size in any of seven sizing systems. Start from the US size in the first column and read across.",
+      "womens": "Women's shoes",
+      "mens": "Men's shoes",
+      "kids": "Kids' shoes",
+      "cmNote": "Japan and Mexico label shoes by foot length in centimeters.",
+      "kidsNote": "US toddler and little kid sizes 4 to 13.",
+      "tipTitle": "Tip: measure foot length",
+      "tip": "Heel-to-toe foot length in centimeters is the one shoe measurement that converts reliably everywhere. Measure standing up, then compare it with the brand's own chart."
+    },
+    "clothing": {
+      "short": "Clothing sizes",
+      "blurb": "Dresses, tops and pants, including letter sizes.",
+      "title": "Clothing size conversion chart",
+      "metaTitle": "Clothing Size Conversion Chart: Dresses, Tops & Pants",
+      "metaDescription": "Convert women's dress sizes, letter sizes for tops and men's pant sizes between US, UK, EU, Japan, Brazil, Mexico and Colombia.",
+      "intro": "Clothing sizes change from country to country. Use these charts to turn a US size into the size printed on labels elsewhere.",
+      "womens": "Women's dresses and pants",
+      "womensNote": "US numeric sizes, with the matching letter size.",
+      "letter": "Letter size",
+      "tops": "Tops (letter sizes)",
+      "topsNote": "Brazil and Mexico use their own letters, and Japanese sizes run about one size smaller.",
+      "chest": "Men's chest",
+      "pants": "Men's pants (waist)",
+      "pantsNote": "US men's pants are labeled waist × inseam in inches, for example 32×30. This table converts the waist.",
+      "tipTitle": "Tip: when in doubt, size up",
+      "tip": "A gift that's slightly big can still be worn, and most stores exchange sizes. It also helps to know whether they like a slim, regular or relaxed fit."
+    },
+    "rings": {
+      "short": "Ring sizes",
+      "blurb": "US, UK, EU and more, with inside diameter.",
+      "title": "Ring size chart",
+      "metaTitle": "Ring Size Conversion Chart: US, UK, EU, Japan & mm",
+      "metaDescription": "Convert ring sizes between US, UK letters, EU, Japan, Brazil, Mexico and Colombia, with inside diameter and circumference in millimeters.",
+      "intro": "Ring sizes are the hardest to guess. Find a size in any system, plus the inside diameter in millimeters.",
+      "tableTitle": "Ring size conversion",
+      "note": "EU sizes are the inside circumference in millimeters.",
+      "diameter": "Inside diameter",
+      "tipTitle": "Tip: measure a ring they already wear",
+      "tip": "Measure the inside diameter of a ring that fits the same finger and find the closest match in the last column. Fingers swell when warm, so ring sizes are best measured at the end of the day."
+    }
   }
 }
