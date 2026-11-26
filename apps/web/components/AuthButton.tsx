@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { signOut, useUser } from "@/lib/auth";
 
-const pill = "rounded-full bg-white/80 px-4 py-2 text-ink shadow-soft hover:bg-white";
+const pill = "whitespace-nowrap rounded-full bg-white/80 px-3 py-2 text-sm sm:px-4 sm:text-[15px] text-ink shadow-soft hover:bg-white";
 
 /** "Sign in" when signed out; the user's first name and "Sign out" when signed in. */
 export function AuthButton() {

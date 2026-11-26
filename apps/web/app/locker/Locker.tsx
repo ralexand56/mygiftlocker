@@ -211,7 +211,7 @@ export function Locker() {
         {people.length > 0 && shown.length === 0 && (
           <p className="rounded-3xl bg-white/70 p-8 text-center text-ink-soft">{t("noMatch", { query: query.trim() })}</p>
         )}
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-1 gap-3">
           {shown.map((p, i) => (
             <li key={p.id}>
               <PersonRow person={p} index={i} hidden={openId === p.id} onOpen={() => setOpenId(p.id)} onToggleGift={(e) => toggleGift(p, e)} />
@@ -310,7 +310,16 @@ function PersonRow({
           {p.relationship ?? (p.kind === "child" ? t("child") : t("connection"))}
           {summarizeSizes(p.sizes, tr) ? ` · ${summarizeSizes(p.sizes, tr)}` : ""}
         </p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs font-bold text-ink-soft sm:hidden">
+        {/* Phones: the next date sits under the name so the name keeps its room. */}
+        {next && (
+          <p className={`mt-0.5 flex items-center gap-1.5 text-sm sm:hidden ${next.days <= 7 ? "font-bold text-rose-deep" : "text-ink-soft"}`}>
+            <EventIcon kind={next.kind} holidayId={next.holidayId} className="h-3.5 w-3.5 shrink-0 text-rose" />
+            <span className="truncate">
+              {eventLabel(next, tr)} · {next.date.toLocaleDateString(tag, { month: "short", day: "numeric" })} · {describeDays(next.days, tr)}
+            </span>
+          </p>
+        )}
+        <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs font-bold text-ink-soft empty:hidden sm:hidden">
           {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">{t("outgrown")}</span>}
           {p.linked && !p.linked.ended && <LiveBadge />}
         </div>
@@ -320,7 +329,7 @@ function PersonRow({
         {p.linked && !p.linked.ended && <LiveBadge />}
         {isStale(p) && <span className="rounded-full bg-butter px-2.5 py-1">{t("outgrown")}</span>}
       </div>
-      <div className="relative shrink-0 text-right">
+      <div className={`relative shrink-0 text-right ${next ? "hidden sm:block" : ""}`}>
         {next ? (
           <>
             <p className="flex items-center justify-end gap-1.5 text-sm font-bold text-ink">
@@ -545,7 +554,7 @@ function PersonDetail({
           {comingUp.length > 0 && (
             <motion.section variants={item}>
               <SectionTitle icon={Gift}>{t("checklist")}</SectionTitle>
-              <ul className="grid gap-2">
+              <ul className="grid grid-cols-1 gap-2">
                 {comingUp.map((e) => {
                   const done = isGifted(p, e);
                   return (
@@ -803,7 +812,7 @@ function MoneyGifts({ handles }: { handles: PaymentHandles }) {
   const t = useTranslations("locker.detail");
   const [copied, setCopied] = useState<string | null>(null);
   return (
-    <ul className="grid gap-2">
+    <ul className="grid grid-cols-1 gap-2">
       {PAYMENT_APPS.filter((app) => handles[app]).map((app) => {
         const handle = handles[app]!;
         const link = paymentLink(app, handle);

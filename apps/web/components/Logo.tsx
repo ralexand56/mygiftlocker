@@ -32,7 +32,7 @@ export function Logo({ size = 36 }: { size?: number }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={size} />
-      <span className="font-display text-[1.35rem] font-semibold tracking-tight">
+      <span className="whitespace-nowrap font-display text-[1rem] min-[380px]:text-[1.05rem] min-[400px]:text-[1.2rem] sm:text-[1.35rem] font-semibold tracking-tight">
         <span className="text-rose">My</span> Gift Lockers
       </span>
     </span>

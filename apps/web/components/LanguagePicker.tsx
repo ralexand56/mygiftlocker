@@ -21,7 +21,7 @@ export function LanguagePicker({ className = "" }: { className?: string }) {
   const [pending, start] = useTransition();
   return (
     <label className={`relative inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-ink-soft hover:bg-white/70 hover:text-ink ${pending ? "opacity-60" : ""} ${className}`}>
-      <Globe className="h-4 w-4 shrink-0" aria-hidden />
+      <Globe className="h-4 w-4 shrink-0 max-[399px]:hidden" aria-hidden />
       <span className="font-bold uppercase" aria-hidden>
         {locale}
       </span>

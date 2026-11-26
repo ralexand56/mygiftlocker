@@ -11,11 +11,11 @@ export function SiteHeader() {
   const href = useLocalePath();
   return (
     <>
-      <header className="relative z-20 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+      <header className="relative z-20 mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-5 sm:px-5">
         <Link href={href("/")} aria-label={t("home")}>
           <Logo />
         </Link>
-        <nav className="flex items-center gap-1 text-[15px] font-bold text-ink-soft">
+        <nav className="flex shrink-0 items-center gap-0.5 sm:gap-1 text-[15px] font-bold text-ink-soft">
           <Link href="/locker" className="hidden rounded-full px-4 py-2 hover:bg-white/70 hover:text-ink sm:block">
             {t("myLocker")}
           </Link>

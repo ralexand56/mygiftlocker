@@ -156,7 +156,7 @@ export function GiftFinder({
                 )}
               </div>
             ) : (
-              <motion.ul layout className="grid gap-3 sm:grid-cols-2">
+              <motion.ul layout className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <AnimatePresence mode="popLayout">
                   {ideas.map((idea, i) => (
                     <motion.li
@@ -306,7 +306,7 @@ function Thinking({ name, step, forSelf }: { name: string; step: number; forSelf
           </motion.p>
         </AnimatePresence>
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2" aria-hidden>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-hidden>
         {Array.from({ length: 6 }, (_, i) => (
           <motion.li
             key={i}

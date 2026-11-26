@@ -92,11 +92,11 @@ function Admin({ ex, adminSub, reload }: Ctx) {
   const reset = () => act(() => resetDraw(ex.id));
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 px-5 pb-24 lg:grid-cols-[1.4fr_1fr]">
-      <div className="grid content-start gap-6">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 pb-24 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid min-w-0 grid-cols-1 content-start gap-6">
         <motion.div layoutId={`ex-${ex.id}`} className="glass rounded-[28px] p-7 shadow-soft">
           <p className="text-xs font-extrabold tracking-wide text-rose uppercase">{ex.status === "drawn" ? t("drawnBadge") : t("collecting")}</p>
-          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{ex.name}</h1>
+          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight break-words">{ex.name}</h1>
           <div className="mt-3 flex flex-wrap gap-2 text-sm font-bold">
             {ex.date && <span className="rounded-full bg-white px-3 py-1">📅 {new Date(ex.date + "T00:00").toLocaleDateString(tag, { weekday: "short", month: "long", day: "numeric" })}</span>}
             {ex.budget && <span className="rounded-full bg-white px-3 py-1">💸 {t("budget", { v: formatBudget(ex.budget, tr)! })}</span>}
@@ -115,7 +115,7 @@ function Admin({ ex, adminSub, reload }: Ctx) {
               </button>
             )}
           </div>
-          <motion.ul layout className="mt-5 grid gap-2">
+          <motion.ul layout className="mt-5 grid grid-cols-1 gap-2">
             <AnimatePresence initial={false}>
               {ex.participants.map((p) => (
                 <motion.li key={p.id} layout initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex items-center gap-3 rounded-2xl bg-white/80 p-3">
@@ -164,7 +164,7 @@ function Admin({ ex, adminSub, reload }: Ctx) {
         </Card>
       </div>
 
-      <div className="grid content-start gap-6">
+      <div className="grid min-w-0 grid-cols-1 content-start gap-6">
         <Card className="p-7">
           <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
             <Link2 className="h-5 w-5 text-rose" /> {t("inviteLink")}
