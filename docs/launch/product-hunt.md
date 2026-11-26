@@ -63,8 +63,9 @@ Edit it into your own voice.
 
 **Now (this week)**
 
-- [ ] Log in to Product Hunt (or create an account) and complete your maker profile: photo,
-      headline, a link to mygiftlockers.com. Accounts with a real profile get taken more seriously.
+- [x] Product Hunt account created 2026-11-26: producthunt.com/@rico_alexander (Google sign-in),
+      photo, headline "Maker of My Gift Lockers 🎁", About, LinkedIn + website links.
+      Email verified; LinkedIn confirmed; verification requested (pending).
 - [ ] Spend a few minutes a day on Product Hunt before launch: upvote and comment on products you
       like. Brand-new accounts that only show up to promote get less reach.
 - [ ] Make a short list of people who'd genuinely try it: family, friends, anyone who's done a
