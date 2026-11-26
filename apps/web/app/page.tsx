@@ -2,6 +2,7 @@ import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
+import { TourButton } from "@/components/TourVideo";
 import { Button } from "@/components/ui";
 import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -37,6 +38,16 @@ const STRUCTURED_DATA = {
       featureList: ["Clothing, shoe and ring sizes with international conversions", "Birthday, anniversary and holiday reminder emails", "Gift ideas for each person", "Secret Santa gift exchanges"],
       inLanguage: ["en", "es", "fr", "pt-BR", "ru"],
     },
+    {
+      "@type": "VideoObject",
+      name: "My Gift Lockers in 45 seconds",
+      description: "A quick tour: keep everyone's sizes, birthdays and wish lists in one place, get AI gift ideas and reminders before every birthday, and run Secret Santa.",
+      thumbnailUrl: `${SITE_URL}/video/tour-en-16x9.jpg`,
+      contentUrl: `${SITE_URL}/video/tour-en-16x9.mp4`,
+      uploadDate: "2026-11-26",
+      duration: "PT45S",
+      inLanguage: "en",
+    },
   ],
 };
 
@@ -71,6 +82,7 @@ export default function Home() {
               {t("startExchange")}
             </Button>
           </div>
+          <TourButton className="mt-6" />
           <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink-soft">
             <BellRing className="h-4 w-4 shrink-0 text-rose" aria-hidden /> {t("reminderLine")}
           </p>

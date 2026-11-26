@@ -973,5 +973,11 @@
       "tipTitle": "Consejo: mide un anillo que ya use",
       "tip": "Mide el diámetro interior de un anillo que le quede bien en el mismo dedo y busca el valor más cercano en la última columna. Los dedos se hinchan con el calor, así que es mejor medir al final del día."
     }
+  },
+  "tour": {
+    "watch": "Mira el recorrido de 45 segundos",
+    "title": "My Gift Lockers en 45 segundos",
+    "close": "Cerrar video",
+    "newHere": "¿Primera vez aquí?"
   }
 }

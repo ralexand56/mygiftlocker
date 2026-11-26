@@ -973,5 +973,11 @@
       "tipTitle": "Astuce : mesurez une bague qu'elle porte déjà",
       "tip": "Mesurez le diamètre intérieur d'une bague qui va au même doigt et cherchez la valeur la plus proche dans la dernière colonne. Les doigts gonflent à la chaleur : mesurez plutôt en fin de journée."
     }
+  },
+  "tour": {
+    "watch": "Voir la visite de 45 secondes (en anglais)",
+    "title": "My Gift Lockers en 45 secondes",
+    "close": "Fermer la vidéo",
+    "newHere": "Première visite ?"
   }
 }

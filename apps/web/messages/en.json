@@ -973,5 +973,11 @@
       "tipTitle": "Tip: measure a ring they already wear",
       "tip": "Measure the inside diameter of a ring that fits the same finger and find the closest match in the last column. Fingers swell when warm, so ring sizes are best measured at the end of the day."
     }
+  },
+  "tour": {
+    "watch": "Watch the 45-second tour",
+    "title": "My Gift Lockers in 45 seconds",
+    "close": "Close video",
+    "newHere": "New here?"
   }
 }

@@ -6,6 +6,7 @@ import { CalendarDays, Gift, Shuffle, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { TourButton } from "@/components/TourVideo";
 import { Button, Card, ChipGroup, Field, Input, Textarea } from "@/components/ui";
 import { useUser } from "@/lib/auth";
 import { createExchange, listMyExchanges, useAsync } from "@/lib/exchanges";
@@ -80,6 +81,7 @@ export function ExchangeHome() {
               );
             })}
           </ul>
+          <TourButton className="mt-7" />
         </div>
 
         <Card className="p-7">

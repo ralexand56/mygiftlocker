@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { TourButton } from "@/components/TourVideo";
 import { Button } from "@/components/ui";
 import { publicMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
@@ -163,8 +164,9 @@ export function ChartPage({ id, children }: { id: ChartId | "hub"; children: Rea
         <section className="glass mt-14 rounded-[28px] p-8 shadow-soft">
           <h2 className="font-display text-2xl font-semibold">{t("common.ctaTitle")}</h2>
           <p className="mt-2 max-w-2xl text-ink-soft">{t("common.ctaBody")}</p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-4">
             <Button href="/locker">{t("common.cta")}</Button>
+            <TourButton />
           </div>
         </section>
 

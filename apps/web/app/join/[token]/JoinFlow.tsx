@@ -68,6 +68,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { StepRail, StepShowcase } from "@/components/StepShowcase";
 import { LogoMark } from "@/components/Logo";
+import { TourButton } from "@/components/TourVideo";
 import { Button, ChipGroup, Field, Input, Textarea, inputCls } from "@/components/ui";
 import { submitInvite } from "@/lib/invites";
 import { useUser } from "@/lib/auth";
@@ -1182,6 +1183,9 @@ function Success({
           <Button href="/sign-in?next=/locker" className="mt-5 w-full">
             {t("create")}
           </Button>
+          <div className="mt-4 flex justify-center">
+            <TourButton />
+          </div>
         </motion.div>
       )}
     </motion.section>

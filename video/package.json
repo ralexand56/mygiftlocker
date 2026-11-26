@@ -1,0 +1,26 @@
+{
+  "name": "mgl-video",
+  "private": true,
+  "description": "Promo video for My Gift Lockers (Remotion). Kept outside the pnpm workspace so production builds never install it.",
+  "scripts": {
+    "studio": "remotion studio",
+    "music": "node scripts/music.mjs out/music.wav && remotion ffmpeg -y -loglevel error -i out/music.wav -c:a aac -b:a 192k -f mp4 public/music.m4a",
+    "render": "pnpm render:en && pnpm render:es",
+    "render:en": "remotion render Landscape out/my-gift-lockers-16x9.mp4 && remotion render Vertical out/my-gift-lockers-9x16.mp4",
+    "render:es": "remotion render LandscapeES out/my-gift-lockers-es-16x9.mp4 && remotion render VerticalES out/my-gift-lockers-es-9x16.mp4",
+    "render:web": "remotion ffmpeg -y -loglevel error -i out/my-gift-lockers-16x9.mp4 -vf scale=1280:720:flags=lanczos -c:v libx264 -crf 25 -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart ../apps/web/public/video/tour-en-16x9.mp4 && remotion ffmpeg -y -loglevel error -i out/my-gift-lockers-9x16.mp4 -vf scale=720:1280:flags=lanczos -c:v libx264 -crf 25 -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart ../apps/web/public/video/tour-en-9x16.mp4 && remotion ffmpeg -y -loglevel error -i out/my-gift-lockers-es-16x9.mp4 -vf scale=1280:720:flags=lanczos -c:v libx264 -crf 25 -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart ../apps/web/public/video/tour-es-16x9.mp4 && remotion ffmpeg -y -loglevel error -i out/my-gift-lockers-es-9x16.mp4 -vf scale=720:1280:flags=lanczos -c:v libx264 -crf 25 -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart ../apps/web/public/video/tour-es-9x16.mp4 && remotion still Landscape ../apps/web/public/video/tour-en-16x9.jpg --frame=190 --jpeg-quality=80 && remotion still Vertical ../apps/web/public/video/tour-en-9x16.jpg --frame=190 --jpeg-quality=80 && remotion still LandscapeES ../apps/web/public/video/tour-es-16x9.jpg --frame=190 --jpeg-quality=80 && remotion still VerticalES ../apps/web/public/video/tour-es-9x16.jpg --frame=190 --jpeg-quality=80",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.541",
+    "@remotion/google-fonts": "4.0.541",
+    "@remotion/transitions": "4.0.541",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.541"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

@@ -10,6 +10,7 @@ import { Button, Input } from "@/components/ui";
 import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { TourButton } from "@/components/TourVideo";
 
 export function SignIn() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function SignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations("signIn");
+  const tTour = useTranslations("tour");
   const user = useUser();
 
   /** Return to where the user came from (?next=/exchange), else the locker. */
@@ -125,6 +127,10 @@ export function SignIn() {
             </form>
           )}
           {error && <p className="text-sm font-bold text-rose-deep">{error}</p>}
+        </div>
+        <div className="mt-6 border-t border-ink/10 pt-5">
+          <p className="mb-2 text-sm text-ink-soft">{tTour("newHere")}</p>
+          <TourButton />
         </div>
         {authMode === "demo" && <p className="mt-5 text-xs text-ink-soft">{t("demo")}</p>}
       </motion.section>

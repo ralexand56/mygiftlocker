@@ -4,6 +4,7 @@ import { formatBudget, pastelFor, sharedFromPerson, sizeValueLabel, summarizeSiz
 import { AnimatePresence, motion } from "motion/react";
 import { ExternalLink, Ruler } from "lucide-react";
 import { useState } from "react";
+import { TourButton } from "@/components/TourVideo";
 import { Avatar, Button, Card, Input } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getMyExchange, saveShared, saveWishlist, useAsync } from "@/lib/exchanges";
@@ -246,6 +247,7 @@ function ShareCard({ exchangeId, token, shared, onSaved }: { exchangeId: string;
             ),
           })}
         </p>
+        <TourButton className="mt-4" />
       </Card>
     );
   if (!shared && !fromProfile) {
