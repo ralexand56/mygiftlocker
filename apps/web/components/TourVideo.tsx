@@ -30,6 +30,58 @@ export function TourButton({ className = "" }: { className?: string }) {
   );
 }
 
+/**
+ * A big preview card: a 12-second silent loop of the app (plays only while on screen, and not
+ * at all for reduced motion) with a play button that opens the full tour with sound.
+ */
+export function TourPreview({ className = "" }: { className?: string }) {
+  const t = useTranslations("tour");
+  const lang = useLocale() === "es" ? "es" : "en";
+  const [open, setOpen] = useState(false);
+  const video = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = video.current;
+    if (!v || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver(([e]) => (e?.isIntersecting ? v.play().catch(() => {}) : v.pause()), { threshold: 0.4 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={t("watch")}
+        className={`group relative block w-full overflow-hidden rounded-[28px] bg-cream text-left shadow-lift ring-1 ring-white/80 ${className}`}
+      >
+        <video
+          ref={video}
+          src={`/video/preview-${lang}.mp4`}
+          poster={`/video/preview-${lang}.jpg`}
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-hidden
+          className="block aspect-video w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+        />
+        <span className="absolute inset-x-0 top-0 grid aspect-video place-items-center bg-ink/10 transition-colors group-hover:bg-ink/5">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-rose to-plum text-white shadow-lift ring-8 ring-white/50 transition-transform group-hover:scale-110 sm:h-24 sm:w-24">
+            <Play className="ml-1 h-7 w-7 fill-current sm:h-9 sm:w-9" aria-hidden />
+          </span>
+        </span>
+        <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 bg-white/80 px-5 py-4 sm:px-7 sm:py-5">
+          <span className="font-display text-lg font-semibold text-ink sm:text-2xl">{t("watch")}</span>
+          <span className="text-sm font-bold text-plum">{t("withSound")}</span>
+        </span>
+      </button>
+      {open && <TourDialog onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
 function TourDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("tour");
   const lang = useLocale() === "es" ? "es" : "en";

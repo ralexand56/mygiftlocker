@@ -2,7 +2,7 @@ import { SignedInRedirect } from "@/components/SignedInRedirect";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroCollage } from "@/components/HeroCollage";
-import { TourButton } from "@/components/TourVideo";
+import { TourButton, TourPreview } from "@/components/TourVideo";
 import { Button } from "@/components/ui";
 import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -58,6 +58,7 @@ export async function generateMetadata() {
 
 export default function Home() {
   const t = useTranslations("home");
+  const tTour = useTranslations("tour");
   const href = useLocalePath();
   return (
     <main className="pastel-wash min-h-dvh overflow-x-clip">
@@ -88,6 +89,11 @@ export default function Home() {
           </p>
         </div>
         <HeroCollage />
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 pb-20">
+        <h2 className="mb-6 text-center font-display text-3xl font-semibold tracking-tight md:text-4xl">{tTour("previewTitle")}</h2>
+        <TourPreview />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-28">

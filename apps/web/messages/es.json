@@ -978,6 +978,8 @@
     "watch": "Mira el recorrido de 45 segundos",
     "title": "My Gift Lockers en 45 segundos",
     "close": "Cerrar video",
-    "newHere": "¿Primera vez aquí?"
+    "newHere": "¿Primera vez aquí?",
+    "previewTitle": "Mira cómo funciona",
+    "withSound": "▶ Reproducir con sonido"
   }
 }
