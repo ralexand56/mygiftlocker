@@ -5,7 +5,10 @@ import { HeroCollage } from "@/components/HeroCollage";
 import { Button } from "@/components/ui";
 import { BellRing, CalendarHeart, ExternalLink, Gift, Ruler, Shuffle, Sparkles, Users, Baby } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { publicMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
+import { useLocalePath } from "@/lib/use-locale-path";
+import { getTranslations } from "next-intl/server";
 
 const FEATURES = [
   { id: "sizes", icon: Ruler, tint: "bg-blush" },
@@ -37,8 +40,14 @@ const STRUCTURED_DATA = {
   ],
 };
 
+export async function generateMetadata() {
+  const t = await getTranslations("meta");
+  return publicMeta("/", t("homeTitle"), t("description"), { absoluteTitle: true });
+}
+
 export default function Home() {
   const t = useTranslations("home");
+  const href = useLocalePath();
   return (
     <main className="pastel-wash min-h-dvh overflow-x-clip">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
@@ -58,7 +67,7 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Button href="/invite">{t("invite")}</Button>
-            <Button href="/exchange" variant="soft">
+            <Button href={href("/exchange")} variant="soft">
               {t("startExchange")}
             </Button>
           </div>

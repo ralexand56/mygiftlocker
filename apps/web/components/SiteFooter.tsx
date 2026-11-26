@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useLocalePath } from "@/lib/use-locale-path";
 
 /** Links to the public pages (helps visitors and search engines find them). */
 export function SiteFooter() {
   const t = useTranslations("footer");
+  const href = useLocalePath();
   const links = [
-    { href: "/size-charts", label: t("sizeCharts") },
-    { href: "/exchange", label: t("secretSanta") },
-    { href: "/privacy", label: t("privacy") },
+    { href: href("/size-charts"), label: t("sizeCharts") },
+    { href: href("/exchange"), label: t("secretSanta") },
+    { href: href("/privacy"), label: t("privacy") },
   ];
   return (
     <footer className="px-5 pb-10 text-center text-sm text-ink-soft">

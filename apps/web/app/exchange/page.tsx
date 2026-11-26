@@ -1,12 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { publicMeta } from "@/lib/site";
+import { publicMeta } from "@/lib/meta";
 import { ExchangeHome } from "./ExchangeHome";
 
 export async function generateMetadata() {
   const t = await getTranslations("meta");
-  return publicMeta(t("exchangeTitle"), t("exchangeDescription"));
+  return publicMeta("/exchange", t("exchangeTitle"), t("exchangeDescription"));
 }
 
 const FAQ = ["free", "accounts", "secret", "exclusions", "budget", "apart", "kids", "circle"] as const;

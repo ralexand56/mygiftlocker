@@ -7,8 +7,12 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useUser } from "@/lib/auth";
 import { chooseLocale } from "@/lib/i18n";
+import { localePath } from "@/lib/site";
 
-/** Compact language switcher; the choice is remembered and URLs don't change. */
+/**
+ * Compact language switcher; the choice is remembered. On a language address (/es/…) it
+ * moves to the same page's address in the new language; other URLs don't change.
+ */
 export function LanguagePicker({ className = "" }: { className?: string }) {
   const locale = useLocale();
   const t = useTranslations("common");
@@ -25,8 +29,12 @@ export function LanguagePicker({ className = "" }: { className?: string }) {
         aria-label={t("language")}
         value={locale}
         onChange={(e) => {
-          chooseLocale(e.target.value as Locale, !!user);
-          start(() => router.refresh());
+          const next = e.target.value as Locale;
+          chooseLocale(next, !!user);
+          const prefixed = window.location.pathname.match(/^\/(es|fr|pt|ru)(\/.*)?$/);
+          // A full load: the client router would reuse the cached page for the new address.
+          if (prefixed) window.location.assign(localePath(next, prefixed[2] || "/"));
+          else start(() => router.refresh());
         }}
         className="absolute inset-0 cursor-pointer opacity-0"
       >

@@ -11,7 +11,9 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui";
-import { publicMeta, SITE_URL } from "@/lib/site";
+import { publicMeta } from "@/lib/meta";
+import { SITE_URL } from "@/lib/site";
+import { useLocalePath } from "@/lib/use-locale-path";
 
 export const CHARTS = [
   { id: "shoes", icon: Footprints, tint: "bg-blush" },
@@ -22,7 +24,7 @@ export type ChartId = (typeof CHARTS)[number]["id"];
 
 export async function chartMeta(page: ChartId | "hub") {
   const t = await getTranslations(`sizeCharts.${page}`);
-  return publicMeta(t("metaTitle"), t("metaDescription"));
+  return publicMeta(page === "hub" ? "/size-charts" : `/size-charts/${page}`, t("metaTitle"), t("metaDescription"));
 }
 
 /** A conversion table: one row per size, one column per sizing system (plus any extras). */
@@ -102,10 +104,11 @@ export function Tip({ title, children }: { title: string; children: ReactNode })
 /** Links to the other charts. */
 export function ChartLinks({ except }: { except?: ChartId }) {
   const t = useTranslations("sizeCharts");
+  const href = useLocalePath();
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       {CHARTS.filter((c) => c.id !== except).map((c) => (
-        <Link key={c.id} href={`/size-charts/${c.id}`} className="glass group rounded-[24px] p-6 shadow-soft hover:bg-white/80">
+        <Link key={c.id} href={href(`/size-charts/${c.id}`)} className="glass group rounded-[24px] p-6 shadow-soft hover:bg-white/80">
           <span className={`mb-4 inline-grid h-11 w-11 place-items-center rounded-2xl ${c.tint}`}>
             <c.icon className="h-5 w-5 text-ink" strokeWidth={2.2} />
           </span>
@@ -120,8 +123,12 @@ export function ChartLinks({ except }: { except?: ChartId }) {
 /** Page frame: header, breadcrumb, title, intro, the charts, the locker pitch and more charts. */
 export function ChartPage({ id, children }: { id: ChartId | "hub"; children: ReactNode }) {
   const t = useTranslations("sizeCharts");
+  const href = useLocalePath();
   const hub = t("hub.title");
-  const crumbs = [{ name: hub, url: `${SITE_URL}/size-charts` }, ...(id === "hub" ? [] : [{ name: t(`${id}.short`), url: `${SITE_URL}/size-charts/${id}` }])];
+  const crumbs = [
+    { name: hub, url: SITE_URL + href("/size-charts") },
+    ...(id === "hub" ? [] : [{ name: t(`${id}.short`), url: SITE_URL + href(`/size-charts/${id}`) }]),
+  ];
   const breadcrumbs = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -134,7 +141,7 @@ export function ChartPage({ id, children }: { id: ChartId | "hub"; children: Rea
       <article className="mx-auto max-w-5xl px-5 pt-4 pb-20">
         {id !== "hub" && (
           <nav aria-label={t("common.breadcrumb")} className="mb-4 flex items-center gap-1 text-sm font-bold text-ink-soft">
-            <Link href="/size-charts" className="hover:text-ink hover:underline">
+            <Link href={href("/size-charts")} className="hover:text-ink hover:underline">
               {hub}
             </Link>
             <ChevronRight className="h-4 w-4" aria-hidden />

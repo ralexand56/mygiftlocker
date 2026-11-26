@@ -4,10 +4,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { LOCALE_TAGS } from "@mgl/core";
 import { SiteHeader } from "@/components/SiteHeader";
+import { publicMeta } from "@/lib/meta";
+import { useLocalePath } from "@/lib/use-locale-path";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("privacy");
-  return { title: (await getTranslations("titles"))("privacy"), description: t("description") };
+  return publicMeta("/privacy", (await getTranslations("titles"))("privacy"), t("description"));
 }
 
 const UPDATED = new Date(2026, 10, 25);
@@ -30,6 +32,7 @@ export default function PrivacyPage() {
   const t = useTranslations("privacy");
   const titles = useTranslations("titles");
   const locale = useLocale();
+  const href = useLocalePath();
   const strong = (c: React.ReactNode) => <strong>{c}</strong>;
   return (
     <main className="pastel-wash min-h-dvh">
@@ -98,7 +101,7 @@ export default function PrivacyPage() {
         </Section>
 
         <p className="mt-14 text-sm">
-          <Link href="/" className="font-bold text-plum underline">
+          <Link href={href("/")} className="font-bold text-plum underline">
             {t("back")}
           </Link>
         </p>
