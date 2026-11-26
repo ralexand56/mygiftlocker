@@ -87,10 +87,15 @@ export default function Home() {
             <BellRing className="h-4 w-4 shrink-0 text-rose" aria-hidden /> {t("reminderLine")}
           </p>
         </div>
+        {/* Narrow screens: the tour comes before the animated collage. */}
+        <div className="md:hidden">
+          <h2 className="mb-4 text-center font-display text-2xl font-semibold tracking-tight">{tTour("previewTitle")}</h2>
+          <TourPreview />
+        </div>
         <HeroCollage />
       </section>
 
-      <section className="mx-auto max-w-5xl px-5 pb-20">
+      <section className="mx-auto hidden max-w-5xl px-5 pb-20 md:block">
         <h2 className="mb-6 text-center font-display text-3xl font-semibold tracking-tight md:text-4xl">{tTour("previewTitle")}</h2>
         <TourPreview />
       </section>
