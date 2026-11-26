@@ -117,7 +117,7 @@ For the **size charts**, pitch gift-guide, expat and parenting bloggers: the cha
 | Site | Submitted | Status | Link live |
 |---|---|---|---|
 | AlternativeTo | 2026-11-26 | In free review queue; alternative to Elfster, DrawNames, Giftster | |
-| SaaSHub | | | |
+| SaaSHub | 2026-11-26 | Submitted by owner; awaiting approval | |
 | Product Hunt | | | |
 | BetaList | | | |
 | Uneed | | | |
