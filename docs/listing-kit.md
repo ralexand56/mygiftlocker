@@ -11,7 +11,7 @@ Every claim here matches what the product does today (Nov 2026). Update it when 
 | Large icon | `apps/web/app/apple-icon.png` (1024×1024) | Where a big square icon is asked for |
 | Wordmark | `packages/brand/lockup.png` / `lockup-cream.png` | Banner or header spots |
 | Social image | https://www.mygiftlockers.com/opengraph-image (1200×630) | Cover image fields |
-| Screenshots | still to take (1270×760 for Product Hunt) | Locker with a person open, size chart, Secret Santa draw, gift ideas |
+| Screenshots | `docs/launch/product-hunt/` (6 × 1270×760 PNG) | From demo data, no real people: home, locker, person card, invite shoe step, Secret Santa organizer, size chart |
 
 ## Core facts
 
