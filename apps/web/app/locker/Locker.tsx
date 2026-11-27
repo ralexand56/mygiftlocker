@@ -63,6 +63,7 @@ const hero = { type: "spring", stiffness: 260, damping: 30 } as const;
 export function Locker() {
   const user = useUser();
   const t = useTranslations("locker");
+  const ta = useTranslations("account");
   const tr = useTr();
   const localPeople = useDB((db) => db.people);
   const { data: remotePeople, loading: loadingPeople, reload: reloadPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
@@ -261,6 +262,14 @@ export function Locker() {
           )}
         </AnimatePresence>
       </LayoutGroup>
+
+      {user && (
+        <p className="mt-12 text-center text-sm">
+          <a href="/locker/account" className="font-bold text-ink-soft underline hover:text-ink">
+            {ta("section")}
+          </a>
+        </p>
+      )}
     </div>
   );
 }

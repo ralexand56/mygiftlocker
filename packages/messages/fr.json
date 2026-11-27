@@ -159,7 +159,7 @@
     },
     "keeping": {
       "title": "Conservation et suppression de vos données",
-      "body": "Nous conservons vos informations tant que votre compte est actif. Vous pouvez modifier ou supprimer des profils et des échanges à tout moment, et nous demander par e-mail de supprimer votre compte et tout son contenu. Nous le ferons sous 30 jours, sauf pour ce que la loi nous oblige à conserver."
+      "body": "Nous conservons vos informations tant que votre compte est actif. Vous pouvez modifier ou supprimer vos profils et échanges à tout moment, et supprimer vous-même votre compte et tout son contenu, immédiatement : sur le site dans Mon casier → Supprimer le compte, ou dans l’app dans Réglages. Vous pouvez aussi nous écrire et nous le ferons sous 30 jours, sauf ce que la loi nous oblige à conserver."
     },
     "security": {
       "title": "Sécurité",
@@ -990,5 +990,15 @@
       "languageHint": "Les e-mails de rappel et de connexion arrivent aussi dans cette langue.",
       "website": "Ouvrir mygiftlockers.com"
     }
+  },
+  "account": {
+    "section": "Supprimer le compte",
+    "delete": "Supprimer mon compte",
+    "title": "Supprimer votre compte ?",
+    "body": "Cela supprime définitivement votre casier, votre propre profil, vos invitations, idées cadeaux et photos, ainsi que les échanges de cadeaux que vous organisez. Les personnes avec qui vous avez partagé votre profil gardent la dernière version sur leurs propres fiches. C'est irréversible.",
+    "confirm": "Oui, tout supprimer",
+    "deleting": "Suppression…",
+    "failed": "La suppression de votre compte n'a pas pu se terminer. Réessayez.",
+    "done": "Votre compte a été supprimé."
   }
 }

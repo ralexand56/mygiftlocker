@@ -159,7 +159,7 @@
     },
     "keeping": {
       "title": "Retenção e exclusão dos seus dados",
-      "body": "Mantemos suas informações enquanto sua conta estiver ativa. Você pode editar ou excluir perfis e amigos secretos a qualquer momento, e pode nos pedir por e-mail para excluir sua conta e tudo o que há nela. Faremos isso em até 30 dias, exceto o que a lei nos obrigar a manter."
+      "body": "Guardamos suas informações enquanto sua conta estiver ativa. Você pode editar ou excluir perfis e trocas a qualquer momento, e pode excluir sua conta e tudo o que há nela você mesmo, na hora: no site em Meu armário → Excluir conta, ou no app em Ajustes. Você também pode nos escrever e faremos isso em até 30 dias, exceto o que a lei nos obriga a manter."
     },
     "security": {
       "title": "Segurança",
@@ -990,5 +990,15 @@
       "languageHint": "Os e-mails de lembrete e de login também chegam neste idioma.",
       "website": "Abrir mygiftlockers.com"
     }
+  },
+  "account": {
+    "section": "Excluir conta",
+    "delete": "Excluir minha conta",
+    "title": "Excluir sua conta?",
+    "body": "Isso exclui para sempre seu armário, seu próprio perfil, seus convites, ideias de presente e fotos, e as trocas de presentes que você organiza. Quem recebeu seu perfil mantém a última versão nos próprios cartões. Não dá para desfazer.",
+    "confirm": "Sim, excluir tudo",
+    "deleting": "Excluindo…",
+    "failed": "Não foi possível concluir a exclusão da sua conta. Tente de novo.",
+    "done": "Sua conta foi excluída."
   }
 }

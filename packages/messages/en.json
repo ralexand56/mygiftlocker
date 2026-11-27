@@ -159,7 +159,7 @@
     },
     "keeping": {
       "title": "Keeping and deleting your data",
-      "body": "We keep your information while your account is active. You can edit or delete profiles and exchanges at any time, and you can ask us to delete your account and everything in it by emailing us. We’ll do so within 30 days, apart from anything we must keep by law."
+      "body": "We keep your information while your account is active. You can edit or delete profiles and exchanges at any time, and you can delete your account and everything in it yourself, right away: on the website under My locker → Delete account, or in the app under Settings. You can also email us and we’ll do it within 30 days, apart from anything we must keep by law."
     },
     "security": {
       "title": "Security",
@@ -990,5 +990,15 @@
       "languageHint": "Reminder and sign-in emails come in this language too.",
       "website": "Open mygiftlockers.com"
     }
+  },
+  "account": {
+    "section": "Delete account",
+    "delete": "Delete my account",
+    "title": "Delete your account?",
+    "body": "This permanently deletes your locker, your own profile, your invites, gift ideas and photos, and any gift exchanges you organize. People you shared your profile with keep the last version on their own cards. This can't be undone.",
+    "confirm": "Yes, delete everything",
+    "deleting": "Deleting…",
+    "failed": "Couldn't finish deleting your account. Please try again.",
+    "done": "Your account has been deleted."
   }
 }

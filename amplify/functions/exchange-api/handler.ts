@@ -100,6 +100,8 @@ export const handler = async (event: ResolverEvent) => {
         return await endConnection(str(args.connectionId), callerSub, args.both === true);
       case "setReminders":
         return await setReminders(str(args.token), args.enabled === true);
+      case "deleteMyAccount":
+        return await deleteMyAccount(callerSub);
       default:
         throw new Error(`Unknown operation ${field}`);
     }
@@ -538,6 +540,71 @@ async function setMyLocale(locale: string, callerSub: string | undefined) {
   if (data) await client.models.ReminderSettings.update({ ownerSub: sub, locale });
   else await client.models.ReminderSettings.create({ ownerSub: sub, locale, remindersOff: false, unsubscribeToken: randomBytes(24).toString("base64url") });
   return { ok: true, locale };
+}
+
+// ---- account deletion ------------------------------------------------------
+
+/** Every row of `model` matching `filter`, across pages (small tables; a filtered scan). */
+async function listAll<T>(list: (o: { filter: object; limit: number; nextToken?: string | null }) => Promise<{ data: T[]; nextToken?: string | null }>, filter: object): Promise<T[]> {
+  const out: T[] = [];
+  let nextToken: string | null | undefined;
+  do {
+    const res = await list({ filter, limit: 1000, nextToken });
+    out.push(...res.data);
+    nextToken = res.nextToken;
+  } while (nextToken);
+  return out;
+}
+
+/**
+ * Deletes everything the signed-in user owns: their locker, own profile, invites, gift lists,
+ * connections (both sides stop syncing; other people keep the last version on their own cards),
+ * Secret Santa exchanges they organize (with participants and matches), reminder settings and
+ * logs. They're also removed as a co-guardian or kid manager elsewhere. Photos live under their
+ * storage identity, so the app deletes those itself, then deletes the Cognito account.
+ * Safe to run twice (e.g. after an interrupted attempt).
+ */
+async function deleteMyAccount(callerSub: string | undefined) {
+  const sub = needSignIn(callerSub);
+  const m = client.models;
+  const own = { ownerSub: { eq: sub } };
+  const now = new Date().toISOString();
+  const count: Record<string, number> = {};
+
+  // Connections first, so nothing syncs while the rest goes.
+  const asMember = await connectionsOf(sub);
+  await endConnections(asMember.filter((c) => c.status !== "ended"), now);
+  const asOwner = await listAll((o) => m.Connection.list(o), own);
+  for (const c of [...asMember, ...asOwner]) await m.Connection.delete({ id: c.id });
+  count.connections = asMember.length + asOwner.length;
+
+  const profiles = await listAll((o) => m.Profile.list(o), own);
+  for (const p of profiles) await m.Profile.delete({ id: p.id });
+  count.profiles = profiles.length;
+  // Kids someone else owns that this user co-guarded.
+  const guarded = await listAll((o) => m.Profile.list(o), { guardians: { contains: sub } });
+  for (const p of guarded) await m.Profile.update({ id: p.id, guardians: (p.guardians ?? []).filter((g) => g && g !== sub) });
+
+  for (const [name, list, del] of [
+    ["invites", (o: never) => m.Invite.list(o), (id: string) => m.Invite.delete({ id })],
+    ["giftJobs", (o: never) => m.GiftJob.list(o), (id: string) => m.GiftJob.delete({ id })],
+    ["giftUsage", (o: never) => m.GiftUsage.list(o), (id: string) => m.GiftUsage.delete({ id })],
+    ["reminderLogs", (o: never) => m.ReminderLog.list(o), (id: string) => m.ReminderLog.delete({ id })],
+  ] as const) {
+    const rows = await listAll<{ id: string }>(list as never, own);
+    for (const r of rows) await del(r.id);
+    count[name] = rows.length;
+  }
+
+  const exchanges = await listAll((o) => m.Exchange.list(o), { adminSub: { eq: sub } });
+  for (const ex of exchanges) await removeExchange(ex.id, sub);
+  count.exchanges = exchanges.length;
+  const managed = await listAll((o) => m.Participant.list(o), { managedBySub: { eq: sub } });
+  for (const p of managed) await m.Participant.update({ id: p.id, managedBySub: null });
+
+  await m.SelfProfile.delete({ ownerSub: sub }).catch(() => {});
+  await m.ReminderSettings.delete({ ownerSub: sub }).catch(() => {});
+  return { ok: true, deleted: count };
 }
 
 // ---- helpers ---------------------------------------------------------------

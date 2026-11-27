@@ -357,6 +357,16 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .handler(a.handler.function(exchangeApi)),
 
+    /**
+     * Deletes everything the caller owns (locker, profile, invites, exchanges, connections, settings).
+     * The app then deletes their photos and their Cognito account. Required by the App Store.
+     */
+    deleteMyAccount: a
+      .mutation()
+      .returns(a.json())
+      .authorization((allow) => [allow.authenticated()])
+      .handler(a.handler.function(exchangeApi)),
+
     /** Deletes the exchange with its participants and assignments (organizers can't delete assignments directly). */
     removeExchange: a
       .mutation()

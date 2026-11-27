@@ -159,7 +159,7 @@
     },
     "keeping": {
       "title": "Conservación y eliminación de tus datos",
-      "body": "Conservamos tu información mientras tu cuenta esté activa. Puedes editar o eliminar perfiles e intercambios cuando quieras, y puedes pedirnos por correo que eliminemos tu cuenta y todo su contenido. Lo haremos en un plazo de 30 días, salvo lo que la ley nos obligue a conservar."
+      "body": "Guardamos tu información mientras tu cuenta esté activa. Puedes editar o eliminar perfiles e intercambios cuando quieras, y puedes eliminar tu cuenta y todo lo que contiene tú mismo, al instante: en el sitio web en Mi casillero → Eliminar cuenta, o en la app en Ajustes. También puedes escribirnos y lo haremos en un plazo de 30 días, salvo lo que la ley nos obligue a conservar."
     },
     "security": {
       "title": "Seguridad",
@@ -990,5 +990,15 @@
       "languageHint": "Los correos de recordatorio y de inicio de sesión también llegan en este idioma.",
       "website": "Abrir mygiftlockers.com"
     }
+  },
+  "account": {
+    "section": "Eliminar cuenta",
+    "delete": "Eliminar mi cuenta",
+    "title": "¿Eliminar tu cuenta?",
+    "body": "Se eliminan para siempre tu casillero, tu propio perfil, tus invitaciones, ideas de regalo y fotos, y los intercambios de regalos que organizas. Las personas con quienes compartiste tu perfil conservan la última versión en sus propias tarjetas. No se puede deshacer.",
+    "confirm": "Sí, eliminar todo",
+    "deleting": "Eliminando…",
+    "failed": "No se pudo terminar de eliminar tu cuenta. Inténtalo de nuevo.",
+    "done": "Tu cuenta se eliminó."
   }
 }

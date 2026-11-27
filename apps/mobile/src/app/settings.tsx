@@ -1,13 +1,14 @@
 import { LOCALES, LOCALE_NAMES } from "@mgl/core";
-import { setMyLocale } from "@mgl/data";
+import { deleteMyAccount, setMyLocale } from "@mgl/data";
 import { Stack, router } from "expo-router";
 import { useState } from "react";
 import { Linking, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, Chips, ErrorText, Field, Input, SectionTitle, styles } from "@/components/ui";
 import { backendEnabled } from "@/lib/amplify";
-import { saveDisplayName, signOut, useUser } from "@/lib/auth";
+import { reloadUser, saveDisplayName, signOut, useUser } from "@/lib/auth";
 import { chooseLocale, useLocale, useT } from "@/lib/i18n";
+import { loadLocker } from "@/lib/store";
 import { colors } from "@/lib/theme";
 
 /** Account and app settings: your name, language, sign out, privacy. */
@@ -78,6 +79,8 @@ export default function SettingsScreen() {
           backendEnabled && <Button title={tc("signIn")} onPress={() => router.push("/sign-in")} />
         )}
 
+        {user && backendEnabled && <DeleteAccount />}
+
         <Card>
           <SectionTitle icon="globe">{tc("language")}</SectionTitle>
           <Chips
@@ -97,5 +100,51 @@ export default function SettingsScreen() {
         </Card>
       </ScrollView>
     </>
+  );
+}
+
+/** App Store rule 5.1.1(v): people who can make an account here can delete it here. */
+function DeleteAccount() {
+  const t = useT("account");
+  const tc = useT("common");
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <Card style={{ gap: 8 }}>
+      <SectionTitle icon="trash">{t("section")}</SectionTitle>
+      {!asking ? (
+        <Button small variant="soft" icon="trash" title={t("delete")} style={{ alignSelf: "flex-start" }} onPress={() => setAsking(true)} />
+      ) : (
+        <View style={{ backgroundColor: "rgba(251,211,227,0.5)", borderRadius: 18, padding: 14, gap: 8 }}>
+          <Text style={styles.strong}>{t("title")}</Text>
+          <Text style={[styles.body, { fontSize: 14 }]}>{t("body")}</Text>
+          <ErrorText>{error}</ErrorText>
+          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+            <Button
+              small
+              variant="danger"
+              icon="trash"
+              busy={busy}
+              title={busy ? t("deleting") : t("confirm")}
+              onPress={async () => {
+                setBusy(true);
+                setError(null);
+                try {
+                  await deleteMyAccount();
+                  await reloadUser();
+                  await loadLocker(null);
+                  router.dismissAll();
+                } catch {
+                  setError(t("failed"));
+                  setBusy(false);
+                }
+              }}
+            />
+            <Button small variant="ghost" title={tc("cancel")} disabled={busy} onPress={() => setAsking(false)} />
+          </View>
+        </View>
+      )}
+    </Card>
   );
 }
