@@ -8,6 +8,7 @@ public class HingeModule: Module {
   private weak var window: UIWindow?
   private let lock = NSLock()
   private var state: [String: Any] = ["status": "unknown", "angle": NSNull()]
+  private var keyObserver: NSObjectProtocol?
 
   public func definition() -> ModuleDefinition {
     Name("MGLHinge")
@@ -20,11 +21,19 @@ public class HingeModule: Module {
     }
 
     OnStartObserving {
-      DispatchQueue.main.async { self.attach(retries: 10) }
+      DispatchQueue.main.async {
+        self.attach(retries: 10)
+        // Folding/unfolding can move the app to another window: follow the key window.
+        self.keyObserver = NotificationCenter.default.addObserver(forName: UIWindow.didBecomeKeyNotification, object: nil, queue: .main) { [weak self] note in
+          guard let self, let win = note.object as? UIWindow, win !== self.window else { return }
+          self.detach(keepObserver: true)
+          self.attach(retries: 0)
+        }
+      }
     }
 
     OnStopObserving {
-      DispatchQueue.main.async { self.detach() }
+      DispatchQueue.main.async { self.detach(keepObserver: false) }
     }
   }
 
@@ -46,14 +55,20 @@ public class HingeModule: Module {
       return
     }
     let i = UIHingeInteraction { [weak self] _, update in
-      self?.publish(update.hinge)
+      // nil: this window no longer gets hinge updates; keep the last state until another one does.
+      guard let hinge = update.hinge else { return }
+      self?.publish(hinge)
     }
     win.addInteraction(i)
     interaction = i
     window = win
   }
 
-  private func detach() {
+  private func detach(keepObserver: Bool) {
+    if !keepObserver, let o = keyObserver {
+      NotificationCenter.default.removeObserver(o)
+      keyObserver = nil
+    }
     guard #available(iOS 27.1, *) else { return }
     if let i = interaction as? UIHingeInteraction { window?.removeInteraction(i) }
     interaction = nil
@@ -61,16 +76,13 @@ public class HingeModule: Module {
   }
 
   @available(iOS 27.1, *)
-  private func publish(_ hinge: UIHinge?) {
-    var next: [String: Any] = ["status": "unknown", "angle": NSNull()]
-    if let hinge {
-      switch hinge.status {
-      case .closed: next["status"] = "closed"
-      case .partiallyOpen: next["status"] = "partial"
-      case .fullyOpen: next["status"] = "open"
-      default: next["status"] = "unknown"
-      }
-      next["angle"] = Double(hinge.angle) * 180 / Double.pi
+  private func publish(_ hinge: UIHinge) {
+    var next: [String: Any] = ["status": "unknown", "angle": Double(hinge.angle) * 180 / Double.pi]
+    switch hinge.status {
+    case .closed: next["status"] = "closed"
+    case .partiallyOpen: next["status"] = "partial"
+    case .fullyOpen: next["status"] = "open"
+    default: next["status"] = "unknown"
     }
     lock.lock()
     state = next

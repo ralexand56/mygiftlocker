@@ -7,7 +7,7 @@ import { describeDays, filterPeopleByName, occasionName, sortPeople, upcomingEve
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, interpolate, useAnimatedStyle } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LockerCalendar, PersonRow, SelfCard } from "@/components/LockerParts";
 import { PersonDetail } from "@/components/PersonDetail";
@@ -15,6 +15,7 @@ import { Button, Chips, Icon, Input, Rich, styles, tap } from "@/components/ui";
 import { backendEnabled } from "@/lib/amplify";
 import { useUser } from "@/lib/auth";
 import { useT, useTr } from "@/lib/i18n";
+import { foldProgress } from "@/lib/hinge";
 import { useLayout } from "@/lib/layout";
 import { loadLocker, useLocker } from "@/lib/store";
 import { colors, fonts } from "@/lib/theme";
@@ -27,11 +28,22 @@ export default function LockerScreen() {
   const people = loaded ?? [];
   const insets = useSafeAreaInsets();
   const layout = useLayout();
-  const { split, listWidth, width, atFold } = layout;
+  const { split, listWidth, width, canFold, foldX } = layout;
   const { id: selectedId } = useLocalSearchParams<{ id?: string }>();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PeopleSort>("next");
   const [refreshing, setRefreshing] = useState(false);
+
+  // iPhone Duo: as it folds, the list slides to the fold and the panes part at the crease.
+  const GAP = 28;
+  const listPane = useAnimatedStyle(() => {
+    const p = canFold ? foldProgress.value : 0;
+    return {
+      width: interpolate(p, [0, 1], [listWidth, foldX - GAP / 2]),
+      borderRightColor: `rgba(74,59,102,${0.08 * (1 - p)})`,
+    };
+  });
+  const detailPane = useAnimatedStyle(() => ({ marginLeft: interpolate(canFold ? foldProgress.value : 0, [0, 1], [0, GAP]) }));
 
   useEffect(() => {
     if (user !== undefined) void loadLocker(user?.sub ?? null);
@@ -139,18 +151,20 @@ export default function LockerScreen() {
     );
 
   // Two panes: list | person (or the calendar when no one is selected).
-  const detailWidth = width - listWidth;
+  const detailWidth = layout.atFold ? width - foldX - 14 : width - listWidth;
   return (
     <View style={{ flex: 1, flexDirection: "row", backgroundColor: colors.cream }}>
-      <ScrollView
-        style={{ width: listWidth, flexGrow: 0, borderRightWidth: atFold ? 0 : 1, borderRightColor: "rgba(74,59,102,0.08)" }}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={backendEnabled ? refresh : undefined}
-        contentContainerStyle={{ padding: 16, paddingRight: atFold ? 22 : 16, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30 }}
-      >
-        {list}
-      </ScrollView>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingLeft: atFold ? 6 : 0, paddingTop: selected ? 0 : insets.top + 20, paddingBottom: insets.bottom + 30 }}>
+      <Animated.View style={[{ borderRightWidth: 1 }, listPane]}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          refreshControl={backendEnabled ? refresh : undefined}
+          contentContainerStyle={{ padding: 16, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30 }}
+        >
+          {list}
+        </ScrollView>
+      </Animated.View>
+      <Animated.View style={[{ flex: 1 }, detailPane]}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: selected ? 0 : insets.top + 20, paddingBottom: insets.bottom + 30 }}>
         {selected ? (
           <Animated.View key={selected.id} entering={FadeIn.duration(220)}>
             <PersonDetail person={selected} paneWidth={detailWidth} topInset={insets.top} onRemoved={() => router.setParams({ id: undefined })} />
@@ -166,6 +180,7 @@ export default function LockerScreen() {
           </View>
         )}
       </ScrollView>
+      </Animated.View>
     </View>
   );
 }
