@@ -2,13 +2,18 @@
   "expo": {
     "name": "My Gift Lockers",
     "slug": "mygiftlocker",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mygiftlocker.app"
+      "bundleIdentifier": "com.mygiftlocker.app",
+      "appleTeamId": "K8F4DVG4VD",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
