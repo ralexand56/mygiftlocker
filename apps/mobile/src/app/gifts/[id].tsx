@@ -28,7 +28,8 @@ export default function GiftsScreen() {
   const user = useUser();
   const locale = useLocale();
   const insets = useSafeAreaInsets();
-  const { width } = useLayout();
+  // Sized by the sheet itself (on iPad the sheet is narrower than the screen).
+  const [width, setWidth] = useState(useLayout().width);
   const forSelf = id === "self";
   const first = p?.name.split(" ")[0] ?? "";
   const [ideas, setIdeas] = useState<GiftIdea[]>(p?.giftIdeas?.ideas ?? []);
@@ -75,13 +76,13 @@ export default function GiftsScreen() {
   }, [loading]);
 
   if (!p) return <ActivityIndicator style={{ flex: 1 }} color={colors.rose} />;
-  const tileW = cols === 2 ? (width - 16 * 2 - 10) / 2 : undefined;
+  const tileW = cols === 2 ? Math.floor((width - 16 * 2 - 10) / 2) : undefined;
 
   return (
     <>
       <Stack.Screen options={{ title: forSelf ? t("titleSelf") : t("title", { name: first }) }} />
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.cream, paddingLeft: insets.left, paddingRight: insets.right }}>
-        <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, gap: 12 }}>
+        <ScrollView onLayout={(e) => setWidth(e.nativeEvent.layout.width)} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, gap: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Avatar name={p.name} color={p.color} size={48} />
             <View style={{ flex: 1 }}>
