@@ -18,6 +18,7 @@ export function InviteBuilder() {
   const me = useUser();
   const router = useRouter();
   const t = useTranslations("inviteBuilder");
+  const ta = useTranslations("addPerson");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [from, setFrom] = useState("");
@@ -69,6 +70,9 @@ export function InviteBuilder() {
       <Card className="p-7 md:p-9">
         <h1 className="font-display text-4xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="mt-2 text-ink-soft">{t("lede")}</p>
+        <a href="/locker/add" className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-plum underline">
+          <UserPlus className="h-4 w-4" /> {ta("orAdd")}
+        </a>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           <Field label={t("yourName")}>

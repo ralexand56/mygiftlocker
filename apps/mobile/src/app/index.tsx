@@ -73,10 +73,12 @@ export default function LockerScreen() {
   const list = (
     <View style={{ gap: 12 }}>
       {header}
-      <View style={{ flexDirection: split ? "column" : "row", gap: 10 }}>
-        <Button title={t("invite")} icon="plus" onPress={() => router.push("/invite")} style={{ flex: split ? undefined : 1 }} />
+      {/* Two ways in: invite them, or add them yourself. Stacked so the labels never truncate. */}
+      <View style={{ gap: 10 }}>
+        <Button title={t("invite")} icon="plus" onPress={() => router.push("/invite")} />
+        <Button title={tr("addPerson.button")} icon="person.badge.plus" variant="soft" onPress={() => router.push("/person/new")} />
         {/* Secret Santa is still demo data in the app (phase 4). */}
-        {!backendEnabled && <Button title={tr("common.giftExchange")} variant="soft" onPress={() => router.push("/exchange")} style={{ flex: split ? undefined : 1 }} />}
+        {!backendEnabled && <Button title={tr("common.giftExchange")} variant="ghost" onPress={() => router.push("/exchange")} />}
       </View>
       {error && <Text style={{ fontFamily: fonts.bold, color: colors.roseDeep }}>{tr("common.somethingWrong")}</Text>}
       {loading ? (
@@ -98,6 +100,7 @@ export default function LockerScreen() {
               <Text style={{ fontSize: 40 }}>🎁</Text>
               <Text style={[styles.h2, { textAlign: "center" }]}>{t("emptyTitle")}</Text>
               <Text style={[styles.body, { textAlign: "center" }]}>{t("emptyBody")}</Text>
+              <Text style={[styles.strong, { textAlign: "center", fontSize: 14 }]}>{tr("addPerson.twoWays")}</Text>
             </View>
           )}
           {people.length > 0 && shown.length === 0 && <Text style={[styles.body, { textAlign: "center", padding: 20 }]}>{t("noMatch", { query: query.trim() })}</Text>}

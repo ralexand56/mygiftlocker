@@ -23,6 +23,7 @@ const SECTIONS: InviteSection[] = ["sizes", "address", "dates", "favorites", "pa
 
 export default function InviteScreen() {
   const t = useT("inviteBuilder");
+  const tr = useTr();
   const user = useUser();
   const insets = useSafeAreaInsets();
   const { split, width } = useLayout();
@@ -64,6 +65,9 @@ export default function InviteScreen() {
     <Card style={{ gap: 4 }}>
       <Text style={styles.h1}>{t("title")}</Text>
       <Text style={styles.body}>{t("lede")}</Text>
+      <Pressable onPress={() => router.replace("/person/new")}>
+        <Text style={[styles.strong, { color: colors.plum, fontSize: 14, textDecorationLine: "underline", marginTop: 6 }]}>{tr("addPerson.orAdd")}</Text>
+      </Pressable>
       <View style={{ flexDirection: width >= 460 ? "row" : "column", gap: width >= 460 ? 12 : 0 }}>
         <View style={{ flex: 1 }}>
           <Field label={t("yourName")}>

@@ -1001,5 +1001,23 @@
     "deleting": "Excluindo…",
     "failed": "Não foi possível concluir a exclusão da sua conta. Tente de novo.",
     "done": "Sua conta foi excluída."
+  },
+  "addPerson": {
+    "button": "Adicionar alguém você mesmo",
+    "title": "Adicione alguém ao seu armário",
+    "lede": "Preencha o que você sabe agora. Dá para completar depois ou enviar um convite para a pessoa preencher o resto.",
+    "who": "Quem você vai adicionar?",
+    "adult": "Um adulto",
+    "adultBody": "Família, amigos, colegas de trabalho",
+    "child": "Uma criança",
+    "childBody": "Crianças para quem você compra; você mantém os tamanhos em dia",
+    "welcome": "Quem você vai adicionar?",
+    "save": "Adicionar ao meu armário",
+    "saving": "Adicionando…",
+    "failed": "Não foi possível adicionar. Tente de novo.",
+    "nameRequired": "Adicione o nome primeiro.",
+    "twoWays": "Duas formas de adicionar alguém: envie um convite para a pessoa preencher os próprios tamanhos, ou adicione você mesmo com o que já sabe.",
+    "orAdd": "Já sabe os tamanhos? Adicione você mesmo",
+    "orInvite": "Prefere que a pessoa preencha? Envie um convite"
   }
 }

@@ -1001,5 +1001,23 @@
     "deleting": "Deleting…",
     "failed": "Couldn't finish deleting your account. Please try again.",
     "done": "Your account has been deleted."
+  },
+  "addPerson": {
+    "button": "Add someone yourself",
+    "title": "Add someone to your locker",
+    "lede": "Fill in what you know now. You can add more later, or send them an invite to fill in the rest.",
+    "who": "Who are you adding?",
+    "adult": "An adult",
+    "adultBody": "Family, friends, coworkers",
+    "child": "A child",
+    "childBody": "Kids you shop for; you keep their sizes current",
+    "welcome": "Who are you adding?",
+    "save": "Add to my locker",
+    "saving": "Adding…",
+    "failed": "Couldn't add them. Try again.",
+    "nameRequired": "Add their name first.",
+    "twoWays": "Two ways to add someone: send an invite and they fill in their own sizes, or add them yourself with what you already know.",
+    "orAdd": "Know their sizes already? Add them yourself",
+    "orInvite": "Rather they fill it in? Send an invite instead"
   }
 }

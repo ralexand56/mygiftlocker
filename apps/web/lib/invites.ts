@@ -68,6 +68,32 @@ export async function submitInvite(invite: PublicInvite, profile: Person, kids: 
   return res?.claimToken;
 }
 
+/** A card the owner fills in themselves (no invite). Returns the new card's id. */
+export async function addLockerPerson(ownerSub: string | undefined, p: Person): Promise<string> {
+  if (!backendEnabled) {
+    upsertPerson(p);
+    return p.id;
+  }
+  if (!ownerSub) throw new Error(currentTr()("errors.signInToInvite"));
+  const json = (v: unknown) => (v === undefined || v === null ? null : JSON.stringify(v));
+  const { data, errors } = await api().models.Profile.create({
+    ownerSub,
+    name: p.name.trim(),
+    kind: p.kind,
+    relationship: p.relationship?.trim() || undefined,
+    color: p.color,
+    sizes: JSON.stringify(p.sizes ?? {}),
+    address: json(p.address),
+    birthday: p.birthday ?? null,
+    anniversary: p.anniversary ?? null,
+    favorites: json(p.favorites),
+    payments: p.kind === "adult" ? json(cleanPayments(p.payments)) : null,
+    guardians: p.kind === "child" ? [ownerSub] : undefined,
+  });
+  if (!data) throw new Error(errors?.[0]?.message ?? currentTr()("addPerson.failed"));
+  return data.id;
+}
+
 /** People in the signed-in user's locker. */
 export async function listLockerPeople(): Promise<Person[]> {
   if (!backendEnabled) return readDB().people;

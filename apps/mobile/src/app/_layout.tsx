@@ -39,6 +39,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ title: t("locker.title"), headerShown: false }} />
         <Stack.Screen name="person/[id]" options={{ title: "", headerTransparent: true, headerStyle: { backgroundColor: "transparent" } }} />
         <Stack.Screen name="person/edit" options={{ title: t("common.edit"), presentation: "modal" }} />
+        <Stack.Screen name="person/new" options={{ title: t("addPerson.title"), presentation: "modal" }} />
         <Stack.Screen name="me" options={{ title: t("myProfile.title"), presentation: "modal" }} />
         <Stack.Screen name="settings" options={{ title: t("app.settings.title") }} />
         <Stack.Screen name="sign-in" options={{ headerShown: false, presentation: "modal" }} />

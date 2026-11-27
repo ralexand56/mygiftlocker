@@ -1001,5 +1001,23 @@
     "deleting": "Suppression…",
     "failed": "La suppression de votre compte n'a pas pu se terminer. Réessayez.",
     "done": "Votre compte a été supprimé."
+  },
+  "addPerson": {
+    "button": "Ajouter quelqu'un vous-même",
+    "title": "Ajouter quelqu'un à votre casier",
+    "lede": "Indiquez ce que vous savez maintenant. Vous pourrez compléter plus tard ou lui envoyer une invitation pour qu'il remplisse le reste.",
+    "who": "Qui ajoutez-vous ?",
+    "adult": "Un adulte",
+    "adultBody": "Famille, amis, collègues",
+    "child": "Un enfant",
+    "childBody": "Les enfants à qui vous offrez des cadeaux ; vous tenez leurs tailles à jour",
+    "welcome": "Qui ajoutez-vous ?",
+    "save": "Ajouter à mon casier",
+    "saving": "Ajout…",
+    "failed": "Impossible de l'ajouter. Réessayez.",
+    "nameRequired": "Indiquez d'abord son nom.",
+    "twoWays": "Deux façons d'ajouter quelqu'un : envoyez une invitation pour qu'il indique ses propres tailles, ou ajoutez-le vous-même avec ce que vous savez déjà.",
+    "orAdd": "Vous connaissez déjà ses tailles ? Ajoutez-le vous-même",
+    "orInvite": "Vous préférez qu'il remplisse lui-même ? Envoyez une invitation"
   }
 }

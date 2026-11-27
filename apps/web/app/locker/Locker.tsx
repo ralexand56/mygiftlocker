@@ -37,7 +37,7 @@ import {
   type Person,
 } from "@mgl/core";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Baby, Check, Trash2, ImagePlus, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserRound, X } from "lucide-react";
+import { Baby, Check, Trash2, ImagePlus, Sparkles, Wallet, CalendarHeart, Copy, ExternalLink, Gift, Link2, Lock, MessageCircle, Share2, Unlink, MapPin, Pencil, Plus, Ruler, Search, UserPlus, UserRound, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, ChipGroup, inputCls } from "@/components/ui";
 import { EventIcon } from "./EventIcon";
@@ -64,6 +64,7 @@ export function Locker() {
   const user = useUser();
   const t = useTranslations("locker");
   const ta = useTranslations("account");
+  const ta2 = useTranslations("addPerson");
   const tr = useTr();
   const localPeople = useDB((db) => db.people);
   const { data: remotePeople, loading: loadingPeople, reload: reloadPeople } = useAsync(async () => (authMode === "amplify" && user ? listLockerPeople() : null), [user?.sub]);
@@ -142,9 +143,14 @@ export function Locker() {
         </div>
         {/* Empty lockers get the invite button in the welcome card instead. */}
         {people.length > 0 && (
-          <Button href="/invite">
-            <Plus className="h-4 w-4" /> {t("invite")}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button href="/invite">
+              <Plus className="h-4 w-4" /> {t("invite")}
+            </Button>
+            <Button href="/locker/add" variant="soft">
+              <UserPlus className="h-4 w-4" /> {ta2("button")}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -159,9 +165,13 @@ export function Locker() {
           </span>
           <h2 className="font-display text-3xl font-semibold">{t("emptyTitle")}</h2>
           <p className="mx-auto mt-2 max-w-sm text-ink-soft">{t("emptyBody")}</p>
-          <div className="mt-7 flex justify-center">
+          <p className="mx-auto mt-3 max-w-sm text-sm font-bold text-ink">{ta2("twoWays")}</p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
             <Button href="/invite">
               <Plus className="h-4 w-4" /> {t("invite")}
+            </Button>
+            <Button href="/locker/add" variant="soft">
+              <UserPlus className="h-4 w-4" /> {ta2("button")}
             </Button>
           </div>
         </motion.div>

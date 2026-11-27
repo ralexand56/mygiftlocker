@@ -186,7 +186,8 @@ export function JoinFlow({
 }: {
   invite: PublicInvite;
   /** about: first name of the person being edited, when it isn't the user's own profile. */
-  self?: { initial: Person | null; onSave: (p: Person) => Promise<void>; doneHref?: string; about?: string; notice?: string };
+  /** adding: a new card the owner fills in themselves; titles use the name they type. */
+  self?: { initial: Person | null; /** May return where to go next. */ onSave: (p: Person) => Promise<void | string>; doneHref?: string; about?: string; notice?: string; adding?: { title: string; save: string } };
 }) {
   const router = useRouter();
   const t = useTranslations("join");
@@ -215,7 +216,7 @@ export function JoinFlow({
 
   const steps = useMemo(() => stepsFor(invite.ask, form.sizes.fit), [invite.ask, form.sizes.fit]);
   const step = steps[Math.min(index, steps.length - 1)]!;
-  const about = self?.about;
+  const about = self?.adding ? form.name.trim().split(" ")[0] || undefined : self?.about;
   const text = stepText(step, tr, about);
   const progress = (index + 1) / steps.length;
 
@@ -296,8 +297,8 @@ export function JoinFlow({
     setSubmitError(null);
     try {
       if (self) {
-        await self.onSave(person);
-        router.push(self.doneHref ?? "/locker");
+        const next = await self.onSave(person);
+        router.push(next || self.doneHref || "/locker");
         return;
       }
       const claimToken = await submitInvite(invite, person, kids);
@@ -377,7 +378,7 @@ export function JoinFlow({
                       {text.eyebrow}
                     </motion.p>
                     <motion.h1 custom={dir} variants={line} className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance md:text-[2.6rem]">
-                      {step.id === "welcome" ? (about ? text.title : self ? t("ownProfile") : t("wantsGifts", { name: invite.from.name })) : text.title}
+                      {step.id === "welcome" ? (self?.adding ? self.adding.title : about ? text.title : self ? t("ownProfile") : t("wantsGifts", { name: invite.from.name })) : text.title}
                     </motion.h1>
                     {text.subtitle && (
                       <motion.p custom={dir} variants={line} className="mt-2 text-ink-soft">
@@ -428,7 +429,7 @@ export function JoinFlow({
                         )}
                         {step.id === "review" ? (
                           <Button onClick={submit} disabled={sending}>
-                            <Sparkles className="h-4 w-4" /> {sending ? (self ? t("saving") : t("sending")) : about ? t("saveChanges") : self ? t("saveProfile") : t("shareWith", { name: invite.from.name })}
+                            <Sparkles className="h-4 w-4" /> {sending ? (self ? t("saving") : t("sending")) : self?.adding ? self.adding.save : about ? t("saveChanges") : self ? t("saveProfile") : t("shareWith", { name: invite.from.name })}
                           </Button>
                         ) : (
                           <Button onClick={() => go(1)} disabled={!canContinue}>

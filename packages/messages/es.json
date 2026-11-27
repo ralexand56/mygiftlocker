@@ -1001,5 +1001,23 @@
     "deleting": "Eliminando…",
     "failed": "No se pudo terminar de eliminar tu cuenta. Inténtalo de nuevo.",
     "done": "Tu cuenta se eliminó."
+  },
+  "addPerson": {
+    "button": "Agregar a alguien tú mismo",
+    "title": "Agrega a alguien a tu casillero",
+    "lede": "Completa lo que sepas ahora. Puedes agregar más después o enviarle una invitación para que complete el resto.",
+    "who": "¿A quién vas a agregar?",
+    "adult": "Un adulto",
+    "adultBody": "Familia, amigos, compañeros de trabajo",
+    "child": "Un niño o niña",
+    "childBody": "Niños a quienes les compras; tú mantienes sus tallas al día",
+    "welcome": "¿A quién vas a agregar?",
+    "save": "Agregar a mi casillero",
+    "saving": "Agregando…",
+    "failed": "No se pudo agregar. Inténtalo de nuevo.",
+    "nameRequired": "Primero agrega su nombre.",
+    "twoWays": "Dos formas de agregar a alguien: envía una invitación para que complete sus propias tallas, o agrégala tú con lo que ya sabes.",
+    "orAdd": "¿Ya conoces sus tallas? Agrégala tú",
+    "orInvite": "¿Prefieres que lo complete esa persona? Envía una invitación"
   }
 }
