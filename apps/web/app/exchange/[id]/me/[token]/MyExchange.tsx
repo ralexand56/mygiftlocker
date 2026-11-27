@@ -14,6 +14,7 @@ import { WishlistLinkList } from "@/app/locker/Locker";
 import { useTranslations } from "next-intl";
 import { useIntlTag, useTr } from "@/lib/i18n";
 import { ColorChips } from "@/components/ColorChips";
+import { LogoMark } from "@/components/Logo";
 
 export function MyExchange({ id, token }: { id: string; token: string }) {
   const { data: view, error, loading, reload } = useAsync(() => getMyExchange(id, token), [id, token]);
@@ -63,8 +64,8 @@ function Waiting() {
   const t = useTranslations("myExchange");
   return (
     <Card className="p-8 text-center">
-      <motion.div className="mx-auto mb-4 w-fit text-6xl" animate={{ rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}>
-        🎁
+      <motion.div className="mx-auto mb-4 w-fit" animate={{ rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}>
+        <LogoMark size={64} />
       </motion.div>
       <h2 className="font-display text-2xl font-semibold">{t("waitingTitle")}</h2>
       <p className="mt-1 text-ink-soft">{t("waitingBody")}</p>

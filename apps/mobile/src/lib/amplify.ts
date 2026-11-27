@@ -15,6 +15,11 @@ const config = outputs as Record<string, unknown>;
 export const backendEnabled = Boolean(config.auth);
 export const photosEnabled = backendEnabled && Boolean(config.storage);
 
+/** Sign-in on our own address (see amplify/backend.ts): Google's chooser shows mygiftlockers.com. */
+const AUTH_DOMAIN = "auth.mygiftlockers.com";
+const auth = config.auth as { oauth?: { domain?: string } } | undefined;
+if (auth?.oauth) config.auth = { ...auth, oauth: { ...auth.oauth, domain: AUTH_DOMAIN } };
+
 if (backendEnabled) {
   Amplify.configure(config as Parameters<typeof Amplify.configure>[0]);
   setClient(generateClient<Schema>(), currentTr);

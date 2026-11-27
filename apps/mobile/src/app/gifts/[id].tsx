@@ -17,6 +17,7 @@ import { useLocale, useT } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { giftAffiliate, runGiftIdeas, useLocker } from "@/lib/store";
 import { colors, fonts, shadow } from "@/lib/theme";
+import { BusyMark } from "@/components/LogoMark";
 
 const CHIPS = ["under50", "experience", "handmade", "lastMinute", "splurge"] as const;
 
@@ -97,9 +98,9 @@ export default function GiftsScreen() {
 
           {loading ? (
             <Animated.View entering={FadeIn} style={{ alignItems: "center", paddingVertical: 50, gap: 14 }}>
-              <ActivityIndicator color={colors.rose} size="large" />
+              <BusyMark size={60} />
               <Animated.Text key={step} entering={FadeIn.duration(400)} style={[styles.strong, { textAlign: "center" }]}>
-                🎁 {forSelf ? t(`thinkingSelf.${step}`) : t(`thinking.${step}`, { name: first })}
+                {forSelf ? t(`thinkingSelf.${step}`) : t(`thinking.${step}`, { name: first })}
               </Animated.Text>
             </Animated.View>
           ) : error ? (

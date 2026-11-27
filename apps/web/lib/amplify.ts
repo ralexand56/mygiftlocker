@@ -15,8 +15,19 @@ import { localizeError } from "./i18n-current";
 
 export const backendEnabled = Boolean((outputs as { auth?: unknown }).auth);
 
+/**
+ * Sign-in runs on our own address (auth.mygiftlockers.com, a Cognito custom domain set up in
+ * amplify/backend.ts) so Google's account chooser says "continue to mygiftlockers.com". The
+ * generated outputs still name Cognito's prefix domain, which keeps working as a fallback.
+ */
+export const AUTH_DOMAIN = "auth.mygiftlockers.com";
+const withAuthDomain = (o: typeof outputs) => {
+  const auth = (o as { auth?: { oauth?: { domain?: string } } }).auth;
+  return auth?.oauth ? { ...o, auth: { ...auth, oauth: { ...auth.oauth, domain: AUTH_DOMAIN } } } : o;
+};
+
 if (backendEnabled && typeof window !== "undefined") {
-  Amplify.configure(outputs as Parameters<typeof Amplify.configure>[0], { ssr: false });
+  Amplify.configure(withAuthDomain(outputs) as Parameters<typeof Amplify.configure>[0], { ssr: false });
 }
 
 let _client: ReturnType<typeof generateClient<Schema>> | null = null;

@@ -7,8 +7,18 @@
  */
 import { api, unwrap } from "./client";
 
+/** Names the step that failed, so the error shown to the user can be traced. */
+const step = async <T>(name: string, run: () => Promise<T>): Promise<T> => {
+  try {
+    return await run();
+  } catch (e) {
+    const why = e instanceof Error ? `${e.name !== "Error" ? `${e.name}: ` : ""}${e.message}` : String(e);
+    throw new Error(`${name}: ${why}`);
+  }
+};
+
 export async function deleteMyAccount(): Promise<void> {
-  unwrap(await api().mutations.deleteMyAccount());
+  await step("data", async () => unwrap(await api().mutations.deleteMyAccount()));
   const { list, remove } = await import("aws-amplify/storage");
   try {
     const { items } = await list({ path: ({ identityId }) => `person-photos/${identityId}/`, options: { listAll: true } });
@@ -16,6 +26,8 @@ export async function deleteMyAccount(): Promise<void> {
   } catch {
     // No storage configured or nothing there.
   }
-  const { deleteUser } = await import("aws-amplify/auth");
-  await deleteUser();
+  await step("sign-in", async () => {
+    const { deleteUser } = await import("aws-amplify/auth");
+    await deleteUser();
+  });
 }

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, ExternalLink, RotateCcw, Sparkles, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { LogoMark } from "@/components/Logo";
 import { Avatar } from "@/components/ui";
 import { GiftRunError, findGifts, giftAffiliate, type GiftError } from "@/lib/gifts";
 
@@ -147,7 +148,7 @@ export function GiftFinder({
               <Thinking name={first} step={step} forSelf={forSelf} />
             ) : error ? (
               <div className="grid place-items-center py-16 text-center">
-                <p className="text-4xl">🎁</p>
+                <LogoMark size={52} className="mx-auto" />
                 <p className="mt-3 max-w-sm font-bold">{t(`errors.${error}`, { n: DAILY_GIFT_RUNS })}</p>
                 {error !== "limit" && (
                   <button onClick={() => run(shown)} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 font-bold shadow-soft">
@@ -297,8 +298,8 @@ function Thinking({ name, step, forSelf }: { name: string; step: number; forSelf
   return (
     <div className="py-4">
       <div className="mb-5 flex items-center justify-center gap-3" aria-live="polite">
-        <motion.span animate={{ rotate: [0, 14, -10, 0], scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1.6 }} className="text-2xl" aria-hidden>
-          🎁
+        <motion.span animate={{ rotate: [0, 10, -8, 0], y: [0, -4, 0], scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.6 }} className="inline-flex" aria-hidden>
+          <LogoMark size={34} />
         </motion.span>
         <AnimatePresence mode="wait">
           <motion.p key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="font-bold text-ink-soft">

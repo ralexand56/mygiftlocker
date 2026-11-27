@@ -137,8 +137,10 @@ function DeleteAccount() {
                   await reloadUser();
                   await loadLocker(null);
                   router.dismissAll();
-                } catch {
-                  setError(t("failed"));
+                } catch (e) {
+                  console.error("[account] delete failed", e);
+                  // The detail (which step, and why) helps trace a failure from a screenshot.
+                  setError(`${t("failed")}\n(${e instanceof Error ? e.message : String(e)})`);
                   setBusy(false);
                 }
               }}

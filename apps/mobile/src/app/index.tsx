@@ -19,6 +19,7 @@ import { foldProgress } from "@/lib/hinge";
 import { useLayout } from "@/lib/layout";
 import { loadLocker, useLocker } from "@/lib/store";
 import { colors, fonts } from "@/lib/theme";
+import { LogoMark } from "@/components/LogoMark";
 
 export default function LockerScreen() {
   const t = useT("locker");
@@ -109,7 +110,7 @@ export default function LockerScreen() {
           {(user || !backendEnabled) && <SelfCard self={self} stacked={split || width < 360} />}
           {people.length === 0 && (
             <View style={{ backgroundColor: "rgba(255,255,255,0.75)", borderRadius: 24, padding: 22, alignItems: "center", gap: 8 }}>
-              <Text style={{ fontSize: 40 }}>🎁</Text>
+              <LogoMark size={52} />
               <Text style={[styles.h2, { textAlign: "center" }]}>{t("emptyTitle")}</Text>
               <Text style={[styles.body, { textAlign: "center" }]}>{t("emptyBody")}</Text>
               <Text style={[styles.strong, { textAlign: "center", fontSize: 14 }]}>{tr("addPerson.twoWays")}</Text>
@@ -190,7 +191,7 @@ function SignedOut() {
   const insets = useSafeAreaInsets();
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28, paddingTop: insets.top, gap: 10 }}>
-      <Text style={{ fontSize: 56 }}>🎁</Text>
+      <LogoMark size={72} />
       <Text style={[styles.h1, { textAlign: "center" }]}>{t("signedOutTitle")}</Text>
       <Text style={[styles.body, { textAlign: "center", maxWidth: 360 }]}>{t("signedOutBody")}</Text>
       <Button

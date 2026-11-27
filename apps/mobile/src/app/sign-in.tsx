@@ -9,6 +9,7 @@ import { confirmEmailCode, signInWithApple, signInWithGoogle, startEmailSignIn, 
 import { useT } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { colors, fonts, shadow } from "@/lib/theme";
+import { LogoMark } from "@/components/LogoMark";
 
 /** Same sign-in as the website: Google, or a one-time code by email. No passwords. */
 export default function SignInScreen() {
@@ -47,7 +48,9 @@ export default function SignInScreen() {
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: 20, paddingTop: insets.top + (short ? 8 : 40) }}>
           <View style={[{ backgroundColor: "rgba(255,253,251,0.96)", borderRadius: 30, padding: short ? 20 : 26, width: "100%", maxWidth: 420, alignSelf: "center", gap: 12 }, shadow]}>
-            <Text style={{ fontSize: short ? 40 : 52, textAlign: "center" }}>🎁</Text>
+            <View style={{ alignItems: "center" }}>
+              <LogoMark size={short ? 50 : 64} />
+            </View>
             <Text style={[styles.h1, { textAlign: "center", fontSize: short ? 28 : 32 }]}>{t("title")}</Text>
             <Text style={[styles.body, { textAlign: "center" }]}>{t("subtitle")}</Text>
             {/* Apple's guidelines: black button with the Apple logo, listed first. */}
