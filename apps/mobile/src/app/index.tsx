@@ -27,7 +27,7 @@ export default function LockerScreen() {
   const people = loaded ?? [];
   const insets = useSafeAreaInsets();
   const layout = useLayout();
-  const { split, listWidth, width } = layout;
+  const { split, listWidth, width, atFold } = layout;
   const { id: selectedId } = useLocalSearchParams<{ id?: string }>();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PeopleSort>("next");
@@ -143,14 +143,14 @@ export default function LockerScreen() {
   return (
     <View style={{ flex: 1, flexDirection: "row", backgroundColor: colors.cream }}>
       <ScrollView
-        style={{ width: listWidth, flexGrow: 0, borderRightWidth: 1, borderRightColor: "rgba(74,59,102,0.08)" }}
+        style={{ width: listWidth, flexGrow: 0, borderRightWidth: atFold ? 0 : 1, borderRightColor: "rgba(74,59,102,0.08)" }}
         keyboardShouldPersistTaps="handled"
         refreshControl={backendEnabled ? refresh : undefined}
-        contentContainerStyle={{ padding: 16, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30 }}
+        contentContainerStyle={{ padding: 16, paddingRight: atFold ? 22 : 16, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30 }}
       >
         {list}
       </ScrollView>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: selected ? 0 : insets.top + 20, paddingBottom: insets.bottom + 30 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingLeft: atFold ? 6 : 0, paddingTop: selected ? 0 : insets.top + 20, paddingBottom: insets.bottom + 30 }}>
         {selected ? (
           <Animated.View key={selected.id} entering={FadeIn.duration(220)}>
             <PersonDetail person={selected} paneWidth={detailWidth} topInset={insets.top} onRemoved={() => router.setParams({ id: undefined })} />

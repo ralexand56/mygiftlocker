@@ -10,7 +10,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mygiftlocker.app",
       "appleTeamId": "K8F4DVG4VD",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

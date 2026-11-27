@@ -1,0 +1,8 @@
+{
+  "name": "mgl-hinge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hinge angle and status on foldable iPhones (UIHingeInteraction, iOS 27.1+)",
+  "license": "UNLICENSED",
+  "main": "index.ts"
+}
