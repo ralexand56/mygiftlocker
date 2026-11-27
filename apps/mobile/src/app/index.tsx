@@ -73,12 +73,11 @@ export default function LockerScreen() {
   const list = (
     <View style={{ gap: 12 }}>
       {header}
-      {!backendEnabled && (
-        <View style={{ flexDirection: split ? "column" : "row", gap: 10 }}>
-          <Button title={t("invite")} icon="plus" onPress={() => router.push("/join")} style={{ flex: split ? undefined : 1 }} />
-          <Button title={tr("common.giftExchange")} variant="soft" onPress={() => router.push("/exchange")} style={{ flex: split ? undefined : 1 }} />
-        </View>
-      )}
+      <View style={{ flexDirection: split ? "column" : "row", gap: 10 }}>
+        <Button title={t("invite")} icon="plus" onPress={() => router.push("/invite")} style={{ flex: split ? undefined : 1 }} />
+        {/* Secret Santa is still demo data in the app (phase 4). */}
+        {!backendEnabled && <Button title={tr("common.giftExchange")} variant="soft" onPress={() => router.push("/exchange")} style={{ flex: split ? undefined : 1 }} />}
+      </View>
       {error && <Text style={{ fontFamily: fonts.bold, color: colors.roseDeep }}>{tr("common.somethingWrong")}</Text>}
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color={colors.rose} />

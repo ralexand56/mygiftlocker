@@ -172,7 +172,7 @@ export function SizeEditor({ sizes: s, kind, onChange }: { sizes: SizeProfile; k
   );
 }
 
-function DateField({ label, value, onChange }: { label: string; value?: PartialDate; onChange: (d: PartialDate | undefined) => void }) {
+export function DateField({ label, value, onChange }: { label: string; value?: PartialDate; onChange: (d: PartialDate | undefined) => void }) {
   const t = useT("join.date");
   const tr = useTr();
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -212,7 +212,7 @@ function DateField({ label, value, onChange }: { label: string; value?: PartialD
   );
 }
 
-function FavoritesEditor({ value: f, onChange, self }: { value: Favorites; onChange: (f: Favorites) => void; self?: boolean }) {
+export function FavoritesEditor({ value: f, onChange, self }: { value: Favorites; onChange: (f: Favorites) => void; self?: boolean }) {
   const t = useT("join.body");
   const tc = useT("colors");
   const set = (patch: Partial<Favorites>) => onChange({ ...f, ...patch });
@@ -265,7 +265,7 @@ function FavoritesEditor({ value: f, onChange, self }: { value: Favorites; onCha
   );
 }
 
-function AddressEditor({ value, onChange }: { value?: Address; onChange: (a: Address | undefined) => void }) {
+export function AddressEditor({ value, onChange }: { value?: Address; onChange: (a: Address | undefined) => void }) {
   const t = useT("join.address");
   const tr = useTr();
   const a: Address = value ?? { line1: "", city: "", region: "", postalCode: "", country: "US" };

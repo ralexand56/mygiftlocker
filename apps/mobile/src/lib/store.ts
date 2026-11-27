@@ -4,9 +4,13 @@
  *
  * Exchanges are still demo data here; Secret Santa moves to the backend in a later phase.
  */
-import { DEMO_EXCHANGES, DEMO_ME, DEMO_PEOPLE, type Exchange, type Person, type WishItem } from "@mgl/core";
+import { DEMO_EXCHANGES, DEMO_ME, DEMO_PEOPLE, decodeInvite, encodeInvite, type Exchange, type InvitePayload, type Person, type PublicInvite, type WishItem } from "@mgl/core";
 import {
   addLockerPerson,
+  createInvite,
+  inviteUrl,
+  loadInvite,
+  submitInvite,
   getSelfProfile,
   listLockerPeople,
   removeLockerPerson,
@@ -127,4 +131,29 @@ export function setWishlist(exchangeId: string, participantId: string, wishlist:
     ...ex,
     participants: ex.participants.map((p) => (p.id === participantId ? { ...p, wishlist } : p)),
   }));
+}
+
+// ---- Invites ----
+
+/** Creates an invite and returns its public link (www.mygiftlockers.com/join/…). */
+export async function makeInvite(ownerSub: string | undefined, payload: InvitePayload): Promise<string> {
+  const segment = backendEnabled && ownerSub ? await createInvite(ownerSub, payload) : encodeInvite(payload);
+  return inviteUrl(segment);
+}
+
+/** Loads the invite behind a /join/<segment> link: a backend id, or an encoded demo invite. */
+export async function openInvite(segment: string): Promise<PublicInvite> {
+  const decoded = decodeInvite(segment);
+  if (decoded) return decoded;
+  if (!backendEnabled) throw new Error("Invite links need the backend");
+  return loadInvite(segment);
+}
+
+/** Sends an invitee's answers. Demo invites land in this app's own locker. */
+export async function answerInvite(invite: PublicInvite, profile: Person, kids: Person[]): Promise<string | undefined> {
+  if (!backendEnabled || invite.id.startsWith("inv_")) {
+    setState({ people: [profile, ...kids, ...(state.people ?? [])] });
+    return undefined;
+  }
+  return submitInvite(invite.id, profile, kids);
 }

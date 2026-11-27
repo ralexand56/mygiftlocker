@@ -69,7 +69,7 @@ export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: 
       <View
         style={{
           backgroundColor: p.color,
-          paddingTop: topInset + (short ? 2 : 12),
+          paddingTop: Math.max(topInset, 16) + (short ? 2 : 12),
           paddingBottom: short ? 18 : 26,
           paddingHorizontal: 20,
           alignItems: "center",
