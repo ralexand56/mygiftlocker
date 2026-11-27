@@ -81,7 +81,8 @@ export function Chips<T extends string | number>({
   );
 }
 
-export function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+/** swatch: a color shown as a dot before the label (favorite colors). */
+export function Chip({ label, active, onPress, swatch }: { label: string; active: boolean; onPress: () => void; swatch?: string }) {
   const style = useAnimatedStyle(() => ({
     backgroundColor: withSpring(active ? colors.rose : "rgba(255,255,255,0.9)", springs.snappy),
     transform: [{ scale: withSpring(active ? 1.04 : 1, springs.snappy) }],
@@ -95,10 +96,27 @@ export function Chip({ label, active, onPress }: { label: string; active: boolea
         onPress();
       }}
     >
-      <Animated.View style={[styles.chip, style]}>
+      <Animated.View style={[styles.chip, style, swatch ? { flexDirection: "row", alignItems: "center", gap: 7 } : null]}>
+        {swatch && <Swatch color={swatch} size={16} ring={active} />}
         <Text style={[styles.chipText, { color: active ? colors.white : colors.ink }]}>{label}</Text>
       </Animated.View>
     </Pressable>
+  );
+}
+
+/** A round color sample; light colors get a thin outline so they show on white. */
+export function Swatch({ color, size = 18, ring }: { color: string; size?: number; ring?: boolean }) {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+        borderWidth: ring ? 2 : 1,
+        borderColor: ring ? colors.white : "rgba(38,34,46,0.15)",
+      }}
+    />
   );
 }
 

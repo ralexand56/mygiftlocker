@@ -225,10 +225,11 @@ export function FavoritesEditor({ value: f, onChange, self }: { value: Favorites
       </Field>
       <Field label={t("colors")}>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {FAVORITE_COLORS.map(([id]) => (
+          {FAVORITE_COLORS.map(([id, hex]) => (
             <Chip
               key={id}
-              label={`● ${tc(id)}`}
+              swatch={hex}
+              label={tc(id)}
               active={colorsOn.has(id)}
               onPress={() => {
                 const next = new Set(colorsOn);

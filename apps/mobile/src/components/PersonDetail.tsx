@@ -37,7 +37,8 @@ import { colors, fonts } from "@/lib/theme";
 import { GiftLock } from "./GiftLock";
 import { PersonPhotos } from "./PersonPhotos";
 import { photosEnabled } from "@/lib/amplify";
-import { Avatar, Button, Card, Chip, ErrorText, Icon, Input, SectionTitle, styles, tap } from "./ui";
+import { FAVORITE_COLORS } from "./PersonForm";
+import { Avatar, Button, Card, Chip, ErrorText, Icon, Input, SectionTitle, Swatch, styles, tap } from "./ui";
 
 /** `topInset`: room for a transparent navigation bar; the hero color runs underneath it. */
 export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: { person: Person; paneWidth: number; onRemoved?: () => void; topInset?: number }) {
@@ -228,7 +229,17 @@ export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: 
               {!!p.favorites.likes && <Text style={[styles.body, { color: colors.ink }]}>{p.favorites.likes}</Text>}
               {!!p.favorites.teams && <Text style={[styles.body, { fontSize: 14 }]}>🏟️ {t("teams", { v: p.favorites.teams })}</Text>}
               {!!p.favorites.colors?.length && (
-                <Text style={[styles.body, { fontSize: 14 }]}>{t("colors", { v: p.favorites.colors.map((c) => tr(`colors.${c}`)).join(", ") })}</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 2 }}>
+                  {p.favorites.colors.map((c) => {
+                    const hex = FAVORITE_COLORS.find(([id]) => id === c)?.[1];
+                    return (
+                      <View key={c} style={{ flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: colors.white, borderRadius: 999, paddingVertical: 5, paddingLeft: 6, paddingRight: 12 }}>
+                        {hex && <Swatch color={hex} size={20} />}
+                        <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ink }}>{tr(`colors.${c}`)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
               )}
               {!!p.favorites.avoid && <Text style={[styles.body, { fontSize: 14, color: colors.roseDeep }]}>{t("avoid", { v: p.favorites.avoid })}</Text>}
               {p.favorites.wishlists?.map((url) => (
