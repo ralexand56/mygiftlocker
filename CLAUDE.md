@@ -14,7 +14,8 @@ Product name is **My Gift Lockers** (plural, matching mygiftlockers.com; not "My
 - Simulators: iPhone 17 Pro (default), iPhone 17 / 17 Pro Max / 17e / Air / 18 Pro, iPad Pro M5, iPad Air M4, iPad mini A17 Pro
 - Node 24, pnpm 11, CocoaPods 1.16 (set `LANG=en_US.UTF-8` before pod commands), gh, aws CLI
 - Repo clone on the Mac: `~/Projects/mygiftlocker`
-- No Apple Developer team or signing certificate yet: builds work on simulators only
+- Apple Developer Program: **Individual**, Team ID **K8F4DVG4VD** (renews 2027-11-27). Signing for devices/TestFlight
+  not set up yet (Xcode needs the owner's Apple ID under Settings → Accounts).
 
 ## iOS build
 

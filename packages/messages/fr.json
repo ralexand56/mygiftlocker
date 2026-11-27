@@ -202,7 +202,8 @@
     "sending": "Envoi…",
     "email": "Continuer avec un e-mail",
     "demo": "Mode démo : aucun compte n’est créé tant que le backend Amplify n’est pas connecté.",
-    "signingIn": "Connexion en cours…"
+    "signingIn": "Connexion en cours…",
+    "apple": "Continuer avec Apple"
   },
   "reminders": {
     "missingCode": "Ce lien n’a pas de code. Utilisez le lien d’un e-mail de rappel.",

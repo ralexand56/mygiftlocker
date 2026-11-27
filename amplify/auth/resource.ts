@@ -8,8 +8,8 @@ import { authMessage } from "../functions/auth-message/resource";
  * Only organizers / locker owners sign in. People who join an exchange or fill
  * in an invite do it from a link, no account needed (see functions/exchange-api).
  *
- * Google secrets are set per branch in the Amplify console (Hosting → Secrets):
- *   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+ * Google and Apple secrets are set per branch in the Amplify console (Hosting → Secrets):
+ *   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SIWA_CLIENT_ID, SIWA_TEAM_ID, SIWA_KEY_ID, SIWA_PRIVATE_KEY
  * Facebook can be added later the same way (FACEBOOK_CLIENT_ID / _SECRET).
  */
 
@@ -42,6 +42,18 @@ export const auth = defineAuth({
         clientSecret: secret("GOOGLE_CLIENT_SECRET"),
         scopes: ["email", "profile", "openid"],
         attributeMapping: { email: "email", fullname: "name", profilePicture: "picture" },
+      },
+      // Sign in with Apple (required by the App Store when Google is offered). Services ID
+      // com.mygiftlocker.signin, key "My Gift Lockers Sign in with Apple", team K8F4DVG4VD.
+      // Set per branch in the Amplify console (Hosting → Secrets): SIWA_CLIENT_ID, SIWA_TEAM_ID,
+      // SIWA_KEY_ID, SIWA_PRIVATE_KEY (the .p8 file's text).
+      signInWithApple: {
+        clientId: secret("SIWA_CLIENT_ID"),
+        teamId: secret("SIWA_TEAM_ID"),
+        keyId: secret("SIWA_KEY_ID"),
+        privateKey: secret("SIWA_PRIVATE_KEY"),
+        scopes: ["email", "name"],
+        attributeMapping: { email: "email", fullname: "name" },
       },
       callbackUrls: [...SITE_URLS.map((u) => `${u}auth/callback`), "mygiftlocker://auth"],
       logoutUrls: [...SITE_URLS, "mygiftlocker://"],

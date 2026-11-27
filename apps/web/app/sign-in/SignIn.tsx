@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
 import { LogoMark } from "@/components/Logo";
 import { Button, Input } from "@/components/ui";
-import { authMode, confirmEmailCode, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
+import { authMode, confirmEmailCode, signInWithApple, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { TourButton } from "@/components/TourVideo";
@@ -65,6 +65,23 @@ export function SignIn() {
         <p className="mt-1 text-ink-soft">{t("subtitle")}</p>
 
         <div className="mt-7 grid gap-3">
+          {/* Apple's guidelines: black button, Apple logo, "Continue with Apple". */}
+          <button
+            onClick={() =>
+              attempt(async () => {
+                const next = new URLSearchParams(window.location.search).get("next");
+                if (next) sessionStorage.setItem("mgl:next", next);
+                await signInWithApple();
+                if (authMode === "demo") done();
+              })
+            }
+            className="flex items-center justify-center gap-3 rounded-full bg-black px-5 py-3 font-bold text-white shadow-soft transition hover:-translate-y-0.5"
+          >
+            <svg viewBox="0 0 814 1000" className="h-5 w-5 fill-current" aria-hidden>
+              <path d="M788 341c-6 4-108 62-108 190 0 148 130 200 134 202-1 3-21 72-69 142-43 62-88 124-156 124s-86-40-165-40c-77 0-104 41-166 41s-106-58-156-129C44 789 0 668 0 553c0-184 120-282 238-282 63 0 115 41 155 41 38 0 97-44 168-44 27 0 124 3 188 73zM554 167c30-35 51-84 51-133 0-7-1-14-2-19-48 2-106 32-140 72-27 31-53 80-53 130 0 8 1 15 2 18 3 1 9 2 14 2 43 0 97-29 128-70z" />
+            </svg>
+            {t("apple")}
+          </button>
           <button
             onClick={() =>
               attempt(async () => {

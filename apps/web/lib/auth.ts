@@ -85,6 +85,15 @@ export async function signInWithGoogle(): Promise<void> {
   await a.signInWithRedirect({ provider: "Google" });
 }
 
+export async function signInWithApple(): Promise<void> {
+  if (!backendEnabled) {
+    setMe({ id: "me", name: "Apple user" });
+    return;
+  }
+  const a = await auth();
+  await a.signInWithRedirect({ provider: "Apple" });
+}
+
 export type EmailStep = "code-sent" | "signed-in";
 
 const errName = (e: unknown) => (e as { name?: string }).name;

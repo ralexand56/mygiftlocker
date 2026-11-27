@@ -202,7 +202,8 @@
     "sending": "Sending…",
     "email": "Continue with email",
     "demo": "Demo mode — no account is created until the Amplify backend is connected.",
-    "signingIn": "Signing you in…"
+    "signingIn": "Signing you in…",
+    "apple": "Continue with Apple"
   },
   "reminders": {
     "missingCode": "This link is missing its code. Use the link from a reminder email.",

@@ -1,11 +1,11 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlyingBackdrop } from "@/components/FlyingBackdrop";
-import { Button, ErrorText, Input, styles } from "@/components/ui";
+import { Button, ErrorText, Icon, Input, styles } from "@/components/ui";
 import { backendEnabled } from "@/lib/amplify";
-import { confirmEmailCode, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
+import { confirmEmailCode, signInWithApple, signInWithGoogle, startEmailSignIn, useUser } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { colors, fonts, shadow } from "@/lib/theme";
@@ -19,14 +19,14 @@ export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState<null | "google" | "email" | "code">(null);
+  const [busy, setBusy] = useState<null | "apple" | "google" | "email" | "code">(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) router.back();
   }, [user]);
 
-  const attempt = async (which: "google" | "email" | "code", fn: () => Promise<void>) => {
+  const attempt = async (which: "apple" | "google" | "email" | "code", fn: () => Promise<void>) => {
     setBusy(which);
     setError(null);
     try {
@@ -50,7 +50,17 @@ export default function SignInScreen() {
             <Text style={{ fontSize: short ? 40 : 52, textAlign: "center" }}>🎁</Text>
             <Text style={[styles.h1, { textAlign: "center", fontSize: short ? 28 : 32 }]}>{t("title")}</Text>
             <Text style={[styles.body, { textAlign: "center" }]}>{t("subtitle")}</Text>
-            <Button title={t("google")} variant="soft" icon="globe" busy={busy === "google"} onPress={() => attempt("google", signInWithGoogle)} style={{ marginTop: 8 }} />
+            {/* Apple's guidelines: black button with the Apple logo, listed first. */}
+            <Pressable
+              accessibilityRole="button"
+              disabled={!!busy}
+              onPress={() => attempt("apple", signInWithApple)}
+              style={{ marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "#000", borderRadius: 999, paddingVertical: 14, opacity: busy && busy !== "apple" ? 0.5 : 1 }}
+            >
+              {busy === "apple" ? <ActivityIndicator color="#fff" /> : <Icon name="apple.logo" size={18} color="#fff" />}
+              <Text style={{ fontFamily: fonts.black, fontSize: 16, color: "#fff" }}>{t("apple")}</Text>
+            </Pressable>
+            <Button title={t("google")} variant="soft" icon="globe" busy={busy === "google"} onPress={() => attempt("google", signInWithGoogle)} />
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <View style={{ flex: 1, height: 1, backgroundColor: "rgba(74,59,102,0.1)" }} />
               <Text style={{ fontFamily: fonts.bold, color: colors.inkSoft, fontSize: 12 }}>{t("or")}</Text>
