@@ -35,11 +35,14 @@ import { useLayout } from "@/lib/layout";
 import { removePerson, saveOwner } from "@/lib/store";
 import { colors, fonts } from "@/lib/theme";
 import { GiftLock } from "./GiftLock";
+import { PersonPhotos } from "./PersonPhotos";
+import { photosEnabled } from "@/lib/amplify";
 import { Avatar, Button, Card, Chip, ErrorText, Icon, Input, SectionTitle, styles, tap } from "./ui";
 
 /** `topInset`: room for a transparent navigation bar; the hero color runs underneath it. */
 export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: { person: Person; paneWidth: number; onRemoved?: () => void; topInset?: number }) {
   const t = useT("locker.detail");
+  const tg = useT("gifts");
   const tr = useTr();
   const tag = useIntlTag();
   const { short, tileCols } = useLayout();
@@ -85,7 +88,8 @@ export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: 
             {p.name}
           </Text>
           {!!p.relationship && <Text style={styles.body}>{p.relationship}</Text>}
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 12, flexWrap: "wrap", justifyContent: short ? "flex-start" : "center" }}>
+            <Button small variant="gradient" icon="sparkles" title={p.giftIdeas ? tg("open") : tg("find")} onPress={() => router.push({ pathname: "/gifts/[id]", params: { id: p.id } })} />
             <Button small variant="soft" icon="pencil" title={t("edit")} onPress={() => router.push({ pathname: "/person/edit", params: { id: p.id } })} />
           </View>
         </View>
@@ -170,6 +174,7 @@ export function PersonDetail({ person: p, paneWidth, onRemoved, topInset = 0 }: 
 
         <Animated.View entering={enter(3)}>
           <OwnerSection person={p} />
+          {photosEnabled && p.kind === "adult" && <PersonPhotos person={p} />}
         </Animated.View>
 
         {p.address && (

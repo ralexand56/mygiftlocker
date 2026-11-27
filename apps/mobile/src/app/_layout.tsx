@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings" options={{ title: t("app.settings.title") }} />
         <Stack.Screen name="sign-in" options={{ headerShown: false, presentation: "modal" }} />
         <Stack.Screen name="join/[token]" options={{ headerShown: false, presentation: "fullScreenModal" }} />
+        <Stack.Screen name="gifts/[id]" options={{ title: t("gifts.eyebrow"), presentation: "modal" }} />
         <Stack.Screen name="invite" options={{ title: t("inviteBuilder.title"), presentation: "modal" }} />
         <Stack.Screen name="exchange/index" options={{ title: t("common.giftExchange") }} />
         <Stack.Screen name="exchange/[id]" options={{ title: "" }} />

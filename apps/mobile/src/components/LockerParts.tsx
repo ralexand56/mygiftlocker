@@ -76,6 +76,7 @@ export function PersonRow({ person: p, selected, onOpen, compact }: { person: Pe
 /** `stacked`: button under the text, for narrow panes. */
 export function SelfCard({ self, stacked }: { self: Person | null; stacked?: boolean }) {
   const t = useT("locker.self");
+  const tg = useT("gifts");
   const tr = useTr();
   const sizes = self ? summarizeSizes(self.sizes, tr) : "";
   return (
@@ -90,7 +91,12 @@ export function SelfCard({ self, stacked }: { self: Person | null; stacked?: boo
         </View>
         {!stacked && <Button small variant="soft" title={self ? t("edit") : t("add")} onPress={() => router.push("/me")} />}
       </View>
-      {stacked && <Button small variant="soft" title={self ? t("edit") : t("add")} onPress={() => router.push("/me")} style={{ alignSelf: "flex-start" }} />}
+      {(stacked || self) && (
+        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+          {stacked && <Button small variant="soft" title={self ? t("edit") : t("add")} onPress={() => router.push("/me")} />}
+          {self && <Button small variant="gradient" icon="sparkles" title={tg("forMe")} onPress={() => router.push({ pathname: "/gifts/[id]", params: { id: "self" } })} />}
+        </View>
+      )}
     </View>
   );
 }

@@ -1,8 +1,8 @@
 import { LOCALES, LOCALE_NAMES } from "@mgl/core";
-import { deleteMyAccount, setMyLocale } from "@mgl/data";
+import { deleteMyAccount, getReminders, setMyLocale, setRemindersOn } from "@mgl/data";
 import { Stack, router } from "expo-router";
-import { useState } from "react";
-import { Linking, ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Linking, ScrollView, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, Chips, ErrorText, Field, Input, SectionTitle, styles } from "@/components/ui";
 import { backendEnabled } from "@/lib/amplify";
@@ -79,6 +79,8 @@ export default function SettingsScreen() {
           backendEnabled && <Button title={tc("signIn")} onPress={() => router.push("/sign-in")} />
         )}
 
+        {user && backendEnabled && <Reminders sub={user.sub} />}
+
         {user && backendEnabled && <DeleteAccount />}
 
         <Card>
@@ -145,6 +147,44 @@ function DeleteAccount() {
           </View>
         </View>
       )}
+    </Card>
+  );
+}
+
+/** Reminder emails before birthdays and holidays: the same switch as the email's unsubscribe link. */
+function Reminders({ sub }: { sub: string }) {
+  const t = useT("reminders");
+  const locale = useLocale();
+  const [on, setOn] = useState<boolean | null>(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    getReminders(sub)
+      .then((r) => setOn(r.on))
+      .catch(() => setOn(true));
+  }, [sub]);
+  return (
+    <Card style={{ gap: 6 }}>
+      <SectionTitle icon="bell">{on === false ? t("offTitle") : t("onTitle")}</SectionTitle>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Text style={[styles.body, { flex: 1, fontSize: 14 }]}>{on === false ? t("offBody") : t("onBody")}</Text>
+        <Switch
+          value={on ?? true}
+          disabled={on === null}
+          trackColor={{ true: colors.rose }}
+          accessibilityLabel={on === false ? t("turnOn") : t("stop")}
+          onValueChange={async (next) => {
+            setOn(next);
+            setError(false);
+            try {
+              await setRemindersOn(sub, next, locale);
+            } catch {
+              setOn(!next);
+              setError(true);
+            }
+          }}
+        />
+      </View>
+      <ErrorText>{error && t("failed")}</ErrorText>
     </Card>
   );
 }

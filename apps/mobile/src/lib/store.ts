@@ -4,9 +4,12 @@
  *
  * Exchanges are still demo data here; Secret Santa moves to the backend in a later phase.
  */
-import { DEMO_EXCHANGES, DEMO_ME, DEMO_PEOPLE, decodeInvite, encodeInvite, type Exchange, type InvitePayload, type Person, type PublicInvite, type WishItem } from "@mgl/core";
+import { DEMO_EXCHANGES, DEMO_ME, DEMO_PEOPLE, cleanGiftIdeas, decodeInvite, encodeInvite, type AffiliateConfig, type GiftIdea, type Locale, type Exchange, type InvitePayload, type Person, type PublicInvite, type WishItem } from "@mgl/core";
 import {
   addLockerPerson,
+  addPersonPhoto,
+  findGifts,
+  removePersonPhoto,
   createInvite,
   inviteUrl,
   loadInvite,
@@ -156,4 +159,67 @@ export async function answerInvite(invite: PublicInvite, profile: Person, kids: 
     return undefined;
   }
   return submitInvite(invite.id, profile, kids);
+}
+
+// ---- Gift ideas and photos ----
+
+export const giftAffiliate: AffiliateConfig = {
+  amazonTag: process.env.EXPO_PUBLIC_AMAZON_TAG || undefined,
+  sovrnKey: process.env.EXPO_PUBLIC_SOVRN_KEY || undefined,
+};
+
+/** Shows a change on a card (or your own profile, id "self") that's already saved elsewhere. */
+export function showLocally(id: string, changes: Partial<Person>) {
+  if (id === "self") setState({ self: state.self ? { ...state.self, ...changes } : state.self });
+  else patchLocal(id, changes);
+}
+
+/** One gift list. With the backend the function also saves it on the card; we mirror it here. */
+export async function runGiftIdeas(ownerSub: string | undefined, person: Person, request: string, locale: Locale): Promise<GiftIdea[]> {
+  const ideas = backendEnabled && ownerSub ? await findGifts(ownerSub, person, request, locale) : await demoIdeas(person, request);
+  showLocally(person.id, { giftIdeas: { ideas, request: request.trim() || undefined, at: new Date().toISOString() } });
+  return ideas;
+}
+
+/** Demo mode: a few ideas from their own wishes and loves (same as the website's demo). */
+async function demoIdeas(p: Person, request: string): Promise<GiftIdea[]> {
+  await new Promise((r) => setTimeout(r, 1600));
+  const f = p.favorites ?? {};
+  const seeds = [
+    ...(f.wishes ?? []).filter(Boolean).map((w) => ({ title: w, why: "It's on their own wish list.", category: "other" as const })),
+    ...(f.likes ? [{ title: `Something for ${f.likes.split(",")[0]!.trim()}`, why: `They love ${f.likes}.`, category: "hobby" as const }] : []),
+    { title: "Cozy knit throw", why: "Always welcome, and it fits any home.", category: "home" as const },
+    { title: "Personalized photo book", why: "Memories you share, made into something to keep.", category: "home" as const },
+    { title: "Cooking class for two", why: "An experience you can enjoy together.", category: "experience" as const },
+  ];
+  return cleanGiftIdeas(
+    seeds.slice(0, 6).map((s, i) => ({
+      ...s,
+      id: `demo-${i}`,
+      title: request && i === 0 ? `${s.title} (${request})` : s.title,
+      priceMin: 20 + i * 10,
+      priceMax: 40 + i * 15,
+      store: s.category === "home" && i % 2 ? "etsy" : "amazon",
+      searchQuery: s.title,
+    })),
+  );
+}
+
+/** Picks a photo from the library, shrinks it to 1280 px JPEG, uploads it and adds it to the card. */
+export async function addPhoto(ownerSub: string, person: Person): Promise<void> {
+  const ImagePicker = await import("expo-image-picker");
+  const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
+  if (picked.canceled || !picked.assets[0]) return;
+  const { manipulateAsync, SaveFormat } = await import("expo-image-manipulator");
+  const a = picked.assets[0];
+  const scale = Math.min(1, 1280 / Math.max(a.width, a.height));
+  const small = await manipulateAsync(a.uri, scale < 1 ? [{ resize: { width: Math.round(a.width * scale) } }] : [], { compress: 0.82, format: SaveFormat.JPEG });
+  const bytes = await (await fetch(small.uri)).arrayBuffer();
+  const photos = await addPersonPhoto(person, bytes, ownerSub);
+  showLocally(person.id, { photos });
+}
+
+export async function deletePhoto(ownerSub: string, person: Person, path: string): Promise<void> {
+  const photos = await removePersonPhoto(person, path, ownerSub);
+  showLocally(person.id, { photos });
 }
