@@ -60,3 +60,8 @@ No tracking, no third-party advertising, no analytics SDK.
 
 ## Screenshots
 `docs/launch/app-store/` — iPhone 6.9" (1320×2868) and iPad 13" (2064×2752), demo data only.
+
+## Status
+- 2026-11-27: version 1.0, build 1.0.0 (1) submitted for review. Free; 174 countries (China mainland removed: no ICP filing).
+- EU Digital Services Act: trader (contact details verified in App Store Connect; email shown is hello@).
+- Age rating 4+; App Privacy published (7 types, app functionality, linked, no tracking); content rights: yes (Unsplash).
