@@ -333,7 +333,10 @@
     "inPerson": "Pessoalmente?",
     "inPersonBody": "Deixe escanearem no jantar, na festa da firma ou na saída da escola.",
     "another": "Convidar outra pessoa",
-    "anotherHint": "Cada pessoa recebe o próprio link, que a cumprimenta pelo nome e mantém as respostas separadas."
+    "anotherHint": "Cada pessoa recebe o próprio link, que a cumprimenta pelo nome e mantém as respostas separadas.",
+    "theirLanguage": "Idioma da pessoa",
+    "automatic": "Automático (o idioma do aparelho dela)",
+    "languageHint": "A mensagem e o formulário que a pessoa preenche usam este idioma. Ela ainda pode trocar."
   },
   "locker": {
     "signedOutTitle": "Seu armário",

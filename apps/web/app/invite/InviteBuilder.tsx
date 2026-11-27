@@ -1,11 +1,12 @@
 "use client";
 
-import { DEFAULT_ASK, inviteShareLinks, newId, type InvitePayload, type InviteSection } from "@mgl/core";
+import { DEFAULT_ASK, LOCALES, LOCALE_NAMES, createTr, inviteShareLinks, newId, withInviteLang, type InvitePayload, type InviteSection, type Locale } from "@mgl/core";
+import { CORE_CATALOGS } from "@mgl/core/catalogs";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Mail, MessageCircle, MessageSquareText, QrCode, Share2, Send, UserPlus } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, Field, Input, Textarea } from "@/components/ui";
+import { Button, Card, Field, Input, Textarea, inputCls } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { authMode, useUser } from "@/lib/auth";
 import { createInvite } from "@/lib/invites";
@@ -24,6 +25,8 @@ export function InviteBuilder() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
+  /** "" = automatic: the page follows their own device or choice. */
+  const [lang, setLang] = useState<Locale | "">("");
   const [ask, setAsk] = useState<InvitePayload["ask"]>(DEFAULT_ASK);
   const [url, setUrl] = useState<string | null>(null);
   const theirName = useRef<HTMLInputElement>(null);
@@ -81,6 +84,18 @@ export function InviteBuilder() {
           <Field label={t("theirName")}>
             <Input ref={theirName} value={to} onChange={(e) => setTo(e.target.value)} placeholder={t("theirNamePlaceholder")} />
           </Field>
+          <div className="sm:col-span-2">
+            <Field label={t("theirLanguage")} hint={t("languageHint")}>
+              <select value={lang} onChange={(e) => setLang(e.target.value as Locale | "")} className={inputCls}>
+                <option value="">{t("automatic")}</option>
+                {LOCALES.map((l) => (
+                  <option key={l} value={l} lang={l}>
+                    {LOCALE_NAMES[l]}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
         </div>
 
         <p className="mt-8 mb-3 text-sm font-bold text-ink-soft">{t("askFor")}</p>
@@ -124,7 +139,7 @@ export function InviteBuilder() {
       <AnimatePresence mode="wait">
         {url ? (
           <motion.div key="share" className="min-w-0" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 120, damping: 18 }}>
-            <SharePanel url={url} from={from} to={to} onAnother={another} />
+            <SharePanel url={withInviteLang(url, lang)} lang={lang || undefined} from={from} to={to} onAnother={another} />
           </motion.div>
         ) : (
           <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }}>
@@ -143,12 +158,14 @@ export function InviteBuilder() {
   );
 }
 
-function SharePanel({ url, from, to, onAnother }: { url: string; from: string; to: string; onAnother: () => void }) {
+function SharePanel({ url, lang, from, to, onAnother }: { url: string; lang?: Locale; from: string; to: string; onAnother: () => void }) {
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState<string>("");
   const [canShare, setCanShare] = useState(false);
   const t = useTranslations("inviteBuilder");
-  const tr = useTr();
+  const mine = useTr();
+  // The message goes out in their language when one is chosen.
+  const tr = lang ? createTr(lang, CORE_CATALOGS[lang]) : mine;
   const links = inviteShareLinks(url, from, to || undefined, tr);
 
   useEffect(() => {
@@ -201,7 +218,7 @@ function SharePanel({ url, from, to, onAnother }: { url: string; from: string; t
       </div>
 
       {canShare && (
-        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "My Gift Lockers", text: t("shareText", { name: from }), url }).catch(() => {})}>
+        <Button variant="soft" className="mt-3 w-full" onClick={() => navigator.share({ title: "My Gift Lockers", text: lang ? tr("core.share.inviteSubject", { from }) : t("shareText", { name: from }), url }).catch(() => {})}>
           <Share2 className="h-4 w-4" /> {t("more")}
         </Button>
       )}

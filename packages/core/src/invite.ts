@@ -91,6 +91,17 @@ export function exchangeRevealMessage(name: string, exchangeName: string, url: s
   return t("core.share.exchangeReveal", { name, exchange: exchangeName, url });
 }
 
+/**
+ * An invite link that opens in a chosen language (?lang=es). The website uses it unless the
+ * person has already picked a language on the site; they can still switch on the page.
+ */
+export function withInviteLang(url: string, lang?: string | null): string {
+  if (!lang) return url;
+  const u = new URL(url);
+  u.searchParams.set("lang", lang);
+  return u.toString();
+}
+
 /** Prefilled deep links for each channel. */
 export function inviteShareLinks(url: string, fromName: string, toName?: string, t: Tr = defaultT): ShareLinks {
   const hi = toName ? t("core.share.inviteHi", { name: toName }) : t("core.share.inviteHiAnon");

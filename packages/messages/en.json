@@ -333,7 +333,10 @@
     "inPerson": "In person?",
     "inPersonBody": "Let them scan this at the dinner table, office party or school pickup.",
     "another": "Invite someone else",
-    "anotherHint": "Everyone gets their own link, so it greets them by name and their answers stay theirs."
+    "anotherHint": "Everyone gets their own link, so it greets them by name and their answers stay theirs.",
+    "theirLanguage": "Their language",
+    "automatic": "Automatic (their device's language)",
+    "languageHint": "The message and the form they fill in use this language. They can still switch."
   },
   "locker": {
     "signedOutTitle": "Your locker",

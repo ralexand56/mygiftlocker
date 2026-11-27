@@ -333,7 +333,10 @@
     "inPerson": "¿En persona?",
     "inPersonBody": "Que lo escaneen en la cena, en la fiesta de la oficina o a la salida de la escuela.",
     "another": "Invitar a otra persona",
-    "anotherHint": "Cada persona recibe su propio enlace, que la saluda por su nombre y mantiene sus respuestas separadas."
+    "anotherHint": "Cada persona recibe su propio enlace, que la saluda por su nombre y mantiene sus respuestas separadas.",
+    "theirLanguage": "Su idioma",
+    "automatic": "Automático (el idioma de su dispositivo)",
+    "languageHint": "El mensaje y el formulario que completen usarán este idioma. Aun así pueden cambiarlo."
   },
   "locker": {
     "signedOutTitle": "Tu casillero",

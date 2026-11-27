@@ -3,7 +3,8 @@
  * their answers land in your locker. Same options as the website's invite page; sharing uses the
  * iPhone share sheet, Messages, WhatsApp, email, a copy button and a QR code.
  */
-import { DEFAULT_ASK, inviteShareLinks, newId, type InvitePayload, type InviteSection } from "@mgl/core";
+import { DEFAULT_ASK, LOCALES, LOCALE_NAMES, createTr, inviteShareLinks, newId, withInviteLang, type InvitePayload, type InviteSection, type Locale } from "@mgl/core";
+import { CORE_CATALOGS } from "@mgl/core/catalogs";
 import * as Clipboard from "expo-clipboard";
 import { Stack, router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import { Linking, Pressable, ScrollView, Share, Text, View } from "react-native"
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { QrCode } from "@/components/QrCode";
-import { Button, Card, ErrorText, Field, Icon, Input, styles, tap } from "@/components/ui";
+import { Button, Card, Chips, ErrorText, Field, Icon, Input, styles, tap } from "@/components/ui";
 import { backendEnabled } from "@/lib/amplify";
 import { useUser } from "@/lib/auth";
 import { useT, useTr } from "@/lib/i18n";
@@ -30,6 +31,8 @@ export default function InviteScreen() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
+  /** "auto" = the page follows their own device or choice. */
+  const [lang, setLang] = useState<Locale | "auto">("auto");
   const [ask, setAsk] = useState<InvitePayload["ask"]>(DEFAULT_ASK);
   const [url, setUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -80,6 +83,16 @@ export default function InviteScreen() {
           </Field>
         </View>
       </View>
+      <Field label={t("theirLanguage")}>
+        <Chips<Locale | "auto">
+          options={["auto", ...LOCALES]}
+          value={lang}
+          required
+          onChange={(v) => v && setLang(v)}
+          render={(v) => (v === "auto" ? t("automatic").split(" (")[0]! : LOCALE_NAMES[v])}
+        />
+        <Text style={[styles.body, { fontSize: 13, marginTop: 6 }]}>{t("languageHint")}</Text>
+      </Field>
       <Text style={styles.label}>{t("askFor")}</Text>
       <View style={{ gap: 8 }}>
         {SECTIONS.map((id) => {
@@ -135,7 +148,8 @@ export default function InviteScreen() {
           {url && (
             <Animated.View entering={FadeInDown.springify().damping(18)} style={{ flex: split ? 1 : undefined, width: split ? undefined : "100%" }}>
               <SharePanel
-                url={url}
+                url={withInviteLang(url, lang === "auto" ? null : lang)}
+                lang={lang === "auto" ? undefined : lang}
                 from={from}
                 to={to}
                 onAnother={() => {
@@ -152,9 +166,11 @@ export default function InviteScreen() {
   );
 }
 
-function SharePanel({ url, from, to, onAnother }: { url: string; from: string; to: string; onAnother: () => void }) {
+function SharePanel({ url, lang, from, to, onAnother }: { url: string; lang?: Locale; from: string; to: string; onAnother: () => void }) {
   const t = useT("inviteBuilder");
-  const tr = useTr();
+  const mine = useTr();
+  // The message goes out in their language when one is chosen.
+  const tr = lang ? createTr(lang, CORE_CATALOGS[lang]) : mine;
   const [copied, setCopied] = useState(false);
   const links = inviteShareLinks(url, from, to || undefined, tr);
   const message = decodeURIComponent(links.whatsapp.split("text=")[1] ?? url);
@@ -166,7 +182,7 @@ function SharePanel({ url, from, to, onAnother }: { url: string; from: string; t
   return (
     <Card style={{ gap: 12 }}>
       <Text style={styles.h2}>{t("sendTitle")}</Text>
-      <Button icon="square.and.arrow.up" title={tr("common.share")} onPress={() => Share.share({ message })} />
+      <Button icon="square.and.arrow.up" title={mine("common.share")} onPress={() => Share.share({ message })} />
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.white, borderRadius: 16, padding: 8, paddingLeft: 14 }}>
         <Text style={[styles.body, { flex: 1, fontSize: 13 }]} numberOfLines={1}>
           {url.replace(/^https:\/\//, "")}
