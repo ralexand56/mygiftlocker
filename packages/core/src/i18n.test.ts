@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import webEn from "../../../apps/web/messages/en.json";
-import webEs from "../../../apps/web/messages/es.json";
-import webFr from "../../../apps/web/messages/fr.json";
-import webPt from "../../../apps/web/messages/pt.json";
-import webRu from "../../../apps/web/messages/ru.json";
+import webEn from "../../messages/en.json";
+import webEs from "../../messages/es.json";
+import webFr from "../../messages/fr.json";
+import webPt from "../../messages/pt.json";
+import webRu from "../../messages/ru.json";
 import { CORE_CATALOGS } from "./catalogs";
 import { createTr, formatMessage, LOCALES, pickLocale, translateError } from "./i18n";
 import { describeDays, formatPartialDate, occasionName, summarizeSizes } from "./index";
@@ -89,6 +89,23 @@ describe("step headings about someone else", () => {
         expect(s.title).not.toContain("core.");
         if (step.subtitle) expect(s.subtitle).not.toContain("core.");
       }
+    }
+  });
+});
+
+describe("pluralCategory fallback (engines without Intl.PluralRules)", () => {
+  it("matches Intl.PluralRules for our languages", async () => {
+    const { pluralCategory } = await import("./i18n");
+    const real = Intl.PluralRules;
+    const cases: [Parameters<typeof pluralCategory>[0], number][] = [];
+    for (const l of ["en", "es", "fr", "pt", "ru"] as const) for (const n of [0, 1, 2, 3, 4, 5, 11, 12, 21, 22, 25, 101, 111, 1.5]) cases.push([l, n]);
+    const expected = cases.map(([l, n]) => pluralCategory(l, n));
+    (Intl as { PluralRules?: unknown }).PluralRules = undefined;
+    try {
+      const fallback = cases.map(([l, n]) => pluralCategory(l, n));
+      expect(fallback).toEqual(expected);
+    } finally {
+      (Intl as { PluralRules?: unknown }).PluralRules = real;
     }
   });
 });

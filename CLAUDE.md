@@ -29,6 +29,30 @@ cd apps/mobile && pnpm ios --device "iPhone 17 Pro"
   until a signing team exists: either forces code signing even for simulator builds.
 - `Link.AppleZoom` children must receive a flat style object (`StyleSheet.flatten`), not an array.
 - The native large title doesn't render with the custom font on iOS 26; screens use in-page headings.
+- `amplify_outputs.json` in `apps/mobile` works like the web's (git-ignored; `{}` = demo data). Create it with
+  `npx ampx generate outputs --app-id dfqe2wyg1hcqx --branch claude/elegant-knuth-eur0b8 --out-dir apps/mobile`.
+- Start Metro with `npx expo start` (never `CI=1`: CI mode turns off file watching and the app keeps an old bundle).
+- Hermes has Intl.NumberFormat/DateTimeFormat/Collator but **no PluralRules, ListFormat, Locale or DisplayNames**.
+  `@mgl/core` has built-in plural rules for our 5 languages; don't add code that needs the missing ones.
+
+## iPhone Duo (foldable) and adaptive layout
+
+- Simulator "iPhone Duo" needs the **iOS 27.1** runtime (installed). It has two displays:
+  folded cover screen **466 × 678 pt** with an **84 pt camera/status strip down the right edge** (reported as
+  `insets.right`), and the unfolded inner screen **669 × 951 pt**.
+- Screenshots need a display: `xcrun simctl io "iPhone Duo" screenshot --display=1 out.png` (1 = cover, 3 = inner).
+  There's no CLI to fold/unfold; use Device Hub.
+- Layout follows the window, not the model (`src/lib/layout.ts`): usable width = window − side insets;
+  **≥ 600 pt → list + detail panes** (unfolded Duo, iPad); height < 760 → compact heroes (folded Duo).
+  The root layout pads side insets; **modal screens must apply them themselves** (use `components/Sheet.tsx`).
+- Opening `mygiftlocker://…` from simctl shows an "Open in…?" prompt; `com.mygiftlocker.app://<route>` doesn't
+  once the app is running.
+
+## Shared packages
+
+- `@mgl/messages`: UI text in all 5 languages, used by the website (next-intl) and the app (`useT` in `src/lib/i18n.ts`).
+- `@mgl/data`: Amplify Data calls shared with the app. The website still uses its own `apps/web/lib/*`
+  until after the Dec 8 launch; then switch it over.
 
 ## Backend
 

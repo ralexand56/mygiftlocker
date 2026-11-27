@@ -62,7 +62,7 @@ export default function Join() {
   };
 
   const finish = () => {
-    addPerson({
+    void addPerson(undefined, {
       id: newId("p_"),
       name: name.trim() || "New friend",
       kind: "adult",

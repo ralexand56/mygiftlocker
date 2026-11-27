@@ -2,6 +2,7 @@ export const colors = {
   cream: "#FFFAF7",
   blush: "#FBD3E3",
   rose: "#E9779F",
+  roseDeep: "#D45C86",
   peach: "#FFC9A8",
   lavender: "#D9C8FF",
   plum: "#7A5AA6",
@@ -10,6 +11,7 @@ export const colors = {
   mint: "#CDEFE3",
   butter: "#FFE7B8",
   sky: "#D4E9FF",
+  shell: "#FAEDE4",
   white: "#FFFFFF",
 };
 

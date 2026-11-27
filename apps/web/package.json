@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mgl/core": "workspace:*",
+    "@mgl/messages": "workspace:*",
     "aws-amplify": "^6.22.2",
     "lucide-react": "^1.78.0",
     "motion": "^14.14.0",

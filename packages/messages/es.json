@@ -453,7 +453,8 @@
       "noProfile": "¿Quieres que {name} también tenga tus tallas? Primero <link>agrega tu perfil</link> y luego podrás compartirlo.",
       "creating": "Creando enlace…",
       "create": "Crear enlace"
-    }
+    },
+    "pickSomeone": "Elige a alguien para ver sus tallas y fechas."
   },
   "join": {
     "childOf": "Hijo/a de {name}",
@@ -981,5 +982,13 @@
     "newHere": "¿Primera vez aquí?",
     "previewTitle": "Mira cómo funciona",
     "withSound": "▶ Reproducir con sonido"
+  },
+  "app": {
+    "settings": {
+      "title": "Ajustes",
+      "signedInAs": "Sesión iniciada como {email}",
+      "languageHint": "Los correos de recordatorio y de inicio de sesión también llegan en este idioma.",
+      "website": "Abrir mygiftlockers.com"
+    }
   }
 }

@@ -3,19 +3,31 @@
   "version": "0.1.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@aws-amplify/react-native": "^1.3.3",
+    "@aws-amplify/rtn-web-browser": "^1.4.0",
     "@expo-google-fonts/fraunces": "^0.4.1",
     "@expo-google-fonts/nunito": "^0.4.2",
     "@mgl/core": "workspace:*",
+    "@mgl/data": "workspace:*",
+    "@mgl/messages": "workspace:*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "@react-navigation/elements": "^2.9.46",
+    "aws-amplify": "^6.22.2",
     "expo": "~58.0.26",
+    "expo-clipboard": "~58.0.4",
     "expo-constants": "~58.0.16",
     "expo-font": "~58.0.12",
     "expo-haptics": "~58.0.8",
     "expo-linear-gradient": "~58.0.4",
     "expo-linking": "~58.0.17",
+    "expo-localization": "~58.0.5",
     "expo-router": "~58.0.32",
     "expo-status-bar": "~58.0.5",
+    "expo-symbols": "~58.0.5",
     "react": "19.3.0",
     "react-native": "0.88.1",
+    "react-native-get-random-values": "^2.1.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.11.1",
     "react-native-screens": "~4.30.1",
@@ -27,11 +39,11 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "node scripts/ensure-outputs.mjs && expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios",
+    "ios": "node scripts/ensure-outputs.mjs && expo run:ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "node scripts/ensure-outputs.mjs && tsc --noEmit"
   },
   "private": true
 }

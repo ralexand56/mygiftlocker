@@ -1,0 +1,16 @@
+{
+  "name": "@mgl/messages",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UI text in every language, shared by the website and the iPhone app.",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./en.json": "./en.json",
+    "./es.json": "./es.json",
+    "./fr.json": "./fr.json",
+    "./pt.json": "./pt.json",
+    "./ru.json": "./ru.json"
+  }
+}

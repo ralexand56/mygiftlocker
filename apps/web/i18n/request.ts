@@ -10,11 +10,11 @@ import { getRequestConfig } from "next-intl/server";
 import { LOCALE_HEADER } from "@/lib/site";
 import { LOCALE_COOKIE } from "./cookie";
 import { cookies, headers } from "next/headers";
-import en from "../messages/en.json";
-import es from "../messages/es.json";
-import fr from "../messages/fr.json";
-import pt from "../messages/pt.json";
-import ru from "../messages/ru.json";
+import en from "@mgl/messages/en.json";
+import es from "@mgl/messages/es.json";
+import fr from "@mgl/messages/fr.json";
+import pt from "@mgl/messages/pt.json";
+import ru from "@mgl/messages/ru.json";
 
 export { LOCALE_COOKIE };
 const WEB: Record<Locale, typeof en> = { en, es, fr, pt, ru };

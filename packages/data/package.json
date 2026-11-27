@@ -1,0 +1,22 @@
+{
+  "name": "@mgl/data",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend data access (Amplify Data) shared by the iPhone app and, after launch, the website.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mgl/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "aws-amplify": "^6.22.2"
+  },
+  "devDependencies": {
+    "aws-amplify": "^6.22.2",
+    "typescript": "^5.9.3"
+  }
+}

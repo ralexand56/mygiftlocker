@@ -1,5 +1,5 @@
 import type { CoreCatalog, Locale } from "@mgl/core";
-import type en from "./messages/en.json";
+import type en from "@mgl/messages/en.json";
 
 declare module "next-intl" {
   interface AppConfig {

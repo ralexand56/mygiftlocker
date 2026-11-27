@@ -1,15 +1,33 @@
 /**
- * In-memory demo store for the mobile app. Mirrors apps/web/lib/store.ts;
- * both are replaced by Amplify Data (`generateClient<Schema>()`) once the
- * backend in /amplify is deployed, which keeps web + mobile in sync.
+ * App state. The locker (people + your own profile) comes from the backend when signed in, or from
+ * demo data. Owner edits show at once and roll back if the save fails.
  *
- * Exchanges are *created* on the website. The app only manages the ones
- * you're in: wishlists, reveals, and (for organizers) sharing + drawing.
+ * Exchanges are still demo data here; Secret Santa moves to the backend in a later phase.
  */
 import { DEMO_EXCHANGES, DEMO_ME, DEMO_PEOPLE, type Exchange, type Person, type WishItem } from "@mgl/core";
+import {
+  addLockerPerson,
+  getSelfProfile,
+  listLockerPeople,
+  removeLockerPerson,
+  saveSelfProfile,
+  updateLockerPerson,
+  updateOwnerFields,
+  type EditableFields,
+  type OwnerFields,
+} from "@mgl/data";
 import { useSyncExternalStore } from "react";
+import { backendEnabled } from "./amplify";
 
-let people: Person[] = DEMO_PEOPLE;
+type Locker = {
+  /** undefined while loading. */
+  people: Person[] | undefined;
+  self: Person | null;
+  error: string | null;
+  loadedFor: string | null;
+};
+
+let state: Locker = { people: backendEnabled ? undefined : DEMO_PEOPLE, self: null, error: null, loadedFor: null };
 let exchanges: Exchange[] = DEMO_EXCHANGES;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
@@ -17,19 +35,80 @@ const subscribe = (l: () => void) => {
   listeners.add(l);
   return () => listeners.delete(l);
 };
+const setState = (patch: Partial<Locker>) => {
+  state = { ...state, ...patch };
+  emit();
+};
 
 export const me = DEMO_ME;
 
+export function useLocker(): Locker {
+  return useSyncExternalStore(subscribe, () => state);
+}
+
 export function usePeople(): Person[] {
-  return useSyncExternalStore(subscribe, () => people);
+  return useLocker().people ?? [];
 }
 
-export function addPerson(p: Person) {
-  people = [p, ...people.filter((x) => x.id !== p.id)];
-  emit();
+export function usePerson(id: string | undefined): Person | undefined {
+  return usePeople().find((p) => p.id === id);
 }
 
-/** Exchanges the signed-in user is part of (as a player or as a kid's guardian). */
+/** Loads (or reloads) the signed-in user's locker. */
+export async function loadLocker(sub: string | null, force = false): Promise<void> {
+  if (!backendEnabled) return;
+  if (!sub) return setState({ people: undefined, self: null, loadedFor: null, error: null });
+  if (!force && state.loadedFor === sub) return;
+  try {
+    const [people, self] = await Promise.all([listLockerPeople(), getSelfProfile(sub)]);
+    setState({ people, self, loadedFor: sub, error: null });
+  } catch (e) {
+    setState({ people: state.people ?? [], error: e instanceof Error ? e.message : String(e) });
+  }
+}
+
+const patchLocal = (id: string, changes: Partial<Person>) =>
+  setState({ people: (state.people ?? []).map((p) => (p.id === id ? { ...p, ...changes } : p)) });
+
+/** Holiday tags, private note, gift locks: shown at once, saved in the background. */
+export async function saveOwner(id: string, changes: OwnerFields): Promise<void> {
+  const before = state.people?.find((p) => p.id === id);
+  patchLocal(id, changes);
+  if (!backendEnabled) return;
+  try {
+    await updateOwnerFields(id, changes);
+  } catch (e) {
+    if (before) patchLocal(id, before);
+    throw e;
+  }
+}
+
+export async function savePerson(id: string, fields: EditableFields): Promise<void> {
+  if (backendEnabled) await updateLockerPerson(id, fields);
+  patchLocal(id, { ...fields, updatedAt: new Date().toISOString() });
+}
+
+export async function addPerson(ownerSub: string | undefined, p: Person): Promise<string> {
+  const id = backendEnabled && ownerSub ? await addLockerPerson(ownerSub, p) : p.id;
+  setState({ people: [{ ...p, id }, ...(state.people ?? [])] });
+  return id;
+}
+
+export async function removePerson(p: Person): Promise<void> {
+  if (backendEnabled) {
+    const { remove } = await import("aws-amplify/storage");
+    await removeLockerPerson(p, (path) => remove({ path }));
+  }
+  setState({ people: (state.people ?? []).filter((x) => x.id !== p.id) });
+}
+
+export async function saveSelf(sub: string, p: Person): Promise<void> {
+  if (backendEnabled) await saveSelfProfile(sub, p);
+  setState({ self: { ...p, id: "self" } });
+}
+
+// ---- Exchanges (demo until the Secret Santa phase) ----
+
 export function useMyExchanges(): Exchange[] {
   return useSyncExternalStore(subscribe, () => exchanges);
 }

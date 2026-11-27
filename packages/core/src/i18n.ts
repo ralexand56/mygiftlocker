@@ -89,6 +89,32 @@ export function listJoin(items: string[], t: Tr = defaultT): string {
 }
 
 /**
+ * CLDR plural category. Uses Intl.PluralRules when the engine has it; Hermes (the iPhone app's
+ * engine) doesn't, so the rules for our five languages are built in as a fallback.
+ */
+export function pluralCategory(locale: Locale, n: number): Intl.LDMLPluralRule {
+  const PR = (globalThis as { Intl?: typeof Intl }).Intl?.PluralRules;
+  if (typeof PR === "function") return new PR(LOCALE_TAGS[locale]).select(n);
+  const i = Math.floor(Math.abs(n));
+  const whole = Number.isInteger(n);
+  switch (locale) {
+    case "ru": {
+      if (!whole) return "other";
+      const m10 = i % 10;
+      const m100 = i % 100;
+      if (m10 === 1 && m100 !== 11) return "one";
+      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "few";
+      return "many";
+    }
+    case "fr":
+    case "pt":
+      return i === 0 || i === 1 ? "one" : "other";
+    default:
+      return n === 1 ? "one" : "other";
+  }
+}
+
+/**
  * ICU message formatting: simple arguments, plural (with =N, #) and select.
  * Enough for our catalogs; anything richer belongs in next-intl on the web.
  */
@@ -166,7 +192,7 @@ export function formatMessage(msg: string, values: MessageValues = {}, locale: L
     if (type === "plural") {
       const exact = branches.get(`=${n}`);
       if (exact !== undefined) return exact;
-      const cat = Number.isFinite(n) ? new Intl.PluralRules(tag).select(n) : "other";
+      const cat = Number.isFinite(n) ? pluralCategory(locale, n) : "other";
       return branches.get(cat) ?? branches.get("other") ?? "";
     }
     return branches.get(String(v)) ?? branches.get("other") ?? "";

@@ -453,7 +453,8 @@
       "noProfile": "Want {name} to have your sizes too? <link>Add your profile</link> first, and you can share it back.",
       "creating": "Creating link…",
       "create": "Create link"
-    }
+    },
+    "pickSomeone": "Pick someone to see their sizes and dates."
   },
   "join": {
     "childOf": "{name}'s child",
@@ -981,5 +982,13 @@
     "newHere": "New here?",
     "previewTitle": "See how it works",
     "withSound": "▶ Play with sound"
+  },
+  "app": {
+    "settings": {
+      "title": "Settings",
+      "signedInAs": "Signed in as {email}",
+      "languageHint": "Reminder and sign-in emails come in this language too.",
+      "website": "Open mygiftlockers.com"
+    }
   }
 }

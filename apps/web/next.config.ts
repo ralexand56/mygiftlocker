@@ -5,7 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const NOINDEX = ["/locker/:path*", "/join/:path*", "/connect/:path*", "/exchange/:id", "/exchange/:id/:path*", "/invite", "/sign-in", "/auth/:path*", "/reminders/:path*"];
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@mgl/core"],
+  transpilePackages: ["@mgl/core", "@mgl/messages"],
   reactStrictMode: true,
   // One address for search engines: the bare domain goes to www.
   async redirects() {
